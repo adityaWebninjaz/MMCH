@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -18,13 +18,18 @@ import {
   Avatar,
   Chip,
   Drawer,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@mui/material';
 import {
   Search as SearchIcon,
   Close as CloseIcon,
-  FileDownload as FileDownloadIcon
+  FileDownload as FileDownloadIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import { getEmployees } from 'services/allEmployeeService';
+import { getDevices } from 'services/deviceServices';
 
 const DEPARTMENTS = [
   'All Departments',
@@ -36,7 +41,7 @@ const DEPARTMENTS = [
   'Radiology'
 ];
 
-const DEVICES_LIST = [
+const DEFAULT_DEVICES = [
   'BioMax Pro 500 (ID: BM-2847)',
   'Device 1',
   'Device 2',
@@ -51,21 +56,13 @@ const HOD_LIST = [
   'Dr. Ananya Sharma'
 ];
 
-const INITIAL_APPROVALS = [
-  { id: '1', name: 'Dr. Ravi Mehta', empId: 'EMP235461', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '2', name: 'Dr. Ravi Mehta', empId: 'EMP235462', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '3', name: 'Dr. Ravi Mehta', empId: 'EMP235463', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '4', name: 'Dr. Ravi Mehta', empId: 'EMP235464', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '5', name: 'Dr. Ravi Mehta', empId: 'EMP235465', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '6', name: 'Dr. Ravi Mehta', empId: 'EMP235466', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '7', name: 'Dr. Ravi Mehta', empId: 'EMP235467', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' },
-  { id: '8', name: 'Dr. Ravi Mehta', empId: 'EMP235468', department: 'Cardiology', designation: 'HOD Cardiology', mobile: '+91 7879536495', submitted: '11 Jul 2026', status: 'Pending', avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400' }
-];
-
 const Approvals = () => {
-  const [approvalsList, setApprovalsList] = useState(INITIAL_APPROVALS);
+  const [approvalsList, setApprovalsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [deviceOptions, setDeviceOptions] = useState(DEFAULT_DEVICES);
 
   // Review Drawer State
   const [reviewDrawerOpen, setReviewDrawerOpen] = useState(false);
@@ -76,10 +73,69 @@ const Approvals = () => {
   const [assignedHod, setAssignedHod] = useState('Department HOD');
   const [rejectionReason, setRejectionReason] = useState('');
 
+  // Fetch employees and devices on mount
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+
+    // Fetch employee data
+    getEmployees()
+      .then((data) => {
+        if (isMounted) {
+          const formatted = (Array.isArray(data) ? data : []).map((emp, index) => ({
+            id: emp.id || `emp-${index}`,
+            empId: emp.empId || `EMP${String(index + 1).padStart(6, '0')}`,
+            name: emp.name || 'Unnamed Employee',
+            avatar:
+              emp.avatar && typeof emp.avatar === 'string' && emp.avatar.trim() !== ''
+                ? emp.avatar
+                : '',
+            department: emp.department || 'General',
+            designation: emp.designation || 'Staff',
+            mobile: emp.mobile || '-',
+            hod: emp.hod || 'Department HOD',
+            shift: emp.shift || '-',
+            device: emp.device || '',
+            submitted: emp.submitted || '11 Jul 2026',
+            status: emp.status || 'Pending'
+          }));
+          setApprovalsList(formatted);
+          setError(null);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          console.error('Failed to load employees for approval:', err);
+          setError(err?.message || 'Failed to load employee approval requests');
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    // Fetch device options
+    getDevices()
+      .then((devs) => {
+        if (isMounted && Array.isArray(devs) && devs.length > 0) {
+          const list = devs.map(
+            (d) => `${d.deviceCode || d.id} (${d.location || 'Main Building'})`
+          );
+          setDeviceOptions(list);
+        }
+      })
+      .catch((err) => {
+        console.warn('Using default device options:', err?.message || err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleOpenReviewDrawer = (row) => {
     setSelectedRequest(row);
-    setAssignedDevice('');
-    setAssignedHod('Department HOD');
+    setAssignedDevice(row.device && deviceOptions.includes(row.device) ? row.device : '');
+    setAssignedHod(row.hod && HOD_LIST.includes(row.hod) ? row.hod : 'Department HOD');
     setRejectionReason('');
     setReviewDrawerOpen(true);
   };
@@ -92,8 +148,18 @@ const Approvals = () => {
   const handleApprove = () => {
     if (selectedRequest) {
       setApprovalsList((prev) =>
-        prev.map((item) => (item.id === selectedRequest.id ? { ...item, status: 'Approved' } : item))
+        prev.map((item) =>
+          item.id === selectedRequest.id
+            ? {
+                ...item,
+                status: 'Approved',
+                device: assignedDevice || item.device,
+                hod: assignedHod !== 'Department HOD' ? assignedHod : item.hod
+              }
+            : item
+        )
       );
+      toast.success(`Request for ${selectedRequest.name} has been Approved`);
     }
     handleCloseReviewDrawer();
   };
@@ -101,8 +167,13 @@ const Approvals = () => {
   const handleReject = () => {
     if (selectedRequest) {
       setApprovalsList((prev) =>
-        prev.map((item) => (item.id === selectedRequest.id ? { ...item, status: 'Rejected' } : item))
+        prev.map((item) =>
+          item.id === selectedRequest.id
+            ? { ...item, status: 'Rejected', rejectionReason }
+            : item
+        )
       );
+      toast.error(`Request for ${selectedRequest.name} has been Rejected`);
     }
     handleCloseReviewDrawer();
   };
@@ -110,7 +181,7 @@ const Approvals = () => {
   // Export CSV Handler
   const handleExportExcel = () => {
     const headers = ['Emp Name,Emp ID,Department,Designation,Mobile Number,Submitted,Status\n'];
-    const rows = approvalsList.map(
+    const rows = filteredApprovals.map(
       (a) => `"${a.name}","${a.empId}","${a.department}","${a.designation}","${a.mobile}","${a.submitted}","${a.status}"\n`
     );
     const blob = new Blob([...headers, ...rows], { type: 'text/csv' });
@@ -121,22 +192,41 @@ const Approvals = () => {
     elem.click();
   };
 
+  // Dynamic Departments List
+  const departmentsList = useMemo(() => {
+    const set = new Set(DEPARTMENTS);
+    if (Array.isArray(approvalsList)) {
+      approvalsList.forEach((item) => {
+        if (item?.department && typeof item.department === 'string' && item.department !== '-') {
+          set.add(item.department);
+        }
+      });
+    }
+    return Array.from(set);
+  }, [approvalsList]);
+
   // Filtered requests list
   const filteredApprovals = useMemo(() => {
+    if (!Array.isArray(approvalsList)) return [];
     return approvalsList.filter((item) => {
-      const matchesDept = selectedDept === 'All Departments' || item.department === selectedDept;
+      const empDept = String(item?.department || '').trim().toLowerCase();
+      const selDept = String(selectedDept || '').trim().toLowerCase();
+      const matchesDept = selectedDept === 'All Departments' || empDept === selDept;
+
       const q = searchQuery.trim().toLowerCase();
       const matchesSearch =
         !q ||
-        item.empId.toLowerCase().includes(q) ||
-        item.name.toLowerCase().includes(q) ||
-        item.designation.toLowerCase().includes(q);
+        String(item?.empId || '').toLowerCase().includes(q) ||
+        String(item?.name || '').toLowerCase().includes(q) ||
+        String(item?.designation || '').toLowerCase().includes(q) ||
+        String(item?.department || '').toLowerCase().includes(q);
+
       return matchesDept && matchesSearch;
     });
   }, [approvalsList, selectedDept, searchQuery]);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', p:"32px" }}>
+    <Box sx={{ width: '100%', minHeight: '100vh', p: '32px' }}>
       {/* Page Title */}
       <Typography
         variant="h3"
@@ -155,7 +245,7 @@ const Approvals = () => {
         sx={{
           display: 'flex',
           alignItems: 'flex-end',
-          justify: 'space-between',
+          justifyContent: 'space-between',
           width: '100%',
           gap: 2,
           mb: 3
@@ -192,7 +282,7 @@ const Approvals = () => {
                   }
                 }}
               >
-                {DEPARTMENTS.map((dept) => (
+                {departmentsList.map((dept) => (
                   <MenuItem key={dept} value={dept}>
                     {dept}
                   </MenuItem>
@@ -271,101 +361,118 @@ const Approvals = () => {
           overflowX: 'auto'
         }}
       >
-          <Table sx={{ minWidth: 950 }} size="medium">
-            <TableHead sx={{ bgcolor: '#f8fafc' }}>
+        <Table sx={{ minWidth: 950 }} size="medium">
+          <TableHead sx={{ bgcolor: '#f8fafc' }}>
+            <TableRow>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp Name</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp ID</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Department</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Submitted</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px', textAlign: 'center' }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px', textAlign: 'center' }}>Action</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
               <TableRow>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp Name</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp ID</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Department</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Submitted</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px', textAlign: 'center' }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px', textAlign: 'center' }}>Action</TableCell>
+                <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                  <CircularProgress size={32} />
+                </TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredApprovals.length > 0 ? (
-                filteredApprovals.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{
-                      '&:hover': { bgcolor: '#f8fafc' },
-                      '& td': { borderColor: '#f1f5f9', py: 1.5, fontSize: '13px', color: '#0F172A' }
-                    }}
-                  >
-                    {/* Emp Name with Avatar */}
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            ) : filteredApprovals.length > 0 ? (
+              filteredApprovals.map((row) => (
+                <TableRow
+                  key={row.id}
+                  sx={{
+                    '&:hover': { bgcolor: '#f8fafc' },
+                    '& td': { borderColor: '#f1f5f9', py: 1.5, fontSize: '13px', color: '#0F172A' }
+                  }}
+                >
+                  {/* Emp Name with Avatar */}
+                  <TableCell>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      {row.avatar ? (
                         <Avatar src={row.avatar} alt={row.name} sx={{ width: 32, height: 32 }} />
-                        <Typography sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.name}</Typography>
-                      </Box>
-                    </TableCell>
+                      ) : (
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: '#90caf9',
+                            color: '#1565c0'
+                          }}
+                        >
+                          <PersonIcon sx={{ fontSize: 20 }} />
+                        </Avatar>
+                      )}
+                      <Typography sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.name}</Typography>
+                    </Box>
+                  </TableCell>
 
-                    {/* Emp ID */}
-                    <TableCell sx={{ fontWeight: 400, color: '#0F172A', lineHeight: '100%' }}>{row.empId}</TableCell>
+                  {/* Emp ID */}
+                  <TableCell sx={{ fontWeight: 400, color: '#0F172A', lineHeight: '100%' }}>{row.empId}</TableCell>
 
-                    {/* Department */}
-                    <TableCell sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.department}</TableCell>
+                  {/* Department */}
+                  <TableCell sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.department}</TableCell>
 
-                    {/* Submitted Date */}
-                    <TableCell sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.submitted}</TableCell>
+                  {/* Submitted Date */}
+                  <TableCell sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.submitted}</TableCell>
 
-                    {/* Status Chip */}
-                    <TableCell align="center">
-                     <Chip
+                  {/* Status Chip */}
+                  <TableCell align="center">
+                    <Chip
                       label={row.status}
-                         size="small"
+                      size="small"
                       sx={{
-                      bgcolor: row.status === 'Approved' ? '#ECFDF5' : row.status === 'Rejected' ? '#FEF2F2' : '#FEF3C7',
-
+                        bgcolor: row.status === 'Approved' ? '#ECFDF5' : row.status === 'Rejected' ? '#FEF2F2' : '#FEF3C7',
                         color: row.status === 'Approved' ? '#059669' : row.status === 'Rejected' ? '#DC2626' : '#D97706',
-                        fontWeight:600,
+                        fontWeight: 600,
                         fontSize: '13px',
                         lineHeight: '100%',
                         px: 1
                       }}
-                      />
+                    />
+                  </TableCell>
 
-                    </TableCell>
-
-                    {/* Action Button */}
-                    <TableCell align="center">
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => handleOpenReviewDrawer(row)}
-                        sx={{
-                          bgcolor: '#f1f5f9',
-                          color: '#334155',
-                          textTransform: 'none',
-                          fontWeight: 500,
-                          fontSize: '13px',
-                          borderRadius: '6px',
-                          px: 2,
-                          py: 0.4,
-                          height: '28px',
-                          boxShadow: 'none',
-                          '&:hover': {
-                            bgcolor: '#e2e8f0'
-                          }
-                        }}
-                      >
-                        Review
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748b' }}>
-                    No approval requests found matching search criteria.
+                  {/* Action Button */}
+                  <TableCell align="center">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleOpenReviewDrawer(row)}
+                      sx={{
+                        bgcolor: '#f1f5f9',
+                        color: '#334155',
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '13px',
+                        borderRadius: '6px',
+                        px: 2,
+                        py: 0.4,
+                        height: '28px',
+                        boxShadow: 'none',
+                        '&:hover': {
+                          bgcolor: '#e2e8f0'
+                        }
+                      }}
+                    >
+                      Review
+                    </Button>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} align="center" sx={{ py: 3, color: '#64748b' }}>
+                  {error ? error : 'No approval requests found matching search criteria.'}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-      {/* DETAILED VERIFICATION SIDE DRAWER (Matching Figma Inspect Specs) */}
+      {/* DETAILED VERIFICATION SIDE DRAWER */}
       <Drawer
         anchor="right"
         open={reviewDrawerOpen}
@@ -388,32 +495,53 @@ const Approvals = () => {
       >
         {selectedRequest && (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: '20px', flexGrow: 1 }}>
-            {/* Header Title */}
-            <Typography
-              variant="h6"
-              sx={{
-                fontFamily: 'Inter, sans-serif',
-                fontWeight: 700,
-                fontSize: '16px',
-                lineHeight: '100%',
-                color: '#0F172A'
-              }}
-            >
-              Detailed Verification
-            </Typography>
+            {/* Header Title with Close Icon */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  lineHeight: '100%',
+                  color: '#0F172A'
+                }}
+              >
+                Detailed Verification
+              </Typography>
+              <IconButton onClick={handleCloseReviewDrawer} size="small" aria-label="close">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
 
-            {/* Employee Doctor Large Image Card */}
-            <Box
-              component="img"
-              src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop&q=80"
-              alt={selectedRequest.name}
-              sx={{
-                width: '100%',
-                height: '405px',
-                objectFit: 'cover',
-                borderRadius: '8px'
-              }}
-            />
+            {/* Employee Doctor Large Image Card or Person Icon Fallback Card */}
+            {selectedRequest.avatar ? (
+              <Box
+                component="img"
+                src={selectedRequest.avatar}
+                alt={selectedRequest.name}
+                sx={{
+                  width: '100%',
+                  height: '405px',
+                  objectFit: 'cover',
+                  borderRadius: '8px'
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  width: '100%',
+                  height: '405px',
+                  bgcolor: '#90caf9',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <PersonIcon sx={{ fontSize: 120, color: '#1565c0' }} />
+              </Box>
+            )}
 
             {/* 2-Column Info Grid */}
             <Box
@@ -451,7 +579,7 @@ const Approvals = () => {
                   Department
                 </Typography>
                 <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, color: '#0F172A', fontSize: '14px', lineHeight: '100%' }}>
-                  Cardiovascular
+                  {selectedRequest.department}
                 </Typography>
               </Box>
 
@@ -460,7 +588,7 @@ const Approvals = () => {
                   Designation
                 </Typography>
                 <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, color: '#0F172A', fontSize: '14px', lineHeight: '100%' }}>
-                  Senior Specialist
+                  {selectedRequest.designation}
                 </Typography>
               </Box>
             </Box>
@@ -492,7 +620,7 @@ const Approvals = () => {
                   <MenuItem value="" disabled sx={{ fontSize: '13px', color: '#64748B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                     Select device
                   </MenuItem>
-                  {DEVICES_LIST.map((d) => (
+                  {deviceOptions.map((d) => (
                     <MenuItem key={d} value={d} sx={{ fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                       {d}
                     </MenuItem>

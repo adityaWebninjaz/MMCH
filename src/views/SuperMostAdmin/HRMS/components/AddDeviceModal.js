@@ -5,36 +5,29 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  Select,
-  MenuItem,
   IconButton,
   Grid,
   Button,
-  FormLabel
+  FormLabel,
+  CircularProgress
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import styles from '../devices.module.css';
 
-const AddDeviceModal = ({ open, onClose, onAddDevice, nextDeviceIndex }) => {
+const AddDeviceModal = ({ open, onClose, onAddDevice, submitting }) => {
   const [formData, setFormData] = useState({
-    id: '',
-    location: '',
-    usersAssigned: '',
-    status: 'Online'
+    device_code: '',
+    location: ''
   });
 
   useEffect(() => {
     if (open) {
-      const formattedId = `DEV-${String(nextDeviceIndex || 1).padStart(3, '0')}`;
       setFormData({
-        id: formattedId,
-        location: '',
-        usersAssigned: '',
-        status: 'Online'
+        device_code: '',
+        location: ''
       });
     }
-  }, [open, nextDeviceIndex]);
+  }, [open]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -42,13 +35,16 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, nextDeviceIndex }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onAddDevice(formData);
+    onAddDevice({
+      device_code: formData.device_code.trim(),
+      location: formData.location.trim()
+    });
   };
 
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={submitting ? undefined : onClose}
       maxWidth="sm"
       fullWidth
       PaperProps={{
@@ -57,7 +53,7 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, nextDeviceIndex }) => {
     >
       <DialogTitle className={styles.modalTitle}>
         Add New Device
-        <IconButton onClick={onClose} size="small" aria-label="close">
+        <IconButton onClick={onClose} size="small" aria-label="close" disabled={submitting}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
@@ -65,18 +61,19 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, nextDeviceIndex }) => {
         <DialogContent className={styles.modalContent} dividers>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <FormLabel htmlFor="device-id-input" className={styles.formLabel}>
-                Device ID <span style={{ color: 'red' }}>*</span>
+              <FormLabel htmlFor="device-code-input" className={styles.formLabel}>
+                Device Code <span style={{ color: 'red' }}>*</span>
               </FormLabel>
               <TextField
-                id="device-id-input"
-                name="deviceId"
+                id="device-code-input"
+                name="device_code"
                 fullWidth
                 size="small"
-                placeholder="e.g. DEV-009"
-                value={formData.id}
-                onChange={(e) => handleInputChange('id', e.target.value)}
+                placeholder="e.g. Test133, BIO-GATE-01"
+                value={formData.device_code}
+                onChange={(e) => handleInputChange('device_code', e.target.value)}
                 required
+                disabled={submitting}
               />
             </Grid>
             <Grid item xs={12}>
@@ -88,51 +85,21 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, nextDeviceIndex }) => {
                 name="location"
                 fullWidth
                 size="small"
-                placeholder="e.g. Laboratory, Blood Bank"
+                placeholder="e.g. Main Building, Admin Block"
                 value={formData.location}
                 onChange={(e) => handleInputChange('location', e.target.value)}
                 required
+                disabled={submitting}
               />
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
-              <FormLabel htmlFor="device-users-input" className={styles.formLabel}>
-                Users Assigned
-              </FormLabel>
-              <TextField
-                id="device-users-input"
-                name="usersAssigned"
-                fullWidth
-                size="small"
-                type="number"
-                placeholder="e.g. 10"
-                value={formData.usersAssigned}
-                onChange={(e) => handleInputChange('usersAssigned', e.target.value)}
-              />
-            </Grid> */}
-            {/* <Grid item xs={12} sm={6}>
-              <FormLabel htmlFor="device-status-select" className={styles.formLabel}>
-                Status
-              </FormLabel>
-              <FormControl fullWidth size="small">
-                <Select
-                  id="device-status-select"
-                  name="status"
-                  value={formData.status}
-                  onChange={(e) => handleInputChange('status', e.target.value)}
-                >
-                  <MenuItem value="Online">Online</MenuItem>
-                  <MenuItem value="Offline">Offline</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid> */}
           </Grid>
         </DialogContent>
         <DialogActions className={styles.modalActions}>
-          <Button onClick={onClose} className={styles.cancelBtn}>
+          <Button onClick={onClose} className={styles.cancelBtn} disabled={submitting}>
             Cancel
           </Button>
-          <Button type="submit" variant="contained" className={styles.saveBtn}>
-            Save
+          <Button type="submit" variant="contained" className={styles.saveBtn} disabled={submitting}>
+            {submitting ? <CircularProgress size={24} color="inherit" /> : 'Save'}
           </Button>
         </DialogActions>
       </form>

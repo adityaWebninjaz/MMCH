@@ -29,7 +29,8 @@ import {
   MoreHoriz as MoreHorizIcon,
   Close as CloseIcon,
   FileDownload as FileDownloadIcon,
-  KeyboardArrowDown as KeyboardArrowDownIcon
+  KeyboardArrowDown as KeyboardArrowDownIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
 import { getEmployees } from 'services/allEmployeeService';
 import { updateEmployee } from './shiftService';
@@ -405,7 +406,20 @@ const AllEmployees = () => {
                     {/* Emp Name with Avatar */}
                     <TableCell>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                        <Avatar src={row.avatar} alt={row.name} sx={{ width: 32, height: 32 }} />
+                        {row.avatar ? (
+                          <Avatar src={row.avatar} alt={row.name} sx={{ width: 32, height: 32 }} />
+                        ) : (
+                          <Avatar
+                            sx={{
+                              width: 32,
+                              height: 32,
+                              bgcolor: '#90caf9',
+                              color: '#1565c0'
+                            }}
+                          >
+                            <PersonIcon sx={{ fontSize: 20 }} />
+                          </Avatar>
+                        )}
                         <Typography sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: "100% " }}>{row.name}</Typography>
                       </Box>
                     </TableCell>
