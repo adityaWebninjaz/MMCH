@@ -1,0 +1,51 @@
+0 verbose cli /usr/local/Cellar/node/23.10.0_1/bin/node /usr/local/bin/npm
+1 info using npm@10.9.2
+2 info using node@v23.10.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/webninjaz-developer/Desktop/hms/hostle/.npmrc
+5 silly config load:file:/Users/webninjaz-developer/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm run start
+8 verbose argv "run" "start"
+9 verbose logfile logs-max:10 dir:/Users/webninjaz-developer/Desktop/hms/hostle/.npm-cache/_logs/2025-10-29T10_20_46_194Z-
+10 verbose logfile /Users/webninjaz-developer/Desktop/hms/hostle/.npm-cache/_logs/2025-10-29T10_20_46_194Z-debug-0.log
+11 silly logfile done cleaning log files
+12 verbose stack Error: kill EPERM
+12 verbose stack     at ChildProcess.kill (node:internal/child_process:512:26)
+12 verbose stack     at process.handleSignal (/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/signal-manager.js:14:10)
+12 verbose stack     at process.emit (node:events:507:28)
+13 verbose pkgid berry-free-material-react-cra@3.3.2
+14 error code EPERM
+15 error syscall kill
+16 error path /Users/webninjaz-developer/Desktop/hms/hostle
+17 error errno -1
+18 error Error: kill EPERM
+18 error     at ChildProcess.kill (node:internal/child_process:512:26)
+18 error     at process.handleSignal (/usr/local/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/signal-manager.js:14:10)
+18 error     at process.emit (node:events:507:28) {
+18 error   errno: -1,
+18 error   code: 'EPERM',
+18 error   syscall: 'kill',
+18 error   cmd: 'sh',
+18 error   args: [ '-c', 'node scripts/start.js' ],
+18 error   stdout: null,
+18 error   stderr: null,
+18 error   event: 'start',
+18 error   script: 'node scripts/start.js',
+18 error   pkgid: 'berry-free-material-react-cra@3.3.2',
+18 error   path: '/Users/webninjaz-developer/Desktop/hms/hostle'
+18 error }
+19 error
+19 error The operation was rejected by your operating system.
+19 error It is likely you do not have the permissions to access this file as the current user
+19 error
+19 error If you believe this might be a permissions issue, please double-check the
+19 error permissions of the file and its containing directories, or try running
+19 error the command again as root/Administrator.
+20 verbose cwd /Users/webninjaz-developer/Desktop/hms/hostle
+21 verbose os Darwin 24.6.0
+22 verbose node v23.10.0
+23 verbose npm  v10.9.2
+24 verbose exit -1
+25 verbose code -1
+26 error A complete log of this run can be found in: /Users/webninjaz-developer/Desktop/hms/hostle/.npm-cache/_logs/2025-10-29T10_20_46_194Z-debug-0.log

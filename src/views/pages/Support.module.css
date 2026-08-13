@@ -1,0 +1,115 @@
+/* Page wrapper */
+.page {
+  min-height: 100vh;
+  padding-top: 80px; /* ✅ space for fixed navbar */
+  display: flex;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Main container */
+.container {
+  width: 100%;
+  max-width: 720px;
+  padding: 48px 20px 80px;
+}
+
+/* Header */
+.header {
+  text-align: start;
+  margin: 0;
+}
+
+.title {
+  font-size: 24px;
+  color: rgba(31, 41, 55, 1);
+  font-weight: 300;
+  margin-bottom: 15px;
+}
+.hr {
+  border: none;
+  background-color: rgba(229, 231, 235, 1);
+  height: 1px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+.subtitle {
+  font-size: 14px;
+  color: #5f6368;
+  margin-bottom: 0;
+}
+
+/* Card */
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #e0e0e0;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2b2b2b;
+}
+
+/* Inputs */
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+  outline: none;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #9aa0a6;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: #644ee5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.15);
+}
+
+/* Submit button */
+.submitBtn {
+  margin-top: 12px;
+
+  background: var(--Violet, #644ee5); /* gold tone from screenshot */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 14px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submitBtn:hover {
+  background-color: #4e38b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}

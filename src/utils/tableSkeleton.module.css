@@ -1,0 +1,67 @@
+/* TableSkeleton.module.css */
+
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.tableHead {
+  background-color: #f9fafb;
+}
+
+.tableHeaderCell {
+  padding: 12px 24px;
+  text-align: left;
+  width: 10%; /* Equal width for 10 columns */
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tableBody {
+  background-color: white;
+}
+
+.tableRow {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.tableRow:hover {
+  background-color: #f9fafb;
+}
+
+.tableRow:not(:last-child) {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tableCell {
+  padding: 16px 24px;
+  white-space: nowrap;
+  width: 10%; /* Equal width for 10 columns */
+}
+
+.skeletonBar {
+  height: 16px;
+  width: 75%;
+  background-color: #d1d5db;
+  border-radius: 4px;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

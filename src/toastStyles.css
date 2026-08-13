@@ -1,0 +1,48 @@
+/* Make Toast Fully Responsive */
+.Toastify__toast {
+  max-width: 90vw !important;
+  word-break: break-word !important;
+  padding: 12px 16px !important;
+  border-radius: 10px !important;
+  font-size: 0.95rem !important;
+}
+
+/* Toast Body Text */
+.Toastify__toast-body {
+  font-size: 0.9rem !important;
+  line-height: 1.3rem !important;
+  word-break: break-word !important;
+  white-space: normal !important;
+}
+
+/* Tablet Responsive Toast */
+@media (max-width: 768px) {
+  .Toastify__toast {
+    max-width: 90vw !important;
+  }
+}
+
+/* Mobile Responsive Toast */
+@media (max-width: 480px) {
+  .Toastify__toast {
+    max-width: 97vw !important;
+    margin: 0 auto !important;
+    font-size: 0.85rem !important;
+    padding: 10px 14px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .Toastify__toast-body {
+    font-size: 0.85rem !important;
+  }
+
+  .Toastify__close-button {
+    transform: scale(0.8);
+  }
+  .Toastify__toast-container--top-right {
+    top: 10px !important;
+    right: 10px !important;
+    left: 10px !important;
+    width: auto !important;
+  }
+}

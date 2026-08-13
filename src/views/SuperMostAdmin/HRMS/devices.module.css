@@ -1,0 +1,227 @@
+.pageContainer {
+  padding: 24px 28px;
+  background-color: transparent;
+  min-height: calc(100vh - 100px);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.headerSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.titleArea {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 0 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em !important;
+}
+
+.pageSubtitle {
+  font-size: 14px !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+.addDeviceButton {
+  background-color: #5c4eed !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  transition: all 0.2s ease !important;
+}
+
+.addDeviceButton:hover {
+  background-color: #4b3dcf !important;
+  box-shadow: 0 4px 6px -1px rgba(92, 78, 237, 0.25) !important;
+}
+
+.tableCard {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+.tableContainer {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableHead {
+  background-color: #f1f5f9;
+}
+
+.tableHeadCell {
+  padding: 14px 24px !important;
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  text-align: left !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap !important;
+}
+
+.colDeviceId {
+  width: 15%;
+  padding-left: 28px !important;
+}
+
+.colLocation {
+  width: 48%;
+}
+
+.colUserAssigned {
+  width: 22%;
+}
+
+.colStatus {
+  width: 15%;
+  padding-right: 28px !important;
+}
+
+.tableRow {
+  transition: background-color 0.15s ease;
+}
+
+.tableRow:hover {
+  background-color: #f8fafc;
+}
+
+.tableRow:last-child td {
+  border-bottom: none !important;
+}
+
+.tableCell {
+  padding: 16px 24px !important;
+  font-size: 14px !important;
+  color: #475569 !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  vertical-align: middle !important;
+}
+
+.tableCellFirst {
+  padding-left: 28px !important;
+}
+
+.tableCellLast {
+  padding-right: 28px !important;
+}
+
+.deviceIdText {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  font-size: 14px !important;
+}
+
+.locationText {
+  color: #475569 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.userAssignedText {
+  color: #475569 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.statusOnline {
+  background-color: #dcfce7;
+  color: #16a34a;
+}
+
+.statusOffline {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+/* Modal styles */
+.modalTitle {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 20px 24px 12px !important;
+}
+
+.modalContent {
+  padding: 16px 24px 24px !important;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.modalActions {
+  padding: 16px 24px !important;
+  border-top: 1px solid #f1f5f9 !important;
+  gap: 12px !important;
+}
+
+.cancelBtn {
+  text-transform: none !important;
+  font-weight: 500 !important;
+  color: #64748b !important;
+  border-radius: 6px !important;
+  border: 1px solid #CBD5E1 !important;
+  padding: 6px 16px !important;
+}
+
+.saveBtn {
+  background-color: #5c4eed !important;
+  color: #ffffff !important;
+  text-transform: none !important;
+  font-weight: 500 !important;
+  border-radius: 6px !important;
+  padding: 6px 20px !important;
+}
+
+.saveBtn:hover {
+  background-color: #4b3dcf !important;
+}

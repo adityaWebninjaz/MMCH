@@ -1,0 +1,41 @@
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  padding-right: 0;
+}
+
+.avatar {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.title {
+  color: #9CA3AF;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+.chevron {
+  color: #111827;
+}
+
+.updatePasswordBtn{
+  background-color: #644EE5;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s ease;
+}
+
+.updatePasswordBtn:hover{
+  background-color: #5a3fd8;
+}

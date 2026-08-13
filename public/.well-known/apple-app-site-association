@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appID": "NCQUR5ZGSQ.com.pmch.app",
+        "paths": [ "/login", "/login/*" ]
+      }
+    ]
+  }
+}
