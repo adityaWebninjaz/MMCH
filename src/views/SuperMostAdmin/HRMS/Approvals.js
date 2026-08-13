@@ -82,7 +82,8 @@ const Approvals = () => {
     getEmployees()
       .then((data) => {
         if (isMounted) {
-          const formatted = (Array.isArray(data) ? data : []).map((emp, index) => ({
+          const items = data?.items || (Array.isArray(data) ? data : []);
+          const formatted = items.map((emp, index) => ({
             id: emp.id || `emp-${index}`,
             empId: emp.empId || `EMP${String(index + 1).padStart(6, '0')}`,
             name: emp.name || 'Unnamed Employee',
