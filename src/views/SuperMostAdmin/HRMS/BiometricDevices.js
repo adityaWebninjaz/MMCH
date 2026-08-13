@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -8,56 +8,77 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TableRow
+  TableRow,
+  CircularProgress
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import AddDeviceModal from './components/AddDeviceModal';
 import styles from './devices.module.css';
-
-const initialDevices = [
-  { id: 'DEV-001', location: 'Main Entrance', usersAssigned: '12 Employees', status: 'Online' },
-  { id: 'DEV-002', location: 'ICU Ward', usersAssigned: '8 Employees', status: 'Online' },
-  { id: 'DEV-003', location: 'Emergency Block', usersAssigned: '15 Employees', status: 'Online' },
-  { id: 'DEV-004', location: 'Pharmacy', usersAssigned: '4 Employees', status: 'Offline' },
-  { id: 'DEV-005', location: 'Admin Office', usersAssigned: '6 Employees', status: 'Online' },
-  { id: 'DEV-006', location: 'Cafeteria', usersAssigned: '3 Employees', status: 'Offline' },
-  { id: 'DEV-007', location: 'Radiology', usersAssigned: '5 Employees', status: 'Online' },
-  { id: 'DEV-008', location: 'OPD Wing', usersAssigned: '10 Employees', status: 'Online' }
-];
+import { getDevices, createDevice } from '../../../services/deviceServices';
 
 const BiometricDevices = () => {
-  const [devices, setDevices] = useState(initialDevices);
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [openAddModal, setOpenAddModal] = useState(false);
+
+  useEffect(() => {
+    const fetchDevices = async () => {
+      setLoading(true);
+      try {
+        const data = await getDevices();
+        setDevices(data || []);
+      } catch (err) {
+        console.error('Failed to load devices:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDevices();
+  }, []);
 
   const handleOpenAddModal = () => {
     setOpenAddModal(true);
   };
 
   const handleCloseAddModal = () => {
-    setOpenAddModal(false);
+    if (!submitting) {
+      setOpenAddModal(false);
+    }
   };
 
-  const handleAddDevice = (formData) => {
-    if (!formData.id?.trim() || !formData.location?.trim()) {
-      toast.error('Device ID and Location are required');
+  const handleAddDevice = async (formData) => {
+    const deviceCode = formData.device_code?.trim() || formData.deviceCode?.trim() || formData.id?.trim();
+    const location = formData.location?.trim();
+
+    if (!deviceCode || !location) {
+      toast.error('Device Code and Location are required');
       return;
     }
 
-    const assignedText = formData.usersAssigned
-      ? `${formData.usersAssigned} Employees`
-      : '0 Employees';
+    setSubmitting(true);
+    try {
+      const response = await createDevice({
+        device_code: deviceCode,
+        location: location
+      });
 
-    const newDevice = {
-      id: formData.id.trim(),
-      location: formData.location.trim(),
-      usersAssigned: assignedText,
-      status: formData.status || 'Online'
-    };
-
-    setDevices((prev) => [...prev, newDevice]);
-    toast.success(`Device ${newDevice.id} added successfully`);
-    handleCloseAddModal();
+      if (response && response.success) {
+        toast.success(response.message || `Device ${deviceCode} added successfully`);
+        // Refresh device list from server so that the new device is visible in the table instant 
+        const updated = await getDevices();
+        setDevices(updated || []);
+        setOpenAddModal(false);
+      } else {
+        toast.error(response?.message || 'Failed to add device');
+      }
+    } catch (err) {
+      toast.error(err?.message || 'An error occurred while adding device');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -104,30 +125,46 @@ const BiometricDevices = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {devices.map((device) => (
-                <TableRow key={device.id} className={styles.tableRow}>
-                  <TableCell className={`${styles.tableCell} ${styles.tableCellFirst}`}>
-                    <span className={styles.deviceIdText}>{device.id}</span>
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    <span className={styles.locationText}>{device.location}</span>
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    <span className={styles.userAssignedText}>{device.usersAssigned}</span>
-                  </TableCell>
-                  <TableCell className={`${styles.tableCell} ${styles.tableCellLast}`}>
-                    <span
-                      className={`${styles.statusBadge} ${
-                        device.status.toLowerCase() === 'online'
-                          ? styles.statusOnline
-                          : styles.statusOffline
-                      }`}
-                    >
-                      {device.status}
-                    </span>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" style={{ padding: '32px' }}>
+                    <CircularProgress size={32} />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : devices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" style={{ padding: '32px' }}>
+                    No devices found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                devices.map((device) => (
+                  <TableRow key={device.id} className={styles.tableRow}>
+                    <TableCell className={`${styles.tableCell} ${styles.tableCellFirst}`}>
+                      <span className={styles.deviceIdText}>{device.deviceCode || device.id}</span>
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      <span className={styles.locationText}>{device.location}</span>
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      <span className={styles.userAssignedText}>
+                        {device.usersAssigned || `${device.users_assigned_count || 0} Employees`}
+                      </span>
+                    </TableCell>
+                    <TableCell className={`${styles.tableCell} ${styles.tableCellLast}`}>
+                      <span
+                        className={`${styles.statusBadge} ${
+                          (device.status || (device.isActive ? 'Online' : 'Offline')).toLowerCase() === 'online'
+                            ? styles.statusOnline
+                            : styles.statusOffline
+                        }`}
+                      >
+                        {device.status || (device.isActive ? 'Online' : 'Offline')}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -138,7 +175,7 @@ const BiometricDevices = () => {
         open={openAddModal}
         onClose={handleCloseAddModal}
         onAddDevice={handleAddDevice}
-        nextDeviceIndex={devices.length + 1}
+        submitting={submitting}
       />
     </Box>
   );
