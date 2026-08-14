@@ -25,7 +25,8 @@ import {
   DialogContent,
   DialogActions,
   Chip,
-  Checkbox
+  Checkbox,
+  CircularProgress
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -40,7 +41,7 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { getShifts, saveShiftDefinition, deleteShiftDefinition } from './shiftService';
+import { getShiftDetails, createShift, createShiftDetail } from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
 
@@ -146,14 +147,27 @@ const ShiftDetails = () => {
   // Tabs State: 0 = Shift Details, 1 = Assign Shift
   const [activeTab, setActiveTab] = useState(0);
 
-  // Search & Pagination States (loaded from shiftService)
-  const [shifts, setShifts] = useState(() => getShifts());
+  // Search & Pagination States (loaded directly from backend API)
+  const [shifts, setShifts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Reload shifts & reset viewMode to list whenever component mounts or route location changes
   useEffect(() => {
     setViewMode('list');
     setActiveTab(0);
-    setShifts(getShifts());
+    const fetchApiShifts = async () => {
+      setLoading(true);
+      try {
+        const apiData = await getShiftDetails();
+        setShifts(Array.isArray(apiData) ? apiData : []);
+      } catch (err) {
+        console.error('Error fetching shift details:', err);
+        setShifts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchApiShifts();
   }, [location.key]);
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -266,9 +280,9 @@ const ShiftDetails = () => {
     if (!q) return shifts;
     return shifts.filter(
       (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.description.toLowerCase().includes(q) ||
-        s.workingDays.toLowerCase().includes(q)
+        (s.name || '').toLowerCase().includes(q) ||
+        (s.description || '').toLowerCase().includes(q) ||
+        (s.workingDays || '').toLowerCase().includes(q)
     );
   }, [shifts, searchQuery]);
 
@@ -318,9 +332,13 @@ const ShiftDetails = () => {
   };
 
   // Delete shift handler
-  const handleDeleteShift = (id) => {
-    const updated = deleteShiftDefinition(id);
-    setShifts(updated);
+  const handleDeleteShift = async (id) => {
+    try {
+      await deleteShiftDetail(id);
+    } catch (e) {
+      console.error('API delete error:', e);
+    }
+    setShifts((prev) => prev.filter((s) => String(s.id) !== String(id)));
   };
 
   // Toggle Working Day Pill
@@ -336,23 +354,26 @@ const ShiftDetails = () => {
   };
 
   // Save Shift Form
-  const handleSaveShift = () => {
+  const handleSaveShift = async () => {
     if (!formData.name.trim()) return;
 
-    const formattedTime = `${formData.startTime} - ${formData.endTime}`;
-    const formattedDays = formData.workingDays.join(', ');
-
-    const shiftPayload = {
-      id: editingShift ? editingShift.id : undefined,
-      name: formData.name,
-      description: formData.description || 'Full system access with all permissions',
-      timeRange: formattedTime,
-      workingDays: formattedDays || 'Mon, Tue, Wed'
-    };
-
-    const updated = saveShiftDefinition(shiftPayload);
-    setShifts(updated);
-    setViewMode('list');
+    setLoading(true);
+    try {
+      await createShift({
+        name: formData.name.trim(),
+        description: formData.description?.trim() || '',
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        working_days: formData.workingDays
+      });
+      const refreshedShifts = await getShiftDetails();
+      setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
+      setViewMode('list');
+    } catch (e) {
+      console.error('Error saving shift:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Filter assigned employees
@@ -534,7 +555,7 @@ const ShiftDetails = () => {
                       Description
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 500, color: '#475569', fontSize: '0.875rem', lineHeight: 1.5 }}>
-                      {currentShift.description || 'Dedicated shift layout for overnight trauma response and emergency ward triage management.'}
+                      {currentShift.description || '-'}
                     </Typography>
                   </Box>
                 </Box>
@@ -1131,7 +1152,16 @@ const ShiftDetails = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {paginatedShifts.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                      <CircularProgress size={32} sx={{ color: '#6366f1' }} />
+                      <Typography sx={{ mt: 1.5, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>
+                        Loading shifts...
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedShifts.length > 0 ? (
                   paginatedShifts.map((row) => (
                     <TableRow
                       key={row.id}
