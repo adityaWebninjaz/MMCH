@@ -3,6 +3,57 @@ import Cookies from 'js-cookie';
 
 const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
+export const formatImageUrl = (imagePath) => {
+  if (!imagePath || typeof imagePath !== 'string') return '';
+  const trimmed = imagePath.trim();
+  if (!trimmed || trimmed === '-' || trimmed === 'null' || trimmed === 'undefined') return '';
+
+  // If already a complete http/https URL
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  const baseOrigin = (BASE_URL || 'https://mmchhrmsapi.pmu.org.in')
+    .replace(/\/api\/v1\/?$/, '')
+    .replace(/\/+$/, '');
+
+  // If path starts with // (e.g. //var/www/pmch-hrms-api/uploads/...)
+  if (trimmed.startsWith('//')) {
+    return `${baseOrigin}${trimmed}`;
+  }
+
+  if (trimmed.startsWith('/')) {
+    return `${baseOrigin}${trimmed}`;
+  }
+
+  return `${baseOrigin}/${trimmed}`;
+};
+
+const imageBlobCache = new Map();
+
+export const getBlobAvatar = async (imagePath) => {
+  const formattedUrl = formatImageUrl(imagePath);
+  if (!formattedUrl) return '';
+
+  if (imageBlobCache.has(formattedUrl)) {
+    return imageBlobCache.get(formattedUrl);
+  }
+
+  if (formattedUrl.startsWith('data:') || formattedUrl.startsWith('blob:')) {
+    return formattedUrl;
+  }
+
+  try {
+    const res = await axios.get(formattedUrl, { responseType: 'blob' });
+    const blobUrl = URL.createObjectURL(res.data);
+    imageBlobCache.set(formattedUrl, blobUrl);
+    return blobUrl;
+  } catch (err) {
+    console.warn('Failed to load image blob for:', formattedUrl, err?.message);
+    return formattedUrl;
+  }
+};
+
 export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) => {
   const token = Cookies.get('Token') || Cookies.get('token');
 
@@ -28,23 +79,36 @@ export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) =
     const items = Array.isArray(resData?.items)
       ? resData.items
       : Array.isArray(resData)
-      ? resData
-      : [];
+        ? resData
+        : [];
 
-    const mappedEmployees = items.map((emp) => ({
-      id: emp.id,
-      empId: emp.uid || '-',
-      name: emp.full_name || '-',
-      avatar: emp.employee_image || '',
-      department: emp.department || '-',
-      designation: emp.designation || '-',
-      hod: emp.reporting_manager || '-',
-      mobile: emp.mobile_number || '-',
-      shift: emp.current_shift || '-',
-      device: emp.device_assigned || '-',
-      status: emp.status || 'active',
-      profileStatus: emp.profile_status || 'approved'
-    }));
+    const mappedEmployees = await Promise.all(
+      items.map(async (emp) => {
+        const avatarUrl = await getBlobAvatar(emp.employee_image);
+        return {
+          id: emp.id,
+          empId: emp.uid || '-',
+          name: emp.full_name || '-',
+          avatar: avatarUrl,
+          department: emp.department || '-',
+          departmentId: emp.department_id || '',
+          designation: emp.designation || '-',
+          designationId: emp.designation_id || '',
+          hod: emp.reporting_manager || '-',
+          hodId: emp.reporting_manager_id || '-',
+          mobile: emp.mobile_number || '-',
+          shift: emp.current_shift || '-',
+          shiftId: emp.current_shift_id || emp.shift_id || '',
+          current_shift_id: emp.current_shift_id || emp.shift_id || '',
+          device: emp.device_assigned || '-',
+          deviceId: emp.device_id || '',
+          device_id: emp.device_id || '',
+          status: emp.status || 'active',
+          profileStatus: emp.profile_status || emp.profileStatus || '',
+          profile_status: emp.profile_status || emp.profileStatus || ''
+        };
+      })
+    );
 
     const total =
       resData.total ??
@@ -79,4 +143,268 @@ export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) =
   }
 };
 
+export const updateEmployeeDevice = async (employeeId, deviceData) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
 
+  const device_id =
+    typeof deviceData === 'object' && deviceData !== null
+      ? deviceData.device_id || deviceData.deviceId || deviceData.id
+      : deviceData;
+
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/employees/${employeeId}/device`,
+      { device_id },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to update employee device',
+      errors: null
+    };
+  }
+};
+
+export const updateEmployeeReportingManager = async (employeeId, managerData) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const reporting_manager_id =
+    typeof managerData === 'object' && managerData !== null
+      ? managerData.reporting_manager_id || managerData.managerId || managerData.id
+      : managerData;
+
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/employees/${employeeId}/reporting-manager`,
+      { reporting_manager_id },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to update reporting manager',
+      errors: null
+    };
+  }
+};
+
+export const getDesignations = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+  try {
+    const response = await axios.get(`${BASE_URL}/designations`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+        ? resData
+        : [];
+
+    return list.map((item) => {
+      if (typeof item === 'string') return { id: item, name: item };
+      return {
+        id: item.id || item._id || item.designation_id || item.name,
+        name: item.name || item.designation || item.designation_name || item.title || item.role_name || item.id,
+        ...item
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch designations:', error);
+    return [];
+  }
+};
+
+export const getManagers = getDesignations;
+
+export const getShifts = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+  try {
+    const response = await axios.get(`${BASE_URL}/shifts`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+        ? resData
+        : [];
+
+    return list.map((s) => ({
+      id: s.id || s._id || s.shift_id,
+      name: s.name || s.shift_name || s.title || s.id,
+      timeRange: s.time_range || s.timeRange || (s.start_time && s.end_time ? `${s.start_time} - ${s.end_time}` : ''),
+      ...s
+    }));
+  } catch (error) {
+    console.error('Failed to fetch shifts from API:', error);
+    return [];
+  }
+};
+
+export const getProfileApprovals = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  try {
+    const response = await axios.get(`${BASE_URL}/profile/approvals`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const resData = response?.data?.data || response?.data || [];
+    const items = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+        ? resData
+        : [];
+
+    const mappedApprovals = await Promise.all(
+      items.map(async (item, index) => {
+        const emp = item.employee || {};
+        const rawImage =
+          item.picture_url ||
+          item.employee_image ||
+          emp.image ||
+          emp.employee_image ||
+          emp.picture_url ||
+          '';
+        const avatarUrl = await getBlobAvatar(rawImage);
+
+        let submittedDate = '-';
+        if (item.submitted_at || item.created_at) {
+          try {
+            const dateObj = new Date(item.submitted_at || item.created_at);
+            if (!isNaN(dateObj.getTime())) {
+              submittedDate = dateObj.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+              });
+            }
+          } catch (e) {
+            submittedDate = item.submitted_at || '-';
+          }
+        }
+
+        return {
+          id: item.id,
+          approvalId: item.id,
+          employeeId: emp.id || item.employee_id || item.employeeId || '',
+          empId: emp.uid || emp.id || `EMP${String(index + 1).padStart(6, '0')}`,
+          name: emp.full_name || emp.name || 'Unnamed Employee',
+          avatar: avatarUrl,
+          department: emp.department || item.department || 'General',
+          departmentId: emp.department_id || emp.departmentId || '',
+          designation: emp.designation || item.designation || 'Staff',
+          designationId: emp.designation_id || emp.designationId || '',
+          mobile: emp.mobile_number || emp.mobile || '-',
+          hod: emp.reporting_manager || emp.hod || 'Department HOD',
+          shift: emp.current_shift || emp.shift || '-',
+          shiftId: emp.current_shift_id || emp.shift_id || item.shift_id || '',
+          current_shift_id: emp.current_shift_id || emp.shift_id || item.shift_id || '',
+          device: emp.device_assigned || item.device_assigned || '-',
+          deviceId: emp.device_id || item.device_id || '',
+          device_id: emp.device_id || item.device_id || '',
+          submitted: submittedDate,
+          rawSubmittedAt: item.submitted_at,
+          status: item.status || 'Pending'
+        };
+      })
+    );
+
+    return mappedApprovals;
+  } catch (error) {
+    console.error('Failed to fetch profile approvals:', error);
+    return [];
+  }
+};
+
+export const approveOrRejectProfile = async (id, { action = 'APPROVE', device_id, shift_id, remarks } = {}) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const payload = {
+    action
+  };
+
+  if (device_id) {
+    payload.device_id = device_id;
+  }
+
+  if (shift_id) {
+    payload.shift_id = shift_id;
+  }
+
+  if (remarks !== undefined && remarks !== null && String(remarks).trim() !== '') {
+    payload.remarks = String(remarks).trim();
+  }
+
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/profile/approvals/${id}`,
+      payload,
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || `Failed to ${action.toLowerCase()} profile`,
+      errors: null
+    };
+  }
+};
+
+export default {
+  getEmployees,
+  updateEmployeeDevice,
+  updateEmployeeReportingManager,
+  getDesignations,
+  getManagers,
+  getShifts,
+  getProfileApprovals,
+  approveOrRejectProfile
+};

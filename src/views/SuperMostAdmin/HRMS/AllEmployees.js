@@ -37,7 +37,8 @@ import {
   LastPage as LastPageIcon,
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
-import { getEmployees } from 'services/allEmployeeService';
+import { toast } from 'react-toastify';
+import { getEmployees, updateEmployeeDevice, updateEmployeeReportingManager, getDesignations, getManagers } from 'services/allEmployeeService';
 import { getDevices } from 'services/deviceServices';
 import { updateEmployee } from './shiftService';
 
@@ -98,29 +99,25 @@ const AllEmployees = () => {
   const [newHod, setNewHod] = useState('');
   const [newShift, setNewShift] = useState('');
   const [newDevice, setNewDevice] = useState('');
+  const [updatingDevice, setUpdatingDevice] = useState(false);
 
   // Devices State
   const [devicesList, setDevicesList] = useState(DEVICES_LIST);
+  const [managersList, setManagersList] = useState(MANAGERS_LIST);
+  const [updatingHod, setUpdatingHod] = useState(false);
 
   // Data & Loading States
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch Biometric Devices list from the device service so update the list of devices 
+  // Fetch Biometric Devices list from the device service
   useEffect(() => {
     let isMounted = true;
     getDevices()
       .then((data) => {
         if (isMounted && Array.isArray(data) && data.length > 0) {
-          const formattedList = data.map((d) => {
-            if (typeof d === 'string') return d;
-            if (d?.deviceCode && d?.location) {
-              return `${d.deviceCode} (${d.location})`;
-            }
-            return d?.deviceCode || d?.id || String(d);
-          });
-          setDevicesList(formattedList);
+          setDevicesList(data);
         }
       })
       .catch((err) => {
@@ -130,6 +127,18 @@ const AllEmployees = () => {
     return () => {
       isMounted = false;
     };
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDesignations()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setManagersList(data);
+        }
+      })
+      .catch((err) => console.error('Failed to load designations:', err));
+    return () => { isMounted = false; };
   }, []);
 
   // Handle Search Input Change
@@ -174,7 +183,7 @@ const AllEmployees = () => {
             Math.max(
               1,
               Number(data?.totalPages) ||
-                Math.ceil((Number(data?.total ?? items.length) || 0) / limit)
+              Math.ceil((Number(data?.total ?? items.length) || 0) / limit)
             )
           );
           setError(null);
@@ -212,6 +221,11 @@ const AllEmployees = () => {
   const handleOpenHodModal = () => {
     if (selectedEmp) {
       setNewHod('');
+      getDesignations()
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) setManagersList(data);
+        })
+        .catch((err) => console.error('Failed to load designations:', err));
       setHodModalOpen(true);
     }
     handleCloseMenu();
@@ -231,14 +245,7 @@ const AllEmployees = () => {
       getDevices()
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) {
-            const formattedList = data.map((d) => {
-              if (typeof d === 'string') return d;
-              if (d?.deviceCode && d?.location) {
-                return `${d.deviceCode} (${d.location})`;
-              }
-              return d?.deviceCode || d?.id || String(d);
-            });
-            setDevicesList(formattedList);
+            setDevicesList(data);
           }
         })
         .catch((err) => console.error('Failed to load devices:', err));
@@ -248,14 +255,46 @@ const AllEmployees = () => {
   };
 
   // Update Handlers
-  const handleUpdateHod = () => {
-    if (selectedEmp && newHod) {
-      updateEmployee(selectedEmp.id, { hod: newHod });
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === selectedEmp.id ? { ...emp, hod: newHod } : emp))
-      );
+  const handleUpdateHod = async () => {
+    if (!selectedEmp || !newHod) return;
+
+    setUpdatingHod(true);
+    try {
+      const response = await updateEmployeeReportingManager(selectedEmp.id, { reporting_manager_id: newHod });
+
+      if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
+        toast.success(response.message || 'Reporting manager updated successfully');
+
+        const matchedManager = managersList.find((m) => (typeof m === 'object' ? m.id === newHod || m.name === newHod : m === newHod));
+        const updatedLabel = matchedManager
+          ? typeof matchedManager === 'object'
+            ? matchedManager.name || matchedManager.designation || matchedManager.designation_name || matchedManager.full_name || matchedManager.title || matchedManager.id
+            : matchedManager
+          : newHod;
+
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === selectedEmp.id ? { ...emp, hod: updatedLabel, hodId: newHod } : emp
+          )
+        );
+
+        setHodModalOpen(false);
+
+        getEmployees({ search: debouncedSearch, page, limit })
+          .then((data) => {
+            const items = data?.items || (Array.isArray(data) ? data : []);
+            if (items.length > 0) setEmployees(items);
+          })
+          .catch((e) => console.error('Background fetch failed:', e));
+      } else {
+        toast.error(response?.message || 'Failed to update reporting manager');
+      }
+    } catch (err) {
+      console.error('Failed to update reporting manager:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update reporting manager');
+    } finally {
+      setUpdatingHod(false);
     }
-    setHodModalOpen(false);
   };
 
   const handleUpdateShift = () => {
@@ -268,20 +307,56 @@ const AllEmployees = () => {
     setShiftModalOpen(false);
   };
 
-  const handleUpdateDevice = () => {
-    if (selectedEmp && newDevice) {
-      updateEmployee(selectedEmp.id, { device: newDevice });
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === selectedEmp.id ? { ...emp, device: newDevice } : emp))
-      );
+  const handleUpdateDevice = async () => {
+    if (!selectedEmp || !newDevice) return;
+
+    setUpdatingDevice(true);
+    try {
+      const response = await updateEmployeeDevice(selectedEmp.id, { device_id: newDevice });
+
+      if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
+        toast.success(response.message || 'Device updated successfully');
+
+        // Find device label for immediate UI update
+        const matchedDevice = devicesList.find((d) => (typeof d === 'object' ? d.id === newDevice : d === newDevice));
+        const updatedLabel = matchedDevice
+          ? typeof matchedDevice === 'object'
+            ? matchedDevice.deviceCode && matchedDevice.location
+              ? `${matchedDevice.deviceCode} (${matchedDevice.location})`
+              : matchedDevice.deviceCode || matchedDevice.id
+            : matchedDevice
+          : newDevice;
+
+        setEmployees((prev) =>
+          prev.map((emp) => (emp.id === selectedEmp.id ? { ...emp, device: updatedLabel } : emp))
+        );
+
+        setDeviceModalOpen(false);
+
+        // Re-fetch employee list in background to ensure fresh data
+        getEmployees({ search: debouncedSearch, page, limit })
+          .then((data) => {
+            const items = data?.items || (Array.isArray(data) ? data : []);
+            if (items.length > 0) {
+              setEmployees(items);
+            }
+          })
+          .catch((e) => console.error('Background fetch failed:', e));
+      } else {
+        toast.error(response?.message || 'Failed to update device');
+      }
+    } catch (err) {
+      console.error('Failed to update device:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update device');
+    } finally {
+      setUpdatingDevice(false);
     }
-    setDeviceModalOpen(false);
   };
 
   // Export CSV Handler
   const handleExportExcel = () => {
     const headers = ['Emp ID,Emp Name,Department,Designation,HOD,Mobile Number,Current Shift,Device Assigned\n'];
-    const rows = employees.map(
+    const rows = filteredEmployees.map(
       (e) => `"${e.empId}","${e.name}","${e.department}","${e.designation}","${e.hod}","${e.mobile}","${e.shift}","${e.device}"\n`
     );
     const blob = new Blob([...headers, ...rows], { type: 'text/csv' });
@@ -771,7 +846,8 @@ const AllEmployees = () => {
       {/* MODAL 1: CHANGE HOD MODAL */}
       <Dialog
         open={hodModalOpen}
-        onClose={() => setHodModalOpen(false)}
+        // onClose={() => setHodModalOpen(false)}
+        onClose={() => { if (!updatingHod) setHodModalOpen(false); }}
         maxWidth="xs"
         fullWidth
         PaperProps={{
@@ -788,7 +864,9 @@ const AllEmployees = () => {
             Change HOD
           </Typography>
           <IconButton
-            onClick={() => setHodModalOpen(false)}
+            // onClick={() => setHodModalOpen(false)}
+            onClick={() => { if (!updatingHod) setHodModalOpen(false); }}
+            disabled={updatingHod}
             size="small"
             sx={{
               width: 32,
@@ -848,12 +926,20 @@ const AllEmployees = () => {
                 value={newHod}
                 onChange={(e) => setNewHod(e.target.value)}
                 displayEmpty
+                disabled={updatingHod}
                 IconComponent={KeyboardArrowDownIcon}
                 renderValue={(selected) => {
                   if (!selected) {
                     return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select Manager</Typography>;
                   }
-                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
+                  // return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
+                  const match = managersList.find((m) => (typeof m === 'object' ? m.id === selected || m.name === selected : m === selected));
+                  const label = match
+                    ? typeof match === 'object'
+                      ? match.name || match.designation || match.designation_name || match.full_name || match.title || match.id
+                      : match
+                    : selected;
+                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{label}</Typography>;
                 }}
                 sx={{
                   height: '46px',
@@ -873,11 +959,15 @@ const AllEmployees = () => {
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Manager
                 </MenuItem>
-                {MANAGERS_LIST.map((m) => (
-                  <MenuItem key={m} value={m} sx={{ fontSize: '14px', color: '#0F172A' }}>
-                    {m}
-                  </MenuItem>
-                ))}
+                {managersList.map((m) => {
+                  const mId = typeof m === 'object' ? (m.id || m.name) : m;
+                  const mLabel = typeof m === 'object' ? (m.name || m.designation || m.designation_name || m.full_name || m.title || m.id) : m;
+                  return (
+                    <MenuItem key={mId} value={mId} sx={{ fontSize: '14px', color: '#0F172A' }}>
+                      {mLabel}
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
           </Box>
@@ -887,6 +977,7 @@ const AllEmployees = () => {
           <Button
             variant="outlined"
             onClick={() => setHodModalOpen(false)}
+            disabled={updatingHod}
             sx={{
               flex: 1,
               height: '48px',
@@ -909,7 +1000,8 @@ const AllEmployees = () => {
           <Button
             variant="contained"
             onClick={handleUpdateHod}
-            disabled={!newHod}
+            // disabled={!newHod}
+            disabled={!newHod || updatingHod}
             sx={{
               flex: 1,
               height: '48px',
@@ -930,7 +1022,7 @@ const AllEmployees = () => {
               }
             }}
           >
-            Update
+           {updatingHod ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1105,7 +1197,9 @@ const AllEmployees = () => {
       {/* MODAL 3: CHANGE BIOMETRIC DEVICE MODAL */}
       <Dialog
         open={deviceModalOpen}
-        onClose={() => setDeviceModalOpen(false)}
+        onClose={() => {
+          if (!updatingDevice) setDeviceModalOpen(false);
+        }}
         maxWidth="xs"
         fullWidth
         PaperProps={{
@@ -1122,7 +1216,10 @@ const AllEmployees = () => {
             Change Biometric Device
           </Typography>
           <IconButton
-            onClick={() => setDeviceModalOpen(false)}
+            onClick={() => {
+              if (!updatingDevice) setDeviceModalOpen(false);
+            }}
+            disabled={updatingDevice}
             size="small"
             sx={{
               width: 32,
@@ -1145,7 +1242,7 @@ const AllEmployees = () => {
             </Typography>
             <FormControl fullWidth size="small">
               <Select
-                value={selectedEmp?.device || 'BioMax Pro 500 (ID: BM-2847)'}
+                value={selectedEmp?.device || 'None'}
                 disabled
                 IconComponent={KeyboardArrowDownIcon}
                 sx={{
@@ -1165,8 +1262,8 @@ const AllEmployees = () => {
                   }
                 }}
               >
-                <MenuItem value={selectedEmp?.device || 'BioMax Pro 500 (ID: BM-2847)'}>
-                  {selectedEmp?.device || 'BioMax Pro 500 (ID: BM-2847)'}
+                <MenuItem value={selectedEmp?.device || 'None'}>
+                  {selectedEmp?.device && selectedEmp.device !== '-' ? selectedEmp.device : 'No device assigned'}
                 </MenuItem>
               </Select>
             </FormControl>
@@ -1182,12 +1279,21 @@ const AllEmployees = () => {
                 value={newDevice}
                 onChange={(e) => setNewDevice(e.target.value)}
                 displayEmpty
+                disabled={updatingDevice}
                 IconComponent={KeyboardArrowDownIcon}
                 renderValue={(selected) => {
                   if (!selected) {
                     return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select Device</Typography>;
                   }
-                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
+                  const match = devicesList.find((d) => (typeof d === 'object' ? d.id === selected : d === selected));
+                  const label = match
+                    ? typeof match === 'object'
+                      ? match.deviceCode && match.location
+                        ? `${match.deviceCode} (${match.location})`
+                        : match.deviceCode || match.id
+                      : match
+                    : selected;
+                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{label}</Typography>;
                 }}
                 sx={{
                   height: '46px',
@@ -1207,11 +1313,20 @@ const AllEmployees = () => {
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Device
                 </MenuItem>
-                {devicesList.map((d) => (
-                    <MenuItem key={d} value={d} sx={{ fontSize: '14px', color: '#0F172A' }}>
-                    {d}
-                  </MenuItem>
-                ))}
+                {devicesList.map((d) => {
+                  const dId = typeof d === 'object' ? d.id : d;
+                  const dLabel =
+                    typeof d === 'object'
+                      ? d.deviceCode && d.location
+                        ? `${d.deviceCode} (${d.location})`
+                        : d.deviceCode || d.id
+                      : d;
+                  return (
+                    <MenuItem key={dId} value={dId} sx={{ fontSize: '14px', color: '#0F172A' }}>
+                      {dLabel}
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
           </Box>
@@ -1221,6 +1336,7 @@ const AllEmployees = () => {
           <Button
             variant="outlined"
             onClick={() => setDeviceModalOpen(false)}
+            disabled={updatingDevice}
             sx={{
               flex: 1,
               height: '48px',
@@ -1243,7 +1359,7 @@ const AllEmployees = () => {
           <Button
             variant="contained"
             onClick={handleUpdateDevice}
-            disabled={!newDevice}
+            disabled={!newDevice || updatingDevice}
             sx={{
               flex: 1,
               height: '48px',
@@ -1264,7 +1380,7 @@ const AllEmployees = () => {
               }
             }}
           >
-            Update
+            {updatingDevice ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
           </Button>
         </DialogActions>
       </Dialog>
