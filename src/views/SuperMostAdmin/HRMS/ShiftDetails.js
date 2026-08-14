@@ -151,29 +151,69 @@ const ShiftDetails = () => {
   // Search & Pagination States (loaded directly from backend API)
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Reload shifts & reset viewMode to list whenever component mounts or route location changes
+  // Debounce search query input (400ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch shifts from backend API with debounced search, page, and limit
+  const fetchApiShifts = async () => {
+    setLoading(true);
+    try {
+      const apiData = await getShiftDetails({
+        search: debouncedSearch,
+        page,
+        limit: rowsPerPage
+      });
+      const items = apiData?.items || (Array.isArray(apiData) ? apiData : []);
+      setShifts(items);
+      const total = Number(apiData?.total ?? items.length) || 0;
+      setTotalCount(total);
+      setTotalPages(
+        Math.max(
+          1,
+          Number(apiData?.totalPages) ||
+          Math.ceil(total / rowsPerPage)
+        )
+      );
+    } catch (err) {
+      console.error('Error fetching shift details:', err);
+      setShifts([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Reload shifts on mount, query change, page/limit change, or location navigation
+  useEffect(() => {
+    fetchApiShifts();
+  }, [debouncedSearch, page, rowsPerPage, location.key]);
+
+  // Reset view to list when route changes
   useEffect(() => {
     setViewMode('list');
     setActiveTab(0);
-    const fetchApiShifts = async () => {
-      setLoading(true);
-      try {
-        const apiData = await getShiftDetails();
-        setShifts(Array.isArray(apiData) ? apiData : []);
-      } catch (err) {
-        console.error('Error fetching shift details:', err);
-        setShifts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchApiShifts();
   }, [location.key]);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  // Clear Search Input Handler
+  const handleClearSearch = () => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setPage(1);
+  };
 
   // Form State for Create / Edit
   const [editingShift, setEditingShift] = useState(null);
@@ -247,8 +287,7 @@ const ShiftDetails = () => {
     };
 
     setSelectedDetailShift(updatedShift);
-    const updatedShifts = saveShiftDefinition(updatedShift);
-    setShifts(updatedShifts);
+    setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
   };
 
   // Handle Confirm from ChangeShiftModal
@@ -275,27 +314,9 @@ const ShiftDetails = () => {
     }
   };
 
-  // Filtered shifts
-  const filteredShifts = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return shifts;
-    return shifts.filter(
-      (s) =>
-        (s.name || '').toLowerCase().includes(q) ||
-        (s.description || '').toLowerCase().includes(q) ||
-        (s.workingDays || '').toLowerCase().includes(q)
-    );
-  }, [shifts, searchQuery]);
-
-  // Pagination math
-  const totalPages = Math.max(1, Math.ceil(filteredShifts.length / rowsPerPage));
-  const paginatedShifts = useMemo(() => {
-    const startIdx = (page - 1) * rowsPerPage;
-    return filteredShifts.slice(startIdx, startIdx + rowsPerPage);
-  }, [filteredShifts, page, rowsPerPage]);
-
-  const startIndex = filteredShifts.length === 0 ? 0 : (page - 1) * rowsPerPage + 1;
-  const endIndex = Math.min(page * rowsPerPage, filteredShifts.length);
+  // Pagination display indices
+  const startIndex = totalCount === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const endIndex = Math.min(page * rowsPerPage, totalCount);
 
   // Open Create Shift View
   const handleOpenCreateView = () => {
@@ -362,16 +383,10 @@ const ShiftDetails = () => {
       } else {
         toast.success(response?.message || 'Shift deleted successfully');
         setDeleteModalOpen(false);
-        const refreshedShifts = await getShiftDetails();
-        setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
-        setPage((prevPage) => {
-          const remainingCount = (refreshedShifts?.length || 1) - 1;
-          const maxPages = Math.max(1, Math.ceil(remainingCount / rowsPerPage));
-          return Math.min(prevPage, maxPages);
-        });
         if (viewMode === 'detail') {
           setViewMode('list');
         }
+        await fetchApiShifts();
       }
     } catch (e) {
       console.error('API delete error:', e);
@@ -430,9 +445,8 @@ const ShiftDetails = () => {
         toast.error(errorMsg);
       } else {
         toast.success(response?.message || 'Shift created successfully');
-        const refreshedShifts = await getShiftDetails();
-        setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
         setViewMode('list');
+        await fetchApiShifts();
       }
     } catch (e) {
       console.error('Error saving shift:', e);
@@ -1184,6 +1198,20 @@ const ShiftDetails = () => {
                     <SearchIcon sx={{ color: '#64748B', fontSize: 20 }} />
                   </InputAdornment>
                 }
+                endAdornment={
+                  searchQuery ? (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={handleClearSearch}
+                        edge="end"
+                        sx={{ color: '#94a3b8', p: 0.5 }}
+                      >
+                        <CloseIcon sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null
+                }
                 sx={{
                   minHeight: '32px',
                   borderRadius: '8px',
@@ -1257,8 +1285,8 @@ const ShiftDetails = () => {
                       </Typography>
                     </TableCell>
                   </TableRow>
-                ) : paginatedShifts.length > 0 ? (
-                  paginatedShifts.map((row) => (
+                ) : shifts.length > 0 ? (
+                  shifts.map((row) => (
                     <TableRow
                       key={row.id}
                       sx={{
@@ -1339,7 +1367,7 @@ const ShiftDetails = () => {
             }}
           >
             <Typography variant="body2" sx={{ color: '#64748B', fontSize: '14px', fontWeight: '400', lineHeight: '20px' }}>
-              Showing {startIndex}-{endIndex} of {filteredShifts.length}
+              Showing {startIndex}-{endIndex} of {totalCount}
             </Typography>
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
