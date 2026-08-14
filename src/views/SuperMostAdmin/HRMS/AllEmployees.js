@@ -42,11 +42,13 @@ import {
   getEmployees,
   exportEmployeesMaster,
   updateEmployeeDevice,
+  updateEmployeeHOD,
   updateEmployeeReportingManager,
   updateEmployeeShift,
   deleteEmployee,
   getDesignations,
   getDepartments,
+  getHODs,
   getManagers,
   getShifts
 } from 'services/allEmployeeService';
@@ -177,15 +179,16 @@ const AllEmployees = () => {
     };
   }, []);
 
+  // Fetch HODs from API
   useEffect(() => {
     let isMounted = true;
-    getDesignations()
+    getHODs()
       .then((data) => {
         if (isMounted && Array.isArray(data) && data.length > 0) {
           setManagersList(data);
         }
       })
-      .catch((err) => console.error('Failed to load designations:', err));
+      .catch((err) => console.error('Failed to load HODs in AllEmployees:', err));
     return () => { isMounted = false; };
   }, []);
 
@@ -270,11 +273,11 @@ const AllEmployees = () => {
   const handleOpenHodModal = () => {
     if (selectedEmp) {
       setNewHod('');
-      getDesignations()
+      getHODs()
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) setManagersList(data);
         })
-        .catch((err) => console.error('Failed to load designations:', err));
+        .catch((err) => console.error('Failed to load HODs:', err));
       setHodModalOpen(true);
     }
     handleCloseMenu();
@@ -380,15 +383,23 @@ const AllEmployees = () => {
 
     setUpdatingHod(true);
     try {
-      const response = await updateEmployeeReportingManager(selectedEmp.id, { reporting_manager_id: newHod });
+      const response = await updateEmployeeHOD(selectedEmp.id, { hod_id: newHod });
 
       if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
-        toast.success(response.message || 'Reporting manager updated successfully');
+        toast.success(response.message || 'HOD updated successfully');
 
-        const matchedManager = managersList.find((m) => (typeof m === 'object' ? m.id === newHod || m.name === newHod : m === newHod));
+        const matchedManager = managersList.find((m) =>
+          typeof m === 'object' ? m.id === newHod || m.name === newHod : m === newHod
+        );
         const updatedLabel = matchedManager
           ? typeof matchedManager === 'object'
-            ? matchedManager.name || matchedManager.designation || matchedManager.designation_name || matchedManager.full_name || matchedManager.title || matchedManager.id
+            ? matchedManager.name ||
+              matchedManager.full_name ||
+              matchedManager.hod_name ||
+              matchedManager.designation ||
+              matchedManager.designation_name ||
+              matchedManager.title ||
+              matchedManager.id
             : matchedManager
           : newHod;
 
@@ -407,11 +418,11 @@ const AllEmployees = () => {
           })
           .catch((e) => console.error('Background fetch failed:', e));
       } else {
-        toast.error(response?.message || 'Failed to update reporting manager');
+        toast.error(response?.message || 'Failed to update HOD');
       }
     } catch (err) {
-      console.error('Failed to update reporting manager:', err);
-      toast.error(err?.response?.data?.message || err?.message || 'Failed to update reporting manager');
+      console.error('Failed to update HOD:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update HOD');
     } finally {
       setUpdatingHod(false);
     }
@@ -1066,14 +1077,14 @@ const AllEmployees = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, mb: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Current Manager */}
+          {/* Current HOD */}
           <Box>
             <Typography sx={{ color: '#475569', fontWeight: 500, display: 'block', mb: '6px', fontSize: '14px', lineHeight: '20px' }}>
-              Current Manager
+              Current HOD
             </Typography>
             <FormControl fullWidth size="small">
               <Select
-                value={selectedEmp?.hod || 'Annette Black'}
+                value={selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}
                 disabled
                 IconComponent={KeyboardArrowDownIcon}
                 sx={{
@@ -1093,17 +1104,17 @@ const AllEmployees = () => {
                   }
                 }}
               >
-                <MenuItem value={selectedEmp?.hod || 'Annette Black'}>
-                  {selectedEmp?.hod || 'Annette Black'}
+                <MenuItem value={selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}>
+                  {selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}
                 </MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          {/* New Manager */}
+          {/* New HOD */}
           <Box>
             <Typography sx={{ color: '#475569', fontWeight: 500, display: 'block', mb: '6px', fontSize: '14px', lineHeight: '20px' }}>
-              New Manager
+              New HOD
             </Typography>
             <FormControl fullWidth size="small">
               <Select
@@ -1114,13 +1125,12 @@ const AllEmployees = () => {
                 IconComponent={KeyboardArrowDownIcon}
                 renderValue={(selected) => {
                   if (!selected) {
-                    return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select Manager</Typography>;
+                    return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select HOD</Typography>;
                   }
-                  // return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
                   const match = managersList.find((m) => (typeof m === 'object' ? m.id === selected || m.name === selected : m === selected));
                   const label = match
                     ? typeof match === 'object'
-                      ? match.name || match.designation || match.designation_name || match.full_name || match.title || match.id
+                      ? match.name || match.full_name || match.hod_name || match.designation || match.designation_name || match.title || match.id
                       : match
                     : selected;
                   return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{label}</Typography>;
@@ -1141,11 +1151,11 @@ const AllEmployees = () => {
                 }}
               >
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
-                  Select Manager
+                  Select HOD
                 </MenuItem>
                 {managersList.map((m) => {
                   const mId = typeof m === 'object' ? (m.id || m.name) : m;
-                  const mLabel = typeof m === 'object' ? (m.name || m.designation || m.designation_name || m.full_name || m.title || m.id) : m;
+                  const mLabel = typeof m === 'object' ? (m.name || m.full_name || m.hod_name || m.designation || m.designation_name || m.title || m.id) : m;
                   return (
                     <MenuItem key={mId} value={mId} sx={{ fontSize: '14px', color: '#0F172A' }}>
                       {mLabel}
