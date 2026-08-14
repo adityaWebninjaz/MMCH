@@ -1,38 +1,39 @@
 .pageContainer {
-  padding: 24px 28px;
+  padding: 32px;
   background-color: transparent;
   min-height: calc(100vh - 100px);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: white;
 }
 
 .headerSection {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .titleArea {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .pageTitle {
-  font-size: 24px !important;
+  font-size: 28px !important;
   font-weight: 700 !important;
   color: #0f172a !important;
   margin: 0 !important;
-  line-height: 1.25 !important;
-  letter-spacing: -0.01em !important;
+  line-height: 100% !important;
+  letter-spacing: 0% !important;
 }
 
 .pageSubtitle {
   font-size: 14px !important;
-  color: #64748b !important;
+  color: #64748B !important;
   margin: 0 !important;
   font-weight: 400 !important;
-  line-height: 1.5 !important;
+  line-height: 100% !important;
 }
 
 .addDeviceButton {
@@ -58,7 +59,7 @@
 .tableCard {
   background: #ffffff;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #E2E8F0;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
   overflow: hidden;
 }
@@ -79,19 +80,19 @@
 }
 
 .tableHeadCell {
-  padding: 14px 24px !important;
-  font-size: 13.5px !important;
+  padding: 12px 24px !important;
+  font-size: 14px !important;
   font-weight: 600 !important;
-  color: #334155 !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  color: #16151C !important;
+  border-bottom: 1px solid #E2E8F0 !important;
   text-align: left !important;
-  letter-spacing: 0.01em !important;
+  line-height: 100%;
   white-space: nowrap !important;
 }
 
 .colDeviceId {
   width: 15%;
-  padding-left: 28px !important;
+  padding-left: 24px !important;
 }
 
 .colLocation {
@@ -104,7 +105,7 @@
 
 .colStatus {
   width: 15%;
-  padding-right: 28px !important;
+  padding-right: 113px !important;
 }
 
 .tableRow {
@@ -120,15 +121,15 @@
 }
 
 .tableCell {
-  padding: 16px 24px !important;
-  font-size: 14px !important;
+  padding: 18px 24px !important;
+  font-size: 13px !important;
   color: #475569 !important;
   border-bottom: 1px solid #f1f5f9 !important;
   vertical-align: middle !important;
 }
 
 .tableCellFirst {
-  padding-left: 28px !important;
+  padding-left: 24px !important;
 }
 
 .tableCellLast {
@@ -136,21 +137,25 @@
 }
 
 .deviceIdText {
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   color: #0f172a !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
+  line-height: 100%;
 }
 
 .locationText {
   color: #475569 !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 400 !important;
+  line-height: 100%;
+
 }
 
 .userAssignedText {
   color: #475569 !important;
-  font-size: 14px !important;
+  font-size: 13 !important;
   font-weight: 400 !important;
+  line-height: 100%;
 }
 
 .statusBadge {
@@ -166,13 +171,16 @@
 }
 
 .statusOnline {
-  background-color: #dcfce7;
-  color: #16a34a;
+  background-color: #DCFCE7;
+  color:#15803D ;  
+  font-weight: 600;
 }
 
 .statusOffline {
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: #F1F5F9;
+  color: #334155;
+  font-weight: 600;
+
 }
 
 /* Modal styles */
@@ -200,7 +208,7 @@
 
 .modalActions {
   padding: 16px 24px !important;
-  border-top: 1px solid #f1f5f9 !important;
+  border-top: 1px solid #E2E8F0 !important;
   gap: 12px !important;
 }
 
@@ -212,7 +220,9 @@
   border: 1px solid #CBD5E1 !important;
   padding: 6px 16px !important;
 }
-
+.saveBtn:hover {
+  background-color: #4b3dcf !important;
+}
 .saveBtn {
   background-color: #5c4eed !important;
   color: #ffffff !important;
@@ -222,6 +232,6 @@
   padding: 6px 20px !important;
 }
 
-.saveBtn:hover {
-  background-color: #4b3dcf !important;
+.cancelBtn:hover {
+  background-color: #f3f3f3 !important;
 }
