@@ -10,7 +10,7 @@ import AuthCardWrapper from '../AuthCardWrapper';
 import AuthLogin from '../auth-forms/AuthLogin';
 import Logo from 'ui-component/Logo';
 import AuthFooter from 'ui-component/cards/AuthFooter';
-import hostelcrm from '../../../../assets/images/hostel1.png';
+import hostelcrm from '../../../../assets/images/laptop.png';
 
 // assets
 
@@ -70,7 +70,7 @@ const Login = () => {
                       fontSize: downSm ? '20px' : '26px'
                     }}
                   >
-                    Welcome to PMU Hostel
+                    Welcome to MMCH
                   </Typography>
                   <Typography textAlign="center" variant="body2" sx={{ color: 'black' }}>
                     Login to use the platform
@@ -121,19 +121,20 @@ const Login = () => {
             >
               <Typography
                 variant="h2"
-                sx={{ color: 'white', fontSize: '24px', fontWeight: '600', textAlign: 'center', marginBottom: '32px' }}
+                sx={{ color: 'white', fontSize: '24px', fontWeight: '600', textAlign: 'center', marginBottom: '0px' }}
               >
-                PMU Hostel Management
+                HRMS Management
               </Typography>
               <Box
                 component="img"
                 src={hostelcrm}
                 alt="Hostel Management"
                 sx={{
-                  maxWidth: '60%',
-                  maxHeight: '60%',
+                  maxWidth: '70%',
+                  maxHeight: '65%',
+                  my: -4,
                   objectFit: 'contain',
-                  borderRadius: '20px'
+                    borderRadius: '20px'
                 }}
               />
               <Typography
@@ -141,13 +142,19 @@ const Login = () => {
                 sx={{
                   color: 'white',
                   fontWeight: 'bold',
-                  textAlign: 'center',
-                  marginTop: '32px'
+                  textAlign: 'center'
                 }}
               >
-                Hostel Management System <br />
-                <span style={{ fontSize: '12px' }}>
-                  Simplify room allocations, manage reservations, and track hostel operations seamlessly.
+                HRMS Management System
+                <span
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    marginTop: '6px'
+                  }}
+                >
+                  Streamline HR operations with smarter tools for attendance,<br />
+                  leave, employee records, and workforce management—all in one place.
                 </span>
               </Typography>
             </Box>

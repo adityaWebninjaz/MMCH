@@ -126,7 +126,8 @@ const ResetPassword = () => {
               <Grid item xs={12} sx={{ marginTop: '-10px' }}>
                 <Stack alignItems="center">
                   <Typography variant="h3" sx={{ fontWeight: 700, textAlign: 'center', color: '#240046' }}>
-                    Welcome to PMU Hostel
+                    {/* Welcome to PMU Hostel */}
+                    Welcome to MMCH
                   </Typography>
                   <Typography textAlign="center" variant="body2" sx={{ color: 'black' }}>
                     Reset your password

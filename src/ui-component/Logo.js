@@ -1,6 +1,6 @@
 // material-ui
 import { useTheme } from '@mui/material/styles';
-import logo from '../assets/images/LogoFinal.png';
+import logo from '../assets/images/New_logo.ong.png';
 import { margin } from '@mui/system';
 
 /**
@@ -152,8 +152,8 @@ const Logo = () => {
       src={logo}
       alt="Logo"
       style={{
-        width: '60px',
-        height: '60px'
+        width: '170px',
+        height: '150px'
       }}
     />
   );
