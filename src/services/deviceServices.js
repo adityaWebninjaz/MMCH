@@ -69,10 +69,48 @@ export const createDevice = async (deviceData) => {
   }
 };
 
+// API for changing/updating employee device assignment
+export const updateEmployeeDevice = async (employeeId, deviceData) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+  const baseUrl = process.env.REACT_APP_BACKEND_URL;
+
+  const device_id =
+    typeof deviceData === 'object' && deviceData !== null
+      ? deviceData.device_id || deviceData.deviceId || deviceData.id
+      : deviceData;
+
+  try {
+    const response = await axios.patch(
+      `${baseUrl}/employees/${employeeId}/device`,
+      { device_id },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to update employee device',
+      errors: null
+    };
+  }
+};
+
 export const addDevice = createDevice;
 
 export default {
   getDevices,
   createDevice,
-  addDevice
+  addDevice,
+  updateEmployeeDevice
 };

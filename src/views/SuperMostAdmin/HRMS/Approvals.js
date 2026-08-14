@@ -28,7 +28,7 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getEmployees } from 'services/allEmployeeService';
+import { getProfileApprovals, approveOrRejectProfile, getShifts } from 'services/allEmployeeService';
 import { getDevices } from 'services/deviceServices';
 
 const DEPARTMENTS = [
@@ -62,7 +62,8 @@ const Approvals = () => {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
-  const [deviceOptions, setDeviceOptions] = useState(DEFAULT_DEVICES);
+  const [devicesList, setDevicesList] = useState([]);
+  const [shiftsList, setShiftsList] = useState([]);
 
   // Review Drawer State
   const [reviewDrawerOpen, setReviewDrawerOpen] = useState(false);
@@ -70,44 +71,31 @@ const Approvals = () => {
 
   // Form states in Drawer
   const [assignedDevice, setAssignedDevice] = useState('');
+  const [assignedShift, setAssignedShift] = useState('');
   const [assignedHod, setAssignedHod] = useState('Department HOD');
   const [rejectionReason, setRejectionReason] = useState('');
+  const [reasonError, setReasonError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Fetch employees and devices on mount
+  // Fetch approval requests, devices, and shifts on mount
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
 
-    // Fetch employee data
-    getEmployees()
+    // Fetch profile approval requests from /profile/approvals API
+    getProfileApprovals()
       .then((data) => {
         if (isMounted) {
-          const items = data?.items || (Array.isArray(data) ? data : []);
-          const formatted = items.map((emp, index) => ({
-            id: emp.id || `emp-${index}`,
-            empId: emp.empId || `EMP${String(index + 1).padStart(6, '0')}`,
-            name: emp.name || 'Unnamed Employee',
-            avatar:
-              emp.avatar && typeof emp.avatar === 'string' && emp.avatar.trim() !== ''
-                ? emp.avatar
-                : '',
-            department: emp.department || 'General',
-            designation: emp.designation || 'Staff',
-            mobile: emp.mobile || '-',
-            hod: emp.hod || 'Department HOD',
-            shift: emp.shift || '-',
-            device: emp.device || '',
-            submitted: emp.submitted || '11 Jul 2026',
-            status: emp.status || 'Pending'
-          }));
-          setApprovalsList(formatted);
+          const items = Array.isArray(data) ? data : [];
+          setApprovalsList(items);
           setError(null);
         }
       })
       .catch((err) => {
         if (isMounted) {
-          console.error('Failed to load employees for approval:', err);
-          setError(err?.message || 'Failed to load employee approval requests');
+          console.error('Failed to load profile approval requests:', err);
+          setError(err?.message || 'Failed to load profile approval requests');
+          setApprovalsList([]);
         }
       })
       .finally(() => {
@@ -118,14 +106,22 @@ const Approvals = () => {
     getDevices()
       .then((devs) => {
         if (isMounted && Array.isArray(devs) && devs.length > 0) {
-          const list = devs.map(
-            (d) => `${d.deviceCode || d.id} (${d.location || 'Main Building'})`
-          );
-          setDeviceOptions(list);
+          setDevicesList(devs);
         }
       })
       .catch((err) => {
-        console.warn('Using default device options:', err?.message || err);
+        console.warn('Failed to load devices:', err?.message || err);
+      });
+
+    // Fetch shifts options
+    getShifts()
+      .then((shifts) => {
+        if (isMounted && Array.isArray(shifts) && shifts.length > 0) {
+          setShiftsList(shifts);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load shifts:', err?.message || err);
       });
 
     return () => {
@@ -135,48 +131,92 @@ const Approvals = () => {
 
   const handleOpenReviewDrawer = (row) => {
     setSelectedRequest(row);
-    setAssignedDevice(row.device && deviceOptions.includes(row.device) ? row.device : '');
+
+    const matchedDevice = devicesList.find(
+      (d) =>
+        (typeof d === 'object' && (d.id === row.deviceId || d.deviceCode === row.device || d.id === row.device))
+    );
+    setAssignedDevice(matchedDevice ? matchedDevice.id : (row.deviceId || row.device_id || ''));
+
+    const matchedShift = shiftsList.find(
+      (s) =>
+        (typeof s === 'object' && (s.id === row.shiftId || s.name === row.shift || s.id === row.current_shift_id))
+    );
+    setAssignedShift(matchedShift ? matchedShift.id : (row.shiftId || row.current_shift_id || ''));
+
     setAssignedHod(row.hod && HOD_LIST.includes(row.hod) ? row.hod : 'Department HOD');
     setRejectionReason('');
+    setReasonError('');
     setReviewDrawerOpen(true);
   };
 
   const handleCloseReviewDrawer = () => {
     setReviewDrawerOpen(false);
     setSelectedRequest(null);
+    setReasonError('');
+    setSubmitting(false);
   };
 
-  const handleApprove = () => {
-    if (selectedRequest) {
-      setApprovalsList((prev) =>
-        prev.map((item) =>
-          item.id === selectedRequest.id
-            ? {
-                ...item,
-                status: 'Approved',
-                device: assignedDevice || item.device,
-                hod: assignedHod !== 'Department HOD' ? assignedHod : item.hod
-              }
-            : item
-        )
-      );
-      toast.success(`Request for ${selectedRequest.name} has been Approved`);
+  const handleApprove = async () => {
+    if (!selectedRequest || submitting) return;
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        action: 'APPROVE',
+        device_id: assignedDevice || selectedRequest.deviceId || selectedRequest.device_id || undefined,
+        shift_id: assignedShift || selectedRequest.shiftId || selectedRequest.current_shift_id || undefined,
+        remarks: rejectionReason.trim() || undefined
+      };
+
+      const response = await approveOrRejectProfile(selectedRequest.id, payload);
+
+      if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
+        toast.success(response.message || `Profile photo for ${selectedRequest.name} has been approved successfully`);
+        setApprovalsList((prev) => prev.filter((item) => item.id !== selectedRequest.id));
+        handleCloseReviewDrawer();
+      } else {
+        toast.error(response?.message || 'Failed to approve profile photo');
+      }
+    } catch (err) {
+      console.error('Approval request failed:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to approve profile photo');
+    } finally {
+      setSubmitting(false);
     }
-    handleCloseReviewDrawer();
   };
 
-  const handleReject = () => {
-    if (selectedRequest) {
-      setApprovalsList((prev) =>
-        prev.map((item) =>
-          item.id === selectedRequest.id
-            ? { ...item, status: 'Rejected', rejectionReason }
-            : item
-        )
-      );
-      toast.error(`Request for ${selectedRequest.name} has been Rejected`);
+  const handleReject = async () => {
+    if (!selectedRequest || submitting) return;
+
+    if (!rejectionReason || rejectionReason.trim() === '') {
+      setReasonError('Please provide a reason / remarks for rejection');
+      toast.error('Please provide a reason for rejection');
+      return;
     }
-    handleCloseReviewDrawer();
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        action: 'REJECT',
+        remarks: rejectionReason.trim()
+      };
+
+      const response = await approveOrRejectProfile(selectedRequest.id, payload);
+
+      if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
+        toast.error(response.message || `Profile photo for ${selectedRequest.name} has been rejected`);
+        setApprovalsList((prev) => prev.filter((item) => item.id !== selectedRequest.id));
+        handleCloseReviewDrawer();
+      } else {
+        toast.error(response?.message || 'Failed to reject profile photo');
+      }
+    } catch (err) {
+      console.error('Rejection request failed:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to reject profile photo');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Export CSV Handler
@@ -621,24 +661,33 @@ const Approvals = () => {
                   <MenuItem value="" disabled sx={{ fontSize: '13px', color: '#64748B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                     Select device
                   </MenuItem>
-                  {deviceOptions.map((d) => (
-                    <MenuItem key={d} value={d} sx={{ fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                      {d}
-                    </MenuItem>
-                  ))}
+                  {devicesList.map((d) => {
+                    const dId = typeof d === 'object' ? d.id : d;
+                    const dLabel =
+                      typeof d === 'object'
+                        ? d.deviceCode && d.location
+                          ? `${d.deviceCode} (${d.location})`
+                          : d.deviceCode || d.id
+                        : d;
+                    return (
+                      <MenuItem key={dId} value={dId} sx={{ fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+                        {dLabel}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Box>
 
-            {/* Field 2: Assign HOD */}
+            {/* Field 2: Assign Shift */}
             <Box>
               <Typography variant="caption" sx={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: '14px', lineHeight: '100%', color: '#0F172A', display: 'block', mb: '6px' }}>
-                Assign HOD:
+                Assign shift:
               </Typography>
               <FormControl fullWidth size="small">
                 <Select
-                  value={assignedHod}
-                  onChange={(e) => setAssignedHod(e.target.value)}
+                  value={assignedShift}
+                  onChange={(e) => setAssignedShift(e.target.value)}
                   displayEmpty
                   MenuProps={{ style: { zIndex: 1500 } }}
                   sx={{
@@ -647,45 +696,61 @@ const Approvals = () => {
                     fontSize: '13px',
                     fontFamily: 'Inter, sans-serif',
                     fontWeight: 400,
-                    color: assignedHod === 'Department HOD' ? '#64748B' : '#0F172A',
+                    color: assignedShift ? '#0F172A' : '#64748B',
                     height: '40px',
                     '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
                   }}
                 >
-                  {HOD_LIST.map((h) => (
-                    <MenuItem key={h} value={h} sx={{ fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
-                      {h}
-                    </MenuItem>
-                  ))}
+                  <MenuItem value="" disabled sx={{ fontSize: '13px', color: '#64748B', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+                    Select shift
+                  </MenuItem>
+                  {shiftsList.map((s) => {
+                    const sId = typeof s === 'object' ? s.id : s;
+                    const sLabel =
+                      typeof s === 'object'
+                        ? s.timeRange
+                          ? `${s.name} (${s.timeRange})`
+                          : s.name || s.id
+                        : s;
+                    return (
+                      <MenuItem key={sId} value={sId} sx={{ fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
+                        {sLabel}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
             </Box>
 
-            {/* Field 3: If rejecting, select reason */}
-            <Box sx={{ width: '100%', height: '131px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {/* Field 3: Remarks / Reason for rejection */}
+            <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <Typography variant="caption" sx={{ fontFamily: 'Inter, sans-serif', fontWeight: 500, fontSize: '14px', lineHeight: '100%', color: '#0F172A', display: 'block' }}>
-                If rejecting, select reason:
+                Remarks / Reason {reasonError && <span style={{ color: '#DC2626' }}>*</span>}:
               </Typography>
               <OutlinedInput
                 multiline
                 rows={3}
                 value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Blurry or bad lighting"
+                onChange={(e) => {
+                  setRejectionReason(e.target.value);
+                  if (reasonError) setReasonError('');
+                }}
+                error={Boolean(reasonError)}
+                placeholder="Enter remarks or reason if rejecting (e.g. Blurry or bad lighting)..."
                 sx={{
                   width: '100%',
-                  height: '105px',
+                  minHeight: '90px',
                   borderRadius: '10px',
                   bgcolor: '#F8FAFC',
                   fontSize: '13px',
                   fontFamily: 'Inter, sans-serif',
                   fontWeight: 400,
                   color: '#0F172A',
-                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#CBD5E1' },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' },
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: reasonError ? '#DC2626' : '#E2E8F0' },
+                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: reasonError ? '#DC2626' : '#CBD5E1' },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: reasonError ? '#DC2626' : '#6366f1' },
                   '& input::placeholder, & textarea::placeholder': {
                     color: '#64748B',
                     opacity: 1,
@@ -695,16 +760,22 @@ const Approvals = () => {
                   }
                 }}
               />
+              {reasonError && (
+                <Typography variant="caption" sx={{ color: '#DC2626', fontSize: '12px', mt: '2px', fontWeight: 500 }}>
+                  {reasonError}
+                </Typography>
+              )}
             </Box>
 
             {/* Action Buttons Row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: '12px', mt: 0, pt: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: '12px', mt: 1, pt: 0 }}>
               {/* Reject Light Red Button */}
               <Button
                 variant="outlined"
                 onClick={handleReject}
+                disabled={submitting}
                 sx={{
-                  width: '201px',
+                  flex: 1,
                   height: '41px',
                   bgcolor: '#FEE2E2',
                   color: '#DC2626',
@@ -722,15 +793,16 @@ const Approvals = () => {
                   }
                 }}
               >
-                Reject
+                {submitting ? <CircularProgress size={18} sx={{ color: '#DC2626' }} /> : 'Reject'}
               </Button>
 
               {/* Approve Photo Solid Green Button */}
               <Button
                 variant="contained"
                 onClick={handleApprove}
+                disabled={submitting}
                 sx={{
-                  width: '199px',
+                  flex: 1,
                   height: '41px',
                   bgcolor: '#15803D',
                   color: '#FFFFFF',
@@ -746,7 +818,7 @@ const Approvals = () => {
                   }
                 }}
               >
-                Approve Photo
+                {submitting ? <CircularProgress size={18} sx={{ color: '#FFFFFF' }} /> : 'Approve Photo'}
               </Button>
             </Box>
           </Box>
