@@ -41,7 +41,8 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { getShiftDetails, createShift, createShiftDetail, deleteShift, deleteShiftDetail } from '../../../services/shiftDetailServices';
+import { toast } from 'react-toastify';
+import { getShiftDetails, getShiftEmployees, createShift, createShiftDetail, deleteShift, deleteShiftDetail } from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
 
@@ -176,6 +177,8 @@ const ShiftDetails = () => {
 
   // Form State for Create / Edit
   const [editingShift, setEditingShift] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Detail View & Delete Modal States
   const [selectedDetailShift, setSelectedDetailShift] = useState(null);
@@ -186,19 +189,17 @@ const ShiftDetails = () => {
   const [assignedSearchQuery, setAssignedSearchQuery] = useState('');
   const [assignedDepartmentFilter, setAssignedDepartmentFilter] = useState('All Departments');
   const [selectedEmpIds, setSelectedEmpIds] = useState([]);
+  const [assignedEmployeesList, setAssignedEmployeesList] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
 
-  // Sample Assigned Employees for Detail View
-  const ASSIGNED_EMPLOYEES_SAMPLE = [
-    { id: 'EM123456-1', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-2', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-3', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-4', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-5', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-6', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-    { id: 'EM123456-7', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' }
-  ];
-
-  const [assignedEmployeesList, setAssignedEmployeesList] = useState(ASSIGNED_EMPLOYEES_SAMPLE);
+  // Dynamic unique departments list from assigned employees
+  const uniqueAssignedDepartments = useMemo(() => {
+    const depts = new Set();
+    assignedEmployeesList.forEach((e) => {
+      if (e.department && e.department !== '-') depts.add(e.department);
+    });
+    return Array.from(depts);
+  }, [assignedEmployeesList]);
 
   // Handle Assignment from AssignEmployeeModal
   const handleAssignEmployees = (payload) => {
@@ -309,11 +310,28 @@ const ShiftDetails = () => {
     setViewMode('create');
   };
 
-  // Open Shift Detail Page View
-  const handleOpenShiftDetailView = (shift) => {
+  // Open Shift Detail Page View & Fetch Assigned Employees
+  const handleOpenShiftDetailView = async (shift) => {
     setSelectedDetailShift(shift);
     setSelectedEmpIds([]);
+    setAssignedSearchQuery('');
+    setAssignedDepartmentFilter('All Departments');
     setViewMode('detail');
+
+    if (shift?.id) {
+      setLoadingEmployees(true);
+      try {
+        const emps = await getShiftEmployees(shift.id);
+        setAssignedEmployeesList(Array.isArray(emps) ? emps : []);
+      } catch (err) {
+        console.error('Error fetching shift employees:', err);
+        setAssignedEmployeesList([]);
+      } finally {
+        setLoadingEmployees(false);
+      }
+    } else {
+      setAssignedEmployeesList([]);
+    }
   };
 
   // Open Edit Shift View
@@ -334,20 +352,34 @@ const ShiftDetails = () => {
   // Delete shift handler
   const handleDeleteShift = async (id) => {
     if (!id) return;
-    setLoading(true);
+    setDeleting(true);
     try {
-      await deleteShift(id);
-      const refreshedShifts = await getShiftDetails();
-      setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
-      setPage((prevPage) => {
-        const remainingCount = shifts.length - 1;
-        const maxPages = Math.max(1, Math.ceil(remainingCount / rowsPerPage));
-        return Math.min(prevPage, maxPages);
-      });
+      const response = await deleteShift(id);
+      if (response && response.success === false) {
+        const errorMsg = response.message || (Array.isArray(response.errors) ? response.errors.join(', ') : 'Failed to delete shift');
+        toast.error(errorMsg);
+        setDeleteModalOpen(false);
+      } else {
+        toast.success(response?.message || 'Shift deleted successfully');
+        setDeleteModalOpen(false);
+        const refreshedShifts = await getShiftDetails();
+        setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
+        setPage((prevPage) => {
+          const remainingCount = (refreshedShifts?.length || 1) - 1;
+          const maxPages = Math.max(1, Math.ceil(remainingCount / rowsPerPage));
+          return Math.min(prevPage, maxPages);
+        });
+        if (viewMode === 'detail') {
+          setViewMode('list');
+        }
+      }
     } catch (e) {
       console.error('API delete error:', e);
+      const errMsg = e?.response?.data?.message || (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) || e?.message || 'Failed to delete shift';
+      toast.error(errMsg);
+      setDeleteModalOpen(false);
     } finally {
-      setLoading(false);
+      setDeleting(false);
     }
   };
 
@@ -363,26 +395,51 @@ const ShiftDetails = () => {
     });
   };
 
-  // Save Shift Form  in the page og Shift Details in Shift Managment 
+  // Save Shift Form in the page of Shift Details in Shift Management 
   const handleSaveShift = async () => {
-    if (!formData.name.trim()) return;
+    const shiftName = formData.name?.trim();
+    if (!shiftName) {
+      toast.error('Shift name is required');
+      return;
+    }
+    if (!formData.startTime) {
+      toast.error('Start time is required');
+      return;
+    }
+    if (!formData.endTime) {
+      toast.error('End time is required');
+      return;
+    }
+    if (!formData.workingDays || formData.workingDays.length === 0) {
+      toast.error('Please select at least one working day');
+      return;
+    }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      await createShift({
-        name: formData.name.trim(),
+      const response = await createShift({
+        name: shiftName,
         description: formData.description?.trim() || '',
-        start_time: formData.startTime,
-        end_time: formData.endTime,
-        working_days: formData.workingDays
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        workingDays: formData.workingDays
       });
-      const refreshedShifts = await getShiftDetails();
-      setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
-      setViewMode('list');
+
+      if (response && response.success === false) {
+        const errorMsg = response.message || (Array.isArray(response.errors) ? response.errors.join(', ') : 'Failed to create shift');
+        toast.error(errorMsg);
+      } else {
+        toast.success(response?.message || 'Shift created successfully');
+        const refreshedShifts = await getShiftDetails();
+        setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
+        setViewMode('list');
+      }
     } catch (e) {
       console.error('Error saving shift:', e);
+      const errMsg = e?.response?.data?.message || (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) || e?.message || 'Error creating shift';
+      toast.error(errMsg);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -555,7 +612,7 @@ const ShiftDetails = () => {
                       Assigned Departments
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a', fontSize: '0.9rem' }}>
-                      {currentShift.assignedDepartments || 'Cardiology, Emergency'}
+                      {uniqueAssignedDepartments.length > 0 ? uniqueAssignedDepartments.join(', ') : '-'}
                     </Typography>
                   </Box>
 
@@ -582,7 +639,7 @@ const ShiftDetails = () => {
               {/* Section Header & Filters Row */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 2, mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.05rem' }}>
-                  Assigned Employees ({currentShift.assignedCount || 42})
+                  Assigned Employees ({assignedEmployeesList.length})
                 </Typography>
 
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
@@ -624,9 +681,9 @@ const ShiftDetails = () => {
                       }}
                     >
                       <MenuItem value="All Departments">All Departments</MenuItem>
-                      <MenuItem value="Cardiology">Cardiology</MenuItem>
-                      <MenuItem value="Emergency">Emergency</MenuItem>
-                      <MenuItem value="Neurology">Neurology</MenuItem>
+                      {uniqueAssignedDepartments.map((dept) => (
+                        <MenuItem key={dept} value={dept}>{dept}</MenuItem>
+                      ))}
                     </Select>
                   </FormControl>
                 </Box>
@@ -652,46 +709,64 @@ const ShiftDetails = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {filteredAssignedEmps.map((emp) => {
-                      const isEmpSelected = selectedEmpIds.includes(emp.id);
-                      return (
-                        <TableRow key={emp.id} sx={{ '&:hover': { bgcolor: '#f8fafc' }, '& td': { borderColor: '#E2E8F0', py: 1.6, fontSize: '0.875rem' } }}>
-                          <TableCell sx={{ fontWeight: 600, color: '#1e293b' }}>{emp.empId}</TableCell>
-                          <TableCell>
-                            <Box>
-                              <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.875rem' }}>{emp.empName}</Typography>
-                              <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem' }}>{emp.designation}</Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Chip label={emp.department} size="small" sx={{ bgcolor: '#f1f5f9', color: '#334155', fontWeight: 500, fontSize: '0.8rem', height: '24px', borderRadius: '12px' }} />
-                          </TableCell>
-                          <TableCell align="right" sx={{ width: '140px', maxWidth: '140px', pr: 3 }}>
-                            <Button
-                              // variant="outlined"
-                              size="small"
-                              onClick={() => {
-                                setSelectedEmployeeForShiftChange(emp);
-                                setChangeShiftModalOpen(true);
-                              }}
-                              sx={{
-                                textTransform: 'none',
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                color: '#334155',
-                                bgcolor: '#F1F5F9',
-                                borderRadius: '6px',
-                                py: 0.4,
-                                px: 1.5,
-                                '&:hover': { borderColor: '#94a3b8', bgcolor: '#f8fafc' }
-                              }}
-                            >
-                              Shift Change
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {loadingEmployees ? (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                          <CircularProgress size={32} sx={{ color: '#6366f1' }} />
+                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mt: 1 }}>
+                            Loading assigned employees...
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredAssignedEmps.length > 0 ? (
+                      filteredAssignedEmps.map((emp) => {
+                        const isEmpSelected = selectedEmpIds.includes(emp.id);
+                        return (
+                          <TableRow key={emp.id} sx={{ '&:hover': { bgcolor: '#f8fafc' }, '& td': { borderColor: '#E2E8F0', py: 1.6, fontSize: '0.875rem' } }}>
+                            <TableCell sx={{ fontWeight: 600, color: '#1e293b' }}>{emp.empId}</TableCell>
+                            <TableCell>
+                              <Box>
+                                <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.875rem' }}>{emp.empName}</Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem' }}>{emp.designation}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Chip label={emp.department} size="small" sx={{ bgcolor: '#f1f5f9', color: '#334155', fontWeight: 500, fontSize: '0.8rem', height: '24px', borderRadius: '12px' }} />
+                            </TableCell>
+                            <TableCell align="right" sx={{ width: '140px', maxWidth: '140px', pr: 3 }}>
+                              <Button
+                                size="small"
+                                onClick={() => {
+                                  setSelectedEmployeeForShiftChange(emp);
+                                  setChangeShiftModalOpen(true);
+                                }}
+                                sx={{
+                                  textTransform: 'none',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 600,
+                                  color: '#334155',
+                                  bgcolor: '#F1F5F9',
+                                  borderRadius: '6px',
+                                  py: 0.4,
+                                  px: 1.5,
+                                  '&:hover': { borderColor: '#94a3b8', bgcolor: '#f8fafc' }
+                                }}
+                              >
+                                Shift Change
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
+                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem' }}>
+                            No employees assigned to this shift.
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -974,6 +1049,7 @@ const ShiftDetails = () => {
                 <Button
                   variant="contained"
                   onClick={handleSaveShift}
+                  disabled={submitting}
                   sx={{
                     bgcolor: '#6366f1',
                     color: '#ffffff',
@@ -988,10 +1064,20 @@ const ShiftDetails = () => {
                     '&:hover': {
                       bgcolor: '#4f46e5',
                       boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
+                    },
+                    '&.Mui-disabled': {
+                      bgcolor: '#a5b4fc',
+                      color: '#ffffff'
                     }
                   }}
                 >
-                  {editingShift ? 'Save shift' : 'Create shift'}
+                  {submitting ? (
+                    <CircularProgress size={22} sx={{ color: '#ffffff' }} />
+                  ) : editingShift ? (
+                    'Save shift'
+                  ) : (
+                    'Create shift'
+                  )}
                 </Button>
               </Box>
             </Box>
@@ -1404,7 +1490,7 @@ const ShiftDetails = () => {
 
         <DialogContent sx={{ py: "24px", borderBottom: "1px solid #E2E8F0" }}>
           <Typography variant="body2" sx={{ color: '#475569', fontSize: '14px', lineHeight: "20px", mb: "16px", fontWeight: 400, pt: "24px" }}>
-            This shift has <strong>{selectedDetailShift?.assignedCount || 18} employees</strong> assigned across <strong>1 department</strong>. Deleting will remove their shift assignment and notify all affected employees.
+            This shift has <strong>{selectedDetailShift?.assignedCount ?? 0} employees</strong> assigned across <strong>{uniqueAssignedDepartments.length} {uniqueAssignedDepartments.length === 1 ? 'department' : 'departments'}</strong>. Deleting will remove their shift assignment and notify all affected employees.
           </Typography>
           <Typography variant="body2" sx={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>
             This action cannot be undone.
@@ -1439,13 +1525,10 @@ const ShiftDetails = () => {
 
           <Button
             variant="contained"
+            disabled={deleting}
             onClick={() => {
               if (selectedDetailShift?.id) {
                 handleDeleteShift(selectedDetailShift.id);
-              }
-              setDeleteModalOpen(false);
-              if (viewMode === 'detail') {
-                setViewMode('list');
               }
             }}
             sx={{
@@ -1455,14 +1538,18 @@ const ShiftDetails = () => {
               fontWeight: 600,
               fontSize: '14px',
               borderRadius: '6px',
-              px: "16px",
-              py: "8px",
+              px: '16px',
+              py: '8px',
               height: '33px',
               boxShadow: 'none',
-              '&:hover': { bgcolor: '#dc2626' }
+              '&:hover': { bgcolor: '#dc2626' },
+              '&.Mui-disabled': {
+                bgcolor: '#fca5a5',
+                color: '#ffffff'
+              }
             }}
           >
-            Delete Shift
+            {deleting ? <CircularProgress size={18} sx={{ color: '#ffffff' }} /> : 'Delete Shift'}
           </Button>
         </DialogActions>
       </Dialog>
