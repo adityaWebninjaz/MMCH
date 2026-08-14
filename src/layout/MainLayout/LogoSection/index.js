@@ -30,9 +30,10 @@ import { useEffect, useState } from 'react';
 import { ButtonBase } from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import Logo from '../../../assets/images/LogoHorizontal.png';
+import Logo from '../../../assets/images/New_logo.ong.png';
 // import LogoMain from '../../../assets/images/admin-logo.png';
 import LogoMain from '../../../assets/images/Logo.png';
+
 
 const LogoSection = () => {
   // useEffect(() => {
@@ -73,7 +74,8 @@ const LogoSection = () => {
       style={{
         width: '171px',
         height: '100%',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        paddingLeft:"55px"
       }}
       disableRipple
     >
@@ -81,9 +83,9 @@ const LogoSection = () => {
         src={logoUrl}
         alt="logo"
         style={{
-          width: '100%',
+          width: '90px',
           height: '100%',
-          objectFit: 'cover'
+          objectFit: 'cover',
         }}
         onError={(e) => {
           e.target.onerror = null;
