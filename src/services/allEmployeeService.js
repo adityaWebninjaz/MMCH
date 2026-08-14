@@ -548,12 +548,42 @@ export const approveOrRejectProfile = async (id, { action = 'APPROVE', device_id
   }
 };
 
+export const deleteEmployee = async (id) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  try {
+    const response = await axios.delete(`${BASE_URL}/users/${id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to delete employee',
+      errors: null
+    };
+  }
+};
+
+export const deleteUser = deleteEmployee;
+
 export default {
   getEmployees,
   exportEmployeesMaster,
   updateEmployeeDevice,
   updateEmployeeReportingManager,
   updateEmployeeShift,
+  deleteEmployee,
+  deleteUser,
   getDesignations,
   getDepartments,
   getManagers,
