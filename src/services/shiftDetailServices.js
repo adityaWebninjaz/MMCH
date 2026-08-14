@@ -56,7 +56,7 @@ export const getShiftDetails = async () => {
 
     const list = response?.data?.data || [];
 
-    // This make the shifts appear in the dropdown in the order they were created
+    // This makes the shifts appear in the table in the order they were created (newest first)
     const sortedList = [...list].sort((a, b) => {
       const timeA = new Date(a.createdAt || 0).getTime();
       const timeB = new Date(b.createdAt || 0).getTime();
@@ -115,9 +115,31 @@ export const createShift = async (data) => {
   }
 };
 
+// Delete shift DELETE API
+export const deleteShift = async (id) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  try {
+    const response = await axios.delete(`${BASE_URL}/shifts/${id}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting shift with ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const deleteShiftDetail = deleteShift;
+
 export default {
   getShiftDetails,
   createShift,
+  deleteShift,
+  deleteShiftDetail,
   formatTimeTo12h,
   formatWorkingDays,
   formatTimeTo24h

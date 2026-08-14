@@ -41,7 +41,7 @@ import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { getShiftDetails, createShift, createShiftDetail } from '../../../services/shiftDetailServices';
+import { getShiftDetails, createShift, createShiftDetail, deleteShift, deleteShiftDetail } from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
 
@@ -333,12 +333,22 @@ const ShiftDetails = () => {
 
   // Delete shift handler
   const handleDeleteShift = async (id) => {
+    if (!id) return;
+    setLoading(true);
     try {
-      await deleteShiftDetail(id);
+      await deleteShift(id);
+      const refreshedShifts = await getShiftDetails();
+      setShifts(Array.isArray(refreshedShifts) ? refreshedShifts : []);
+      setPage((prevPage) => {
+        const remainingCount = shifts.length - 1;
+        const maxPages = Math.max(1, Math.ceil(remainingCount / rowsPerPage));
+        return Math.min(prevPage, maxPages);
+      });
     } catch (e) {
       console.error('API delete error:', e);
+    } finally {
+      setLoading(false);
     }
-    setShifts((prev) => prev.filter((s) => String(s.id) !== String(id)));
   };
 
   // Toggle Working Day Pill
@@ -353,7 +363,7 @@ const ShiftDetails = () => {
     });
   };
 
-  // Save Shift Form
+  // Save Shift Form  in the page og Shift Details in Shift Managment 
   const handleSaveShift = async () => {
     if (!formData.name.trim()) return;
 
