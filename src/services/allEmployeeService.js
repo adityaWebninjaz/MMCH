@@ -249,18 +249,24 @@ export const updateEmployeeDevice = async (employeeId, deviceData) => {
   }
 };
 
-export const updateEmployeeReportingManager = async (employeeId, managerData) => {
+export const updateEmployeeHOD = async (employeeId, hodData) => {
   const token = Cookies.get('Token') || Cookies.get('token');
 
-  const reporting_manager_id =
-    typeof managerData === 'object' && managerData !== null
-      ? managerData.reporting_manager_id || managerData.managerId || managerData.id
-      : managerData;
+  const hod_id =
+    typeof hodData === 'object' && hodData !== null
+      ? hodData.hod_id || hodData.reporting_manager_id || hodData.managerId || hodData.id
+      : hodData;
+
+  const payload = {
+    employee_id: employeeId,
+    hod_id,
+    reporting_manager_id: hod_id
+  };
 
   try {
     const response = await axios.patch(
-      `${BASE_URL}/employees/${employeeId}/reporting-manager`,
-      { reporting_manager_id },
+      `${BASE_URL}/employees/hods`,
+      payload,
       {
         headers: {
           Authorization: token ? `Bearer ${token}` : '',
@@ -271,6 +277,41 @@ export const updateEmployeeReportingManager = async (employeeId, managerData) =>
 
     return response.data;
   } catch (error) {
+    if (error.response?.status === 404) {
+      try {
+        const fallbackRes = await axios.patch(
+          `${BASE_URL}/employees/${employeeId}/hods`,
+          { hod_id, reporting_manager_id: hod_id },
+          {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        return fallbackRes.data;
+      } catch (err2) {
+        if (err2.response?.status === 404) {
+          try {
+            const fallbackRes2 = await axios.patch(
+              `${BASE_URL}/employees/${employeeId}/reporting-manager`,
+              { reporting_manager_id: hod_id, hod_id },
+              {
+                headers: {
+                  Authorization: token ? `Bearer ${token}` : '',
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
+            return fallbackRes2.data;
+          } catch (err3) {
+            if (err3.response && err3.response.data) return err3.response.data;
+          }
+        }
+        if (err2.response && err2.response.data) return err2.response.data;
+      }
+    }
+
     if (error.response && error.response.data) {
       return error.response.data;
     }
@@ -278,11 +319,14 @@ export const updateEmployeeReportingManager = async (employeeId, managerData) =>
       success: false,
       statusCode: error.response?.status || 500,
       data: null,
-      message: error.response?.data?.message || error.message || 'Failed to update reporting manager',
+      message: error.response?.data?.message || error.message || 'Failed to update HOD',
       errors: null
     };
   }
 };
+
+export const updateEmployeeHod = updateEmployeeHOD;
+export const updateEmployeeReportingManager = updateEmployeeHOD;
 
 export const updateEmployeeShift = async (employeeId, shiftData) => {
   const token = Cookies.get('Token') || Cookies.get('token');
@@ -379,7 +423,49 @@ export const getDepartments = async () => {
   }
 };
 
-export const getManagers = getDesignations;
+export const getHODs = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+  try {
+    const response = await axios.get(`${BASE_URL}/employees/hods`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+        ? resData
+        : [];
+
+    return list.map((item) => {
+      if (typeof item === 'string') return { id: item, name: item };
+      const id = item.id || item._id || item.hod_id || item.employee_id || item.uid || item.name;
+      const name =
+        item.full_name ||
+        item.name ||
+        item.hod_name ||
+        item.employee_name ||
+        item.designation ||
+        item.title ||
+        id;
+      return {
+        id,
+        name,
+        department: item.department || item.department_name || '',
+        designation: item.designation || item.designation_name || '',
+        ...item
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch HODs from API:', error);
+    return [];
+  }
+};
+
+export const getHods = getHODs;
+export const getManagers = getHODs;
 
 export const getShifts = async () => {
   const token = Cookies.get('Token') || Cookies.get('token');
@@ -581,11 +667,15 @@ export default {
   exportEmployeesMaster,
   updateEmployeeDevice,
   updateEmployeeReportingManager,
+  updateEmployeeHOD,
+  updateEmployeeHod,
   updateEmployeeShift,
   deleteEmployee,
   deleteUser,
   getDesignations,
   getDepartments,
+  getHODs,
+  getHods,
   getManagers,
   getShifts,
   getProfileApprovals,
