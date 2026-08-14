@@ -712,7 +712,7 @@ const AttendanceReport = () => {
                   textAlign: 'center'
                 }}
               >
-                Half
+                Half Days
               </TableCell>
               <TableCell
                 sx={{
