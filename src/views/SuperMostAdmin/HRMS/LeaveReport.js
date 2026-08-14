@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -18,168 +18,262 @@ import {
   IconButton,
   Tabs,
   Tab,
-  Chip
+  Chip,
+  CircularProgress,
+  Skeleton,
+  Alert
 } from '@mui/material';
 import {
   Search as SearchIcon,
+  Close as CloseIcon,
   FileDownload as FileDownloadIcon,
   FirstPage as FirstPageIcon,
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
   LastPage as LastPageIcon,
-  CalendarToday as CalendarTodayIcon,
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
+import { getLeaveReport, exportLeaveReport } from 'services/leaveReportService';
+import { getDepartments } from 'services/allEmployeeService';
 
-// Sample leave application dataset
-const INITIAL_LEAVE_DATA = [
-  { id: 1, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 2, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 3, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Pending', phone: '9876543210' },
-  { id: 4, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Rejected', phone: '9876543210' },
-  { id: 5, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 6, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 7, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 8, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 9, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 10, empId: 'EMP235469', empName: 'Dr. Ravi Mehta', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '10 Jul 2026', toDate: '11 Jul 2026', totalDays: '04', appliedDate: '11 Jul 2026', status: 'Approved', phone: '9876543210' },
-  { id: 11, empId: 'EMP235470', empName: 'Dr. Ananya Sharma', department: 'Cardiology', leaveType: 'Medical Leave', fromDate: '12 Jul 2026', toDate: '15 Jul 2026', totalDays: '03', appliedDate: '10 Jul 2026', status: 'Pending', phone: '9876543211' },
-  { id: 12, empId: 'EMP235471', empName: 'Dr. Vikram Patel', department: 'Neurology', leaveType: 'Earned Leave', fromDate: '14 Jul 2026', toDate: '18 Jul 2026', totalDays: '05', appliedDate: '09 Jul 2026', status: 'Approved', phone: '9876543212' },
-  { id: 13, empId: 'EMP235472', empName: 'Dr. Priya Nair', department: 'Pediatrics', leaveType: 'Casual Leave', fromDate: '16 Jul 2026', toDate: '17 Jul 2026', totalDays: '02', appliedDate: '12 Jul 2026', status: 'Pending', phone: '9876543213' },
-  { id: 14, empId: 'EMP235473', empName: 'Dr. Rajesh Gupta', department: 'Orthopedics', leaveType: 'Sick Leave', fromDate: '08 Jul 2026', toDate: '09 Jul 2026', totalDays: '02', appliedDate: '07 Jul 2026', status: 'Rejected', phone: '9876543214' },
-  { id: 15, empId: 'EMP235474', empName: 'Dr. Sunita Rao', department: 'ICU', leaveType: 'Casual Leave', fromDate: '20 Jul 2026', toDate: '22 Jul 2026', totalDays: '03', appliedDate: '14 Jul 2026', status: 'Approved', phone: '9876543215' },
-  { id: 16, empId: 'EMP235475', empName: 'Dr. Amit Verma', department: 'Surgery', leaveType: 'Medical Leave', fromDate: '21 Jul 2026', toDate: '25 Jul 2026', totalDays: '05', appliedDate: '15 Jul 2026', status: 'Pending', phone: '9876543216' },
-  { id: 17, empId: 'EMP235476', empName: 'Dr. Meera Joshi', department: 'OPD', leaveType: 'Earned Leave', fromDate: '05 Jul 2026', toDate: '06 Jul 2026', totalDays: '02', appliedDate: '04 Jul 2026', status: 'Rejected', phone: '9876543217' },
-  { id: 18, empId: 'EMP235477', empName: 'Dr. Alok Singh', department: 'Emergency', leaveType: 'Casual Leave', fromDate: '28 Jul 2026', toDate: '30 Jul 2026', totalDays: '03', appliedDate: '20 Jul 2026', status: 'Approved', phone: '9876543218' },
-  { id: 19, empId: 'EMP235478', empName: 'Dr. Kavita Reddy', department: 'Cardiology', leaveType: 'Sick Leave', fromDate: '01 Aug 2026', toDate: '03 Aug 2026', totalDays: '03', appliedDate: '25 Jul 2026', status: 'Approved', phone: '9876543219' },
-  { id: 20, empId: 'EMP235479', empName: 'Dr. Suresh Kumar', department: 'Neurology', leaveType: 'Casual Leave', fromDate: '05 Aug 2026', toDate: '06 Aug 2026', totalDays: '02', appliedDate: '28 Jul 2026', status: 'Approved', phone: '9876543220' }
+const DATE_PRESETS = [
+  { label: 'All Dates', value: 'all' },
+  { label: 'This Month', value: 'this_month' },
+  { label: 'Last Month', value: 'last_month' },
+  { label: 'Last 7 Days', value: 'last_7_days' },
+  { label: 'Last 30 Days', value: 'last_30_days' },
+  { label: 'Custom Range', value: 'custom' }
 ];
 
-const DEPARTMENTS = [
-  'All Departments',
-  'Emergency',
-  'Cardiology',
-  'Neurology',
-  'Pediatrics',
-  'Orthopedics',
-  'ICU',
-  'Surgery',
-  'OPD'
-];
+const formatDisplayDate = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+  } catch {
+    return dateStr;
+  }
+};
 
-const DATE_RANGES = [
-  '12 July 2025',
-  'Last 7 Days',
-  'Last 30 Days',
-  'This Month',
-  'Last Month',
-  'Custom Range'
-];
+const computePresetDates = (presetKey) => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  if (presetKey === 'this_month') {
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    return { from: formatDate(firstDay), to: formatDate(lastDay) };
+  }
+  if (presetKey === 'last_month') {
+    const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+    return { from: formatDate(firstDay), to: formatDate(lastDay) };
+  }
+  if (presetKey === 'last_7_days') {
+    const past = new Date(now);
+    past.setDate(past.getDate() - 7);
+    return { from: formatDate(past), to: formatDate(now) };
+  }
+  if (presetKey === 'last_30_days') {
+    const past = new Date(now);
+    past.setDate(past.getDate() - 30);
+    return { from: formatDate(past), to: formatDate(now) };
+  }
+  return { from: '', to: '' };
+};
 
 const LeaveReport = () => {
-  // Tab State: 'All', 'Pending', 'Approved', 'Rejected'
+  // Tab State: 'All', 'Pending', 'Approved', 'Rejected', 'Cancelled'
   const [activeTab, setActiveTab] = useState('All');
 
   // Filter States
-  const [department, setDepartment] = useState('All Departments');
-  const [dateRange, setDateRange] = useState('12 July 2025');
+  const [departmentId, setDepartmentId] = useState('');
+  const [departmentsList, setDepartmentsList] = useState([]);
+  const [datePreset, setDatePreset] = useState('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Pagination States
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Filtered dataset based on tab, department, and search query
-  const filteredLeaveData = useMemo(() => {
-    return INITIAL_LEAVE_DATA.filter((item) => {
-      const matchesTab = activeTab === 'All' || item.status.toLowerCase() === activeTab.toLowerCase();
-      const matchesDept = department === 'All Departments' || item.department === department;
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !q ||
-        item.empId.toLowerCase().includes(q) ||
-        item.empName.toLowerCase().includes(q) ||
-        item.department.toLowerCase().includes(q) ||
-        item.leaveType.toLowerCase().includes(q) ||
-        (item.phone && item.phone.includes(q));
+  // Data States
+  const [leaveItems, setLeaveItems] = useState([]);
+  const [kpis, setKpis] = useState({
+    total_requests: 0,
+    total_pending: 0,
+    total_approved: 0,
+    total_rejected: 0
+  });
+  const [loading, setLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-      return matchesTab && matchesDept && matchesSearch;
-    });
-  }, [activeTab, department, searchQuery]);
+  // Fetch departments on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in LeaveReport:', err);
+      });
 
-  // Pagination math
-  const totalPages = Math.max(1, Math.ceil(filteredLeaveData.length / rowsPerPage));
-  const paginatedData = useMemo(() => {
-    const startIdx = (page - 1) * rowsPerPage;
-    return filteredLeaveData.slice(startIdx, startIdx + rowsPerPage);
-  }, [filteredLeaveData, page, rowsPerPage]);
-
-  // Stat Cards values matching design spec
-  const stats = useMemo(() => {
-    if (activeTab === 'All' && department === 'All Departments' && !searchQuery) {
-      return {
-        total: '147',
-        pending: '04',
-        approved: '75',
-        rejected: '12'
-      };
-    }
-    const totalCount = filteredLeaveData.length;
-    const pendingCount = filteredLeaveData.filter((d) => d.status === 'Pending').length;
-    const approvedCount = filteredLeaveData.filter((d) => d.status === 'Approved').length;
-    const rejectedCount = filteredLeaveData.filter((d) => d.status === 'Rejected').length;
-
-    return {
-      total: totalCount < 10 ? `0${totalCount}` : String(totalCount),
-      pending: pendingCount < 10 ? `0${pendingCount}` : String(pendingCount),
-      approved: approvedCount < 10 ? `0${approvedCount}` : String(approvedCount),
-      rejected: rejectedCount < 10 ? `0${rejectedCount}` : String(rejectedCount)
+    return () => {
+      isMounted = false;
     };
-  }, [activeTab, department, searchQuery, filteredLeaveData]);
+  }, []);
 
-  // Export CSV handler
-  const handleExportExcel = () => {
-    const headers = [
-      'Emp ID',
-      'Emp Name',
-      'Department',
-      'Leave Type',
-      'From Date',
-      'To Date',
-      'Total Days',
-      'Applied Date',
-      'Status'
-    ];
+  // Debounce search query (400ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, 400);
 
-    const csvRows = [headers.join(',')];
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-    filteredLeaveData.forEach((row) => {
-      const line = [
-        `"${row.empId}"`,
-        `"${row.empName}"`,
-        `"${row.department}"`,
-        `"${row.leaveType}"`,
-        `"${row.fromDate}"`,
-        `"${row.toDate}"`,
-        `"${row.totalDays}"`,
-        `"${row.appliedDate}"`,
-        `"${row.status}"`
-      ];
-      csvRows.push(line.join(','));
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Leave_Report_${activeTab}_${department.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  // Handle date preset change
+  const handleDatePresetChange = (newPreset) => {
+    setDatePreset(newPreset);
+    if (newPreset !== 'custom') {
+      const dates = computePresetDates(newPreset);
+      setFromDate(dates.from);
+      setToDate(dates.to);
+    }
+    setPage(1);
   };
 
-  const startIndex = filteredLeaveData.length === 0 ? 0 : (page - 1) * rowsPerPage + 1;
-  const endIndex = Math.min(page * rowsPerPage, filteredLeaveData.length);
+  // Fetch leave report from API
+  const fetchLeaveData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    const statusParam = activeTab === 'All' ? 'ALL' : activeTab.toUpperCase();
+
+    try {
+      const res = await getLeaveReport({
+        status: statusParam,
+        department_id: departmentId || undefined,
+        from: fromDate || undefined,
+        to: toDate || undefined,
+        page,
+        limit: rowsPerPage,
+        search: debouncedSearch || undefined
+      });
+
+      const rawItems = res.items || [];
+      // Filter out CANCELLED records
+      const items = rawItems.filter((item) => (item?.status || '').toUpperCase() !== 'CANCELLED');
+      setLeaveItems(items);
+      setKpis(
+        res.kpis || {
+          total_requests: items.length,
+          total_pending: 0,
+          total_approved: 0,
+          total_rejected: 0
+        }
+      );
+
+      const pagination = res.pagination || {};
+      const total = Number(pagination.total ?? items.length) || 0;
+      setTotalCount(total);
+      setTotalPages(Math.max(1, Number(pagination.totalPages) || Math.ceil(total / rowsPerPage)));
+    } catch (err) {
+      console.error('Failed to fetch leave report:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to load leave report. Please try again.');
+      setLeaveItems([]);
+      setTotalCount(0);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, departmentId, fromDate, toDate, page, rowsPerPage, debouncedSearch]);
+
+  useEffect(() => {
+    fetchLeaveData();
+  }, [fetchLeaveData]);
+
+  // Export handler (calls /reports/leaves/export with client CSV fallback)
+  const handleExport = async () => {
+    setExportLoading(true);
+    const statusParam = activeTab === 'All' ? 'ALL' : activeTab.toUpperCase();
+
+    try {
+      await exportLeaveReport({
+        status: statusParam,
+        department_id: departmentId || undefined,
+        from: fromDate || undefined,
+        to: toDate || undefined,
+        search: debouncedSearch || undefined
+      });
+    } catch (err) {
+      console.warn('Backend export failed, generating CSV locally...', err);
+      // Fallback: Export loaded rows to CSV
+      if (leaveItems.length === 0) {
+        alert('No leave records found to export.');
+        setExportLoading(false);
+        return;
+      }
+
+      const headers = [
+        'Emp ID',
+        'Emp Name',
+        'Department',
+        'Leave Category',
+        'Leave Type',
+        'From Date',
+        'To Date',
+        'Total Days',
+        'Applied Date',
+        'Status'
+      ];
+
+      const csvRows = [headers.join(',')];
+
+      leaveItems.forEach((row) => {
+        const line = [
+          `"${row.employee_uid || '-'}"`,
+          `"${row.employee_name || '-'}"`,
+          `"${row.department || '-'}"`,
+          `"${row.leave_category || '-'}"`,
+          `"${row.leave_type || '-'}"`,
+          `"${row.from_date || '-'}"`,
+          `"${row.to_date || '-'}"`,
+          row.total_days ?? 0,
+          `"${row.applied_date || '-'}"`,
+          `"${row.status || '-'}"`
+        ];
+        csvRows.push(line.join(','));
+      });
+
+      const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
+      const link = document.createElement('a');
+      link.setAttribute('href', csvContent);
+      link.setAttribute('download', `Leave_Report_${statusParam}_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const startIndex = totalCount === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const endIndex = Math.min(page * rowsPerPage, totalCount);
 
   return (
     <Box sx={{ width: '100%', bgcolor: '#ffffff', minHeight: '100vh', p: 4 }}>
@@ -191,7 +285,7 @@ const LeaveReport = () => {
           color: '#0F172A',
           fontSize: '24px',
           lineHeight: '100%',
-          mb: "24px"
+          mb: '24px'
         }}
       >
         Leave Report
@@ -200,14 +294,14 @@ const LeaveReport = () => {
       {/* KPI Cards Row (4 Cards) */}
       <Box
         sx={{
-          width:"100%",
+          width: '100%',
           display: 'grid',
           gridTemplateColumns: {
             xs: 'repeat(1, 1fr)',
             sm: 'repeat(2, 1fr)',
             md: 'repeat(4, 1fr)'
           },
-          gap: "12px",
+          gap: '12px',
           mb: 3
         }}
       >
@@ -215,16 +309,16 @@ const LeaveReport = () => {
         <Paper
           elevation={0}
           sx={{
-            p: "16px",
+            p: '16px',
             borderRadius: '12px',
             border: '1px solid #E2E8F0',
             bgcolor: '#ffffff'
           }}
         >
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: "100%" }}>
-            {stats.total}
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: '100%' }}>
+            {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_requests ?? 0).toLocaleString('en-US')}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#475569', mt: "8px", fontWeight: 600, fontSize: "13px", lineHeight: "100%" }}>
+          <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
             Total Application
           </Typography>
         </Paper>
@@ -233,16 +327,16 @@ const LeaveReport = () => {
         <Paper
           elevation={0}
           sx={{
-            p: "16px",
+            p: '16px',
             borderRadius: '12px',
             border: '1px solid #E2E8F0',
             bgcolor: '#ffffff'
           }}
         >
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: "100%" }}>
-            {stats.pending}
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#D97706', fontSize: '24px', lineHeight: '100%' }}>
+            {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_pending ?? 0).toLocaleString('en-US')}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#475569', mt: "8px", fontWeight: 600, fontSize: "13px", lineHeight: "100%" }}>
+          <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
             Pending
           </Typography>
         </Paper>
@@ -251,16 +345,16 @@ const LeaveReport = () => {
         <Paper
           elevation={0}
           sx={{
-            p: "16px",
+            p: '16px',
             borderRadius: '12px',
             border: '1px solid #E2E8F0',
             bgcolor: '#ffffff'
           }}
         >
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: "100%" }}>
-            {stats.approved}
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#16A34A', fontSize: '24px', lineHeight: '100%' }}>
+            {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_approved ?? 0).toLocaleString('en-US')}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#475569', mt: "8px", fontWeight: 600, fontSize: "13px", lineHeight: "100%" }}>
+          <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
             Approved
           </Typography>
         </Paper>
@@ -269,23 +363,23 @@ const LeaveReport = () => {
         <Paper
           elevation={0}
           sx={{
-            p: "16px",
+            p: '16px',
             borderRadius: '12px',
             border: '1px solid #E2E8F0',
             bgcolor: '#ffffff'
           }}
         >
-          <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: "100%" }}>
-            {stats.rejected}
+          <Typography variant="h3" sx={{ fontWeight: 700, color: '#DC2626', fontSize: '24px', lineHeight: '100%' }}>
+            {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_rejected ?? 0).toLocaleString('en-US')}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#475569', mt: "8px", fontWeight: 600, fontSize: "13px", lineHeight: "100%" }}>
+          <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
             Rejected
           </Typography>
         </Paper>
       </Box>
 
       {/* Tabs Row (All, Pending, Approved, Rejected) */}
-      <Box sx={{ mb: "24px" }}>
+      <Box sx={{ mb: '24px' }}>
         <Tabs
           value={activeTab}
           onChange={(e, newValue) => {
@@ -313,8 +407,8 @@ const LeaveReport = () => {
                 px: 2,
                 py: 0.5,
                 fontSize: '14px',
-                lineHeight: "20px",
-                fontWeight: activeTab === tabLabel ? 600 : 600,
+                lineHeight: '20px',
+                fontWeight: 600,
                 color: activeTab === tabLabel ? '#6366f1' : '#64748b',
                 '&.Mui-selected': {
                   color: '#6366f1'
@@ -338,46 +432,24 @@ const LeaveReport = () => {
       >
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2, flex: 1 }}>
           {/* Department Dropdown */}
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: "6px", display: 'block', fontSize: "13px", lineHeight: "100%" }}>
+          <FormControl size="small" sx={{ minWidth: 190 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#1E293B',
+                fontWeight: 500,
+                mb: '6px',
+                display: 'block',
+                fontSize: '13px',
+                lineHeight: '100%'
+              }}
+            >
               Department
             </Typography>
             <Select
-              value={department}
+              value={departmentId}
               onChange={(e) => {
-                setDepartment(e.target.value);
-                setPage(1);
-              }}
-              displayEmpty
-              sx={{
-                bgcolor: '#ffffff',
-                height: '40px',
-                fontSize: '13px',
-                fontWeight: 400,
-                lineHeight: "100%",
-                color: '#1E293B',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
-              }}
-            >
-              {DEPARTMENTS.map((dept) => (
-                <MenuItem key={dept} value={dept} sx={{ fontSize: '0.875rem' }}>
-                  {dept}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          {/* Date Range Dropdown */}
-          <FormControl size="small" sx={{ minWidth: 180 }}>
-            <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: "6px", display: 'block', fontSize: "13px", lineHeight: "100%" }}>
-              Date Range
-            </Typography>
-            <Select
-              value={dateRange}
-              onChange={(e) => {
-                setDateRange(e.target.value);
+                setDepartmentId(e.target.value);
                 setPage(1);
               }}
               displayEmpty
@@ -385,24 +457,147 @@ const LeaveReport = () => {
                 borderRadius: '8px',
                 bgcolor: '#ffffff',
                 height: '40px',
-                fontSize: '0.875rem',
+                fontSize: '13px',
+                fontWeight: 400,
+                lineHeight: '100%',
+                color: '#1E293B',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+              }}
+            >
+              <MenuItem value="" sx={{ fontSize: '0.875rem' }}>
+                All Departments
+              </MenuItem>
+              {departmentsList.map((dept) => (
+                <MenuItem key={dept.id || dept.name} value={dept.id} sx={{ fontSize: '0.875rem' }}>
+                  {dept.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Date Range Preset */}
+          <FormControl size="small" sx={{ minWidth: 160 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#1E293B',
+                fontWeight: 500,
+                mb: '6px',
+                display: 'block',
+                fontSize: '13px',
+                lineHeight: '100%'
+              }}
+            >
+              Date Range
+            </Typography>
+            <Select
+              value={datePreset}
+              onChange={(e) => handleDatePresetChange(e.target.value)}
+              sx={{
+                borderRadius: '8px',
+                bgcolor: '#ffffff',
+                height: '40px',
+                fontSize: '13px',
                 color: '#334155',
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
               }}
             >
-              {DATE_RANGES.map((d) => (
-                <MenuItem key={d} value={d} sx={{ fontSize: '0.875rem' }}>
-                  {d}
+              {DATE_PRESETS.map((p) => (
+                <MenuItem key={p.value} value={p.value} sx={{ fontSize: '0.875rem' }}>
+                  {p.label}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
+          {/* Custom Date Pickers (Shown when Custom Range is active) */}
+          {datePreset === 'custom' && (
+            <>
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#1E293B',
+                    fontWeight: 500,
+                    mb: '6px',
+                    display: 'block',
+                    fontSize: '13px',
+                    lineHeight: '100%'
+                  }}
+                >
+                  From Date
+                </Typography>
+                <OutlinedInput
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => {
+                    setFromDate(e.target.value);
+                    setPage(1);
+                  }}
+                  sx={{
+                    borderRadius: '8px',
+                    bgcolor: '#ffffff',
+                    height: '40px',
+                    fontSize: '13px',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                  }}
+                />
+              </FormControl>
+
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: '#1E293B',
+                    fontWeight: 500,
+                    mb: '6px',
+                    display: 'block',
+                    fontSize: '13px',
+                    lineHeight: '100%'
+                  }}
+                >
+                  To Date
+                </Typography>
+                <OutlinedInput
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => {
+                    setToDate(e.target.value);
+                    setPage(1);
+                  }}
+                  sx={{
+                    borderRadius: '8px',
+                    bgcolor: '#ffffff',
+                    height: '40px',
+                    fontSize: '13px',
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                  }}
+                />
+              </FormControl>
+            </>
+          )}
+
           {/* Employee Search */}
-          <FormControl size="small" sx={{ minWidth: 392, flex: 1, maxWidth: 392 }}>
-            <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: "6px", display: 'block', fontSize: "13px", lineHeight: "100%" }}>
+          <FormControl size="small" sx={{ minWidth: 280, flex: 1, maxWidth: 400 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: '#1E293B',
+                fontWeight: 500,
+                mb: '6px',
+                display: 'block',
+                fontSize: '13px',
+                lineHeight: '100%'
+              }}
+            >
               Employee Search
             </Typography>
             <OutlinedInput
@@ -417,13 +612,30 @@ const LeaveReport = () => {
                   <SearchIcon sx={{ color: '#94a3b8', fontSize: 20 }} />
                 </InputAdornment>
               }
+              endAdornment={
+                searchQuery ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setSearchQuery('');
+                        setDebouncedSearch('');
+                        setPage(1);
+                      }}
+                      sx={{ p: '2px', color: '#94a3b8' }}
+                    >
+                      <CloseIcon sx={{ fontSize: 16 }} />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null
+              }
               sx={{
                 borderRadius: '8px',
                 bgcolor: '#ffffff',
                 height: '40px',
                 fontSize: '13px',
                 fontWeight: 400,
-                lineHeight: "100%",
+                lineHeight: '100%',
                 color: '#64748B',
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
@@ -433,32 +645,74 @@ const LeaveReport = () => {
           </FormControl>
         </Box>
 
-        {/* Export Excel Button */}
-        <Box>
+        {/* Action Buttons: Refresh & Export */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* <Button
+            variant="outlined"
+            onClick={fetchLeaveData}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} sx={{ color: '#644EE5' }} /> : <RefreshIcon />}
+            sx={{
+              borderColor: '#E2E8F0',
+              color: '#475569',
+              fontWeight: 500,
+              fontSize: '14px',
+              borderRadius: '8px',
+              height: '40px',
+              px: 2,
+              '&:hover': {
+                borderColor: '#cbd5e1',
+                bgcolor: '#f8fafc'
+              }
+            }}
+          >
+            Refresh
+          </Button> */}
+
           <Button
             variant="contained"
-            onClick={handleExportExcel}
-            startIcon={<FileDownloadIcon />}
+            onClick={handleExport}
+            disabled={exportLoading || loading}
+            startIcon={exportLoading ? <CircularProgress size={16} sx={{ color: '#ffffff' }} /> : <FileDownloadIcon />}
             sx={{
               bgcolor: '#644EE5',
               color: '#ffffff',
               fontWeight: 500,
               fontSize: '14px',
               borderRadius: '8px',
-              lineHeight: "24px",
+              lineHeight: '24px',
               px: 2,
               height: '40px',
               boxShadow: 'none',
               '&:hover': {
                 bgcolor: '#4f46e5',
                 boxShadow: '0 2px 4px rgba(99,102,241,0.2)'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#E2E8F0',
+                color: '#94A3B8'
               }
             }}
           >
-            Export Excel
+            {exportLoading ? 'Exporting...' : 'Export Excel'}
           </Button>
         </Box>
       </Box>
+
+      {/* Error Alert */}
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3, borderRadius: '8px' }}
+          action={
+            <Button color="inherit" size="small" onClick={fetchLeaveData}>
+              Retry
+            </Button>
+          }
+        >
+          {error}
+        </Alert>
+      )}
 
       {/* Main Leave Applications Data Table */}
       <TableContainer
@@ -470,74 +724,207 @@ const LeaveReport = () => {
           borderStyle: 'solid',
           borderColor: '#E2E8F0',
           overflowX: 'auto',
-          mb: "20px"
+          mb: '20px'
         }}
       >
         <Table sx={{ minWidth: 950 }} size="medium">
           <TableHead sx={{ bgcolor: '#F1F5F9' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', pl: "24px" }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px',
+                  pl: '24px'
+                }}
+              >
                 Emp ID
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', pl: "24px" }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px',
+                  pl: '24px'
+                }}
+              >
                 Emp Name
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', textAlign: 'center' }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px'
+                }}
+              >
                 Department
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', textAlign: 'center' }}>
-                Leave Type
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px'
+                }}
+              >
+                Leave Category / Type
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px' }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px'
+                }}
+              >
                 From Date
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', textAlign: "center" }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px'
+                }}
+              >
                 To Date
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px' }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px',
+                  textAlign: 'center'
+                }}
+              >
                 Total Days
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px' }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px'
+                }}
+              >
                 Applied Date
               </TableCell>
-              <TableCell sx={{ fontWeight: 600, color: '#16151C', fontSize: '14px', py: "12px", lineHeight: '20px', textAlign: 'center' }}>
+              <TableCell
+                sx={{
+                  fontWeight: 600,
+                  color: '#16151C',
+                  fontSize: '14px',
+                  py: '12px',
+                  lineHeight: '20px',
+                  textAlign: 'center'
+                }}
+              >
                 Status
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((row, index) => {
+            {loading ? (
+              Array.from({ length: rowsPerPage }).map((_, index) => (
+                <TableRow key={`skeleton-${index}`}>
+                  <TableCell sx={{ pl: '24px' }}>
+                    <Skeleton width={80} />
+                  </TableCell>
+                  <TableCell sx={{ pl: '24px' }}>
+                    <Skeleton width={120} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton width={100} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton width={120} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton width={90} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton width={90} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Skeleton width={30} sx={{ mx: 'auto' }} />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton width={90} />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Skeleton width={60} sx={{ mx: 'auto' }} />
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : leaveItems.length > 0 ? (
+              leaveItems.map((row, index) => {
                 // Color mapping for Status Chips
-                let chipBg = '#d1fae5';
-                let chipColor = '#15803d';
-                if (row.status === 'Pending') {
+                const statusNormalized = (row.status || '').toUpperCase();
+                let chipBg = '#f1f5f9';
+                let chipColor = '#475569';
+
+                if (statusNormalized === 'APPROVED') {
+                  chipBg = '#d1fae5';
+                  chipColor = '#15803d';
+                } else if (statusNormalized === 'PENDING') {
                   chipBg = '#fef3c7';
                   chipColor = '#b45309';
-                } else if (row.status === 'Rejected') {
+                } else if (statusNormalized === 'REJECTED') {
                   chipBg = '#fee2e2';
                   chipColor = '#dc2626';
+                } else if (statusNormalized === 'CANCELLED') {
+                  chipBg = '#f1f5f9';
+                  chipColor = '#64748b';
                 }
 
                 return (
                   <TableRow
-                    key={`${row.id}-${index}`}
+                    key={`${row.employee_uid || 'emp'}-${row.applied_date || index}-${index}`}
                     sx={{
                       '&:hover': { bgcolor: '#f8fafc' },
-                      '& td': { borderBottom: "1px solid #E2E8F0", py: "10px", px: "24px", fontSize: '13px', color: '##000000', lineHeight: "100%", fontWeight: "400" }
+                      '& td': {
+                        borderBottom: '1px solid #E2E8F0',
+                        py: '10px',
+                        px: '24px',
+                        fontSize: '13px',
+                        color: '#0F172A',
+                        lineHeight: '100%',
+                        fontWeight: 400
+                      }
                     }}
                   >
-                    <TableCell >{row.empId}</TableCell>
-                    <TableCell >{row.empName}</TableCell>
-                    <TableCell align="center">{row.department}</TableCell>
-                    <TableCell align="center">{row.leaveType}</TableCell>
-                    <TableCell>{row.fromDate}</TableCell>
-                    <TableCell align='center'>{row.toDate}</TableCell>
-                    <TableCell >{row.totalDays}</TableCell>
-                    <TableCell>{row.appliedDate}</TableCell>
+                    <TableCell sx={{ fontWeight: 500, color: '#1E293B' }}>{row.employee_uid || '-'}</TableCell>
+                    <TableCell>{row.employee_name || '-'}</TableCell>
+                    <TableCell>{row.department || '-'}</TableCell>
+                    <TableCell>
+                      <Typography sx={{ fontSize: '13px', fontWeight: 500, color: '#1E293B', lineHeight: '120%' }}>
+                        {row.leave_category || '-'}
+                      </Typography>
+                      {row.leave_type && (
+                        <Typography sx={{ fontSize: '11px', color: '#64748B', lineHeight: '120%' }}>{row.leave_type}</Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>{formatDisplayDate(row.from_date)}</TableCell>
+                    <TableCell>{formatDisplayDate(row.to_date)}</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 500 }}>
+                      {row.total_days ?? 0}
+                    </TableCell>
+                    <TableCell>{formatDisplayDate(row.applied_date)}</TableCell>
                     <TableCell align="center">
                       <Chip
-                        label={row.status}
+                        label={row.status || 'UNKNOWN'}
                         size="small"
                         sx={{
                           bgcolor: chipBg,
@@ -555,8 +942,13 @@ const LeaveReport = () => {
               })
             ) : (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4, color: '#64748b' }}>
-                  No leave application records found matching your filters.
+                <TableCell colSpan={9} align="center" sx={{ py: 6, color: '#64748b' }}>
+                  <Typography variant="body1" sx={{ fontWeight: 500, color: '#475569', mb: 0.5 }}>
+                    No leave application records found
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+                    Try adjusting the tab status, date range, department, or clearing the search query.
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -575,8 +967,8 @@ const LeaveReport = () => {
           pt: 1
         }}
       >
-        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '14px', fontWeight: "400", lineHeight: "20px" }}>
-          Showing {startIndex}-{endIndex} of {filteredLeaveData.length}
+        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '14px', fontWeight: 400, lineHeight: '20px' }}>
+          Showing {startIndex}-{endIndex} of {totalCount}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
@@ -594,48 +986,57 @@ const LeaveReport = () => {
               size="small"
               IconComponent={UnfoldMoreIcon}
               sx={{
-               height: '36px',
-                  borderRadius: '6px',
-                  bgcolor: '#FFFFFF',
-                  color: '#1E293B',
-                  fontSize: '14px',
-                  fontWeight: 400,
-                  minWidth: '78px',
-                  overflow: 'hidden',
-                  lineHeight:"20px",
-                  '& .MuiOutlinedInput-notchedOutline': {
+                height: '36px',
+                borderRadius: '6px',
+                bgcolor: '#FFFFFF',
+                color: '#1E293B',
+                fontSize: '14px',
+                fontWeight: 400,
+                minWidth: '78px',
+                overflow: 'hidden',
+                lineHeight: '20px',
+                '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#D0D5DD',
-                    borderRadius: '6px',
-                    borderWidth: '1px'
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#94A3B8'
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#6366F1'
-                  },
-                  '& .MuiSelect-select': {
-                    py: '8px',
-                    pl: '14px',
-                    pr: '34px !important',
-                    display: 'flex',
-                    alignItems: 'center'
-                  },
-                  '& .MuiSelect-icon': {
-                    color: '#1E293B',
-                    fontSize: '18px',
-                    right: '8px'
-                  }
+                  borderRadius: '6px',
+                  borderWidth: '1px'
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#94A3B8'
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#6366F1'
+                },
+                '& .MuiSelect-select': {
+                  py: '8px',
+                  pl: '14px',
+                  pr: '34px !important',
+                  display: 'flex',
+                  alignItems: 'center'
+                },
+                '& .MuiSelect-icon': {
+                  color: '#1E293B',
+                  fontSize: '18px',
+                  right: '8px'
+                }
               }}
             >
-              <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>10</MenuItem>
-              <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>20</MenuItem>
-              <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>50</MenuItem>
+              <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                10
+              </MenuItem>
+              <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                20
+              </MenuItem>
+              <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                50
+              </MenuItem>
+              <MenuItem value={100} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                100
+              </MenuItem>
             </Select>
           </Box>
 
           {/* Page counter text */}
-          <Typography variant="body2" sx={{ color: '##1E293B', fontSize: '14px', fontWeight: "500", lineHeight: "20px" }}>
+          <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>
             Page {page} of {totalPages}
           </Typography>
 
@@ -646,7 +1047,7 @@ const LeaveReport = () => {
               onClick={() => setPage(1)}
               disabled={page === 1}
               sx={{
-                border: '1px solid #cbd5e1',
+                border: '1px solid #E2E8F0',
                 borderRadius: '6px',
                 p: '4px',
                 color: '#475569',
@@ -660,7 +1061,7 @@ const LeaveReport = () => {
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={page === 1}
               sx={{
-                border: '1px solid #cbd5e1',
+                border: '1px solid #E2E8F0',
                 borderRadius: '6px',
                 p: '4px',
                 color: '#475569',
@@ -674,7 +1075,7 @@ const LeaveReport = () => {
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={page === totalPages}
               sx={{
-                border: '1px solid #cbd5e1',
+                border: '1px solid #E2E8F0',
                 borderRadius: '6px',
                 p: '4px',
                 color: '#475569',
@@ -688,7 +1089,7 @@ const LeaveReport = () => {
               onClick={() => setPage(totalPages)}
               disabled={page === totalPages}
               sx={{
-                border: '1px solid #cbd5e1',
+                border: '1px solid #E2E8F0',
                 borderRadius: '6px',
                 p: '4px',
                 color: '#475569',
