@@ -38,6 +38,7 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { getEmployees } from 'services/allEmployeeService';
+import { getDevices } from 'services/deviceServices';
 import { updateEmployee } from './shiftService';
 
 const DEPARTMENTS = [
@@ -98,10 +99,38 @@ const AllEmployees = () => {
   const [newShift, setNewShift] = useState('');
   const [newDevice, setNewDevice] = useState('');
 
+  // Devices State
+  const [devicesList, setDevicesList] = useState(DEVICES_LIST);
+
   // Data & Loading States
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Fetch Biometric Devices list from the device service so update the list of devices 
+  useEffect(() => {
+    let isMounted = true;
+    getDevices()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const formattedList = data.map((d) => {
+            if (typeof d === 'string') return d;
+            if (d?.deviceCode && d?.location) {
+              return `${d.deviceCode} (${d.location})`;
+            }
+            return d?.deviceCode || d?.id || String(d);
+          });
+          setDevicesList(formattedList);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load devices:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Handle Search Input Change
   const handleSearchChange = (e) => {
@@ -199,6 +228,20 @@ const AllEmployees = () => {
   const handleOpenDeviceModal = () => {
     if (selectedEmp) {
       setNewDevice('');
+      getDevices()
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            const formattedList = data.map((d) => {
+              if (typeof d === 'string') return d;
+              if (d?.deviceCode && d?.location) {
+                return `${d.deviceCode} (${d.location})`;
+              }
+              return d?.deviceCode || d?.id || String(d);
+            });
+            setDevicesList(formattedList);
+          }
+        })
+        .catch((err) => console.error('Failed to load devices:', err));
       setDeviceModalOpen(true);
     }
     handleCloseMenu();
@@ -1164,8 +1207,8 @@ const AllEmployees = () => {
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Device
                 </MenuItem>
-                {DEVICES_LIST.map((d) => (
-                  <MenuItem key={d} value={d} sx={{ fontSize: '14px', color: '#0F172A' }}>
+                {devicesList.map((d) => (
+                    <MenuItem key={d} value={d} sx={{ fontSize: '14px', color: '#0F172A' }}>
                     {d}
                   </MenuItem>
                 ))}
