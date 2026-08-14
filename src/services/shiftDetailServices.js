@@ -64,14 +64,7 @@ export const formatTimeTo24h = (time12h, includeSeconds = true) => {
 export const mapShiftEmployee = (emp, index) => {
   if (!emp) return null;
 
-  const empId =
-    emp.empId ||
-    emp.employeeId ||
-    emp.employee_id ||
-    emp.code ||
-    emp.employeeCode ||
-    emp.id ||
-    `EMP-${index + 1}`;
+  const empId = emp.empId || emp.employeeId || emp.employee_id || emp.code || emp.employeeCode || emp.id || `EMP-${index + 1}`;
 
   const empName =
     emp.empName ||
@@ -82,29 +75,11 @@ export const mapShiftEmployee = (emp, index) => {
     emp.employee?.name ||
     'Employee';
 
-  const designation =
-    emp.designation?.name ||
-    emp.designation ||
-    emp.role ||
-    emp.designation_name ||
-    emp.employee?.designation ||
-    '-';
+  const designation = emp.designation?.name || emp.designation || emp.role || emp.designation_name || emp.employee?.designation || '-';
 
-  const department =
-    emp.department?.name ||
-    emp.department ||
-    emp.dept ||
-    emp.department_name ||
-    emp.employee?.department ||
-    '-';
+  const department = emp.department?.name || emp.department || emp.dept || emp.department_name || emp.employee?.department || '-';
 
-  const mobileNo =
-    emp.mobileNo ||
-    emp.mobile ||
-    emp.phone ||
-    emp.contact ||
-    emp.phoneNumber ||
-    '-';
+  const mobileNo = emp.mobileNo || emp.mobile || emp.phone || emp.contact || emp.phoneNumber || '-';
 
   return {
     id: emp.id || emp.userId || empId,
@@ -143,11 +118,7 @@ export const getShiftDetails = async ({ search = '', page = 1, limit = 10 } = {}
     });
 
     const resData = response?.data?.data || response?.data || [];
-    const list = Array.isArray(resData?.items)
-      ? resData.items
-      : Array.isArray(resData)
-      ? resData
-      : [];
+    const list = Array.isArray(resData?.items) ? resData.items : Array.isArray(resData) ? resData : [];
 
     // Order shifts by creation time (newest first)
     const sortedList = [...list].sort((a, b) => {
@@ -163,9 +134,7 @@ export const getShiftDetails = async ({ search = '', page = 1, limit = 10 } = {}
       return {
         id: shift.id,
         name: shift.name || '-',
-        description: (shift.description && String(shift.description).trim().toLowerCase() !== 'string')
-          ? shift.description
-          : '-',
+        description: shift.description && String(shift.description).trim().toLowerCase() !== 'string' ? shift.description : '-',
         timeRange: `${startTime} - ${endTime}`,
         startTime,
         endTime,
@@ -188,12 +157,7 @@ export const getShiftDetails = async ({ search = '', page = 1, limit = 10 } = {}
       : mappedShifts;
 
     const total =
-      resData.total ??
-      resData.total_count ??
-      resData.totalCount ??
-      resData.count ??
-      resData.pagination?.total ??
-      filteredShifts.length;
+      resData.total ?? resData.total_count ?? resData.totalCount ?? resData.count ?? resData.pagination?.total ?? filteredShifts.length;
 
     const totalPages =
       resData.totalPages ??
@@ -265,9 +229,7 @@ export const createShift = async (data) => {
 
   const rawDays = data.workingDays || data.working_days;
   const workingDaysArray = Array.isArray(rawDays)
-    ? rawDays
-        .map((d) => (typeof d === 'number' ? d : DAYS.indexOf(d)))
-        .filter((d) => d >= 0)
+    ? rawDays.map((d) => (typeof d === 'number' ? d : DAYS.indexOf(d))).filter((d) => d >= 0)
     : [1, 2, 3, 4, 5];
 
   const payload = {
@@ -319,12 +281,82 @@ export const deleteShift = async (id) => {
   }
 };
 
+// Assign employees to shift API
+// POST /shifts/{id}/employees
+// Payload: { "uids": ["PMCH0101", "PMCH0104"] }
+export const assignEmployeesToShift = async (shiftId, uids = []) => {
+  if (!shiftId) throw new Error('Shift ID is required for assignment');
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const uidsArray = Array.isArray(uids) ? uids.filter(Boolean).map(String) : uids ? [String(uids)] : [];
+
+  const payload = {
+    uids: uidsArray
+  };
+
+  try {
+    const response = await axios.post(`${BASE_URL}/shifts/${shiftId}/employees`, payload, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error assigning employees to shift ${shiftId}:`, error);
+    throw error;
+  }
+};
+
+// Assign department to shift API
+// POST /shifts/{id}/assign
+// Payload: { "department_id": "uuid", "user_ids": ["uuid"] }
+export const assignDepartmentToShift = async (shiftId, { department_id, user_ids = [] } = {}) => {
+  if (!shiftId) throw new Error('Shift ID is required for assignment');
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const payload = {
+    department_id,
+    user_ids: Array.isArray(user_ids) ? user_ids : []
+  };
+
+  try {
+    const response = await axios.post(`${BASE_URL}/shifts/${shiftId}/assign`, payload, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error assigning department ${department_id} to shift ${shiftId}:`, error);
+    throw error;
+  }
+};
+
+// Bulk assign multiple departments to shift API
+// Calls POST /shifts/{id}/assign for each department
+export const assignMultipleDepartmentsToShift = async (shiftId, departmentIds = [], userIds = []) => {
+  if (!shiftId) throw new Error('Shift ID is required for assignment');
+  const depts = Array.isArray(departmentIds) ? departmentIds.filter(Boolean) : departmentIds ? [departmentIds] : [];
+  const promises = depts.map((deptId) =>
+    assignDepartmentToShift(shiftId, {
+      department_id: deptId,
+      user_ids: Array.isArray(userIds) ? userIds : []
+    })
+  );
+  return Promise.all(promises);
+};
+
 export const deleteShiftDetail = deleteShift;
 
 export default {
   getShiftDetails,
   getShiftEmployees,
   createShift,
+  assignEmployeesToShift,
+  assignDepartmentToShift,
+  assignMultipleDepartmentsToShift,
   deleteShift,
   deleteShiftDetail,
   mapShiftEmployee,

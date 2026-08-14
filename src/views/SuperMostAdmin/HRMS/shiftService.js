@@ -1,4 +1,4 @@
-import { getShiftDetails } from '../../../services/shiftDetailServices';
+import { getShiftDetails, assignEmployeesToShift } from '../../../services/shiftDetailServices';
 
 export const DEPARTMENT_EMPLOYEE_LIST = [
   { id: 'cardiology', name: 'Cardiology', count: 42 },
@@ -9,7 +9,7 @@ export const DEPARTMENT_EMPLOYEE_LIST = [
   { id: 'radiology', name: 'Radiology', count: 18 }
 ];
 
-export { getShiftDetails };
+export { getShiftDetails, assignEmployeesToShift };
 
 /**
  * Fetch all shift records directly from backend API
@@ -22,11 +22,19 @@ export const getShifts = async (params = {}) => {
 export const fetchShiftsApi = getShifts;
 
 /**
- * Assign a shift to selected departments or individual employees
+ * Assign a shift to selected individual employee uids
+ * API: POST /shifts/{shiftId}/employees
+ * Payload: { "uids": ["PMCH0101", "PMCH0104"] }
  */
-export const assignShift = async () => {
-  const res = await getShiftDetails();
-  return res?.items || (Array.isArray(res) ? res : []);
+export const assignShift = async ({ shiftId, uids = [], selectedEmployees = [] } = {}) => {
+  const empUids =
+    Array.isArray(uids) && uids.length > 0
+      ? uids
+      : Array.isArray(selectedEmployees)
+      ? selectedEmployees.map((e) => e.empId || e.uid || e.id).filter(Boolean)
+      : [];
+
+  return assignEmployeesToShift(shiftId, empUids);
 };
 
 /**

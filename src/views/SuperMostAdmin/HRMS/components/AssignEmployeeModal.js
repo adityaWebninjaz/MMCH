@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -20,164 +20,247 @@ import {
   TableBody,
   TableContainer,
   Checkbox,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
-import {
-  Close as CloseIcon,
-  Search as SearchIcon
-} from '@mui/icons-material';
-
-// Sample dataset of hospital employees for assignment matching design mockup
-const DEFAULT_EMPLOYEE_LIST = [
-  { id: 'EM123456-1', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-2', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-3', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-4', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-5', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-6', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-7', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123457', empId: 'EM123457', empName: 'Dr. Ravi Mehta', designation: 'Senior Surgeon', mobileNo: '+91 9876543210', department: 'Emergency' },
-  { id: 'EM123458', empId: 'EM123458', empName: 'Dr. Vikram Patel', designation: 'Neurologist', mobileNo: '+91 9876543211', department: 'Neurology' },
-  { id: 'EM123459', empId: 'EM123459', empName: 'Dr. Priya Nair', designation: 'Pediatrician', mobileNo: '+91 9876543212', department: 'Pediatrics' },
-  { id: 'EM123460', empId: 'EM123460', empName: 'Dr. Rajesh Gupta', designation: 'Orthopedic Surgeon', mobileNo: '+91 9876543213', department: 'Orthopedics' },
-  { id: 'EM123461', empId: 'EM123461', empName: 'Dr. Sneha Roy', designation: 'Radiologist', mobileNo: '+91 9876543214', department: 'Radiology' }
-];
+import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import { getEmployees, getDepartments } from 'services/allEmployeeService';
+import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from 'services/shiftDetailServices';
 
 const DEFAULT_DEPARTMENT_LIST = [
-  { id: 'cardiology', name: 'Cardiology', count: 42 },
-  { id: 'neurology', name: 'Neurology', count: 28 },
-  { id: 'emergency', name: 'Emergency', count: 65 },
-  { id: 'orthopedics', name: 'Orthopedics', count: 31 },
-  { id: 'pediatrics', name: 'Pediatrics', count: 24 },
-  { id: 'radiology', name: 'Radiology', count: 18 }
-];
-
-const DEPARTMENTS_FILTER = [
-  'All Departments',
-  'Cardiology',
-  'Emergency',
-  'Neurology',
-  'Orthopedics',
-  'Pediatrics',
-  'Radiology'
+  { id: 'cardiology', name: 'Cardiology', count: 0 },
+  { id: 'neurology', name: 'Neurology', count: 0 },
+  { id: 'emergency', name: 'Emergency', count: 0 },
+  { id: 'orthopedics', name: 'Orthopedics', count: 0 },
+  { id: 'pediatrics', name: 'Pediatrics', count: 0 },
+  { id: 'radiology', name: 'Radiology', count: 0 }
 ];
 
 /**
  * AssignEmployeeModal Component
- * 
+ *
  * Supports 2 States matching designs:
- * 1. 'select_employees' - Individual employee selection with department filter, search, and table.
+ * 1. 'select_employees' - Individual employee selection from Employee Master with API department filter, search, and table.
  * 2. 'assign_department' - Bulk department selection with employee counts.
  */
-const AssignEmployeeModal = ({
-  open,
-  onClose,
-  onAssign,
-  shift,
-  initialMode = 'select_employees',
-  departmentList = DEFAULT_DEPARTMENT_LIST,
-  employeeList = DEFAULT_EMPLOYEE_LIST
-}) => {
+const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'select_employees', departmentList: propDepartmentList }) => {
   // State 1 vs State 2: 'select_employees' | 'assign_department'
   const [assignMode, setAssignMode] = useState(initialMode);
+
+  // Master employees list from API
+  const [employeeList, setEmployeeList] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [apiDepartments, setApiDepartments] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
   // State 1: Individual Employee Selection states
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState('All Departments');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEmpIds, setSelectedEmpIds] = useState(['EM123456-1', 'EM123456-2', 'EM123456-3']);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedEmpIds, setSelectedEmpIds] = useState([]); // Stores employee UIDs (e.g. "PMCH0101")
 
   // State 2: Department Selection states
-  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState(['cardiology', 'emergency']);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState([]);
 
-  // Total employee pool size for counter display (e.g. 340)
-  const totalEmployeesCount = 340;
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  // Reset or initialize state when modal opens
+  // Fetch departments when modal opens
   useEffect(() => {
     if (open) {
+      getDepartments()
+        .then((depts) => {
+          if (Array.isArray(depts) && depts.length > 0) {
+            setApiDepartments(depts);
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to load departments in AssignEmployeeModal:', err);
+        });
+
       setAssignMode(initialMode);
       setSearchQuery('');
+      setDebouncedSearch('');
       setSelectedDepartmentFilter('All Departments');
-      if (selectedEmpIds.length === 0) {
-        setSelectedEmpIds(['EM123456-1', 'EM123456-2', 'EM123456-3']);
-      }
-      if (selectedDepartmentIds.length === 0) {
-        setSelectedDepartmentIds(['cardiology', 'emergency']);
-      }
+      setSelectedEmpIds([]);
+      setSelectedDepartmentIds([]);
     }
   }, [open, initialMode]);
 
-  // Filtered employees for State 1
-  const filteredEmployees = useMemo(() => {
-    return employeeList.filter((emp) => {
-      const matchesDept =
-        selectedDepartmentFilter === 'All Departments' ||
-        emp.department.toLowerCase() === selectedDepartmentFilter.toLowerCase();
+  // Fetch employees from API using search and department_id filter
+  const fetchEmployeesFromApi = useCallback(async () => {
+    if (!open) return;
+    setLoadingEmployees(true);
+    try {
+      const deptId =
+        selectedDepartmentFilter && selectedDepartmentFilter !== 'All Departments' && selectedDepartmentFilter !== 'all'
+          ? selectedDepartmentFilter
+          : '';
 
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !q ||
-        emp.empId.toLowerCase().includes(q) ||
-        emp.empName.toLowerCase().includes(q) ||
-        emp.designation.toLowerCase().includes(q) ||
-        emp.mobileNo.includes(q) ||
-        emp.department.toLowerCase().includes(q);
+      const res = await getEmployees({
+        search: debouncedSearch.trim(),
+        department_id: deptId,
+        limit: 100,
+        page: 1
+      });
 
-      return matchesDept && matchesSearch;
-    });
-  }, [employeeList, selectedDepartmentFilter, searchQuery]);
+      const items = Array.isArray(res?.items) ? res.items : [];
+      const formatted = items.map((emp) => ({
+        id: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        uid: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        empId: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        empName: emp.name || emp.full_name || '-',
+        designation: emp.designation || '-',
+        mobileNo: emp.mobile || emp.mobile_number || '-',
+        department: emp.department || '-',
+        departmentId: emp.departmentId || '',
+        raw: emp
+      }));
+      setEmployeeList(formatted);
+    } catch (err) {
+      console.error('Failed to load employees from API in AssignEmployeeModal:', err);
+      setEmployeeList([]);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  }, [open, selectedDepartmentFilter, debouncedSearch]);
+
+  // Trigger API employee fetch on search or filter changes
+  useEffect(() => {
+    fetchEmployeesFromApi();
+  }, [fetchEmployeesFromApi]);
+
+  // Combined department list for department mode
+  const effectiveDepartmentList = useMemo(() => {
+    if (Array.isArray(propDepartmentList) && propDepartmentList.length > 0) {
+      return propDepartmentList;
+    }
+    if (apiDepartments.length > 0) {
+      return apiDepartments.map((d) => ({
+        id: d.id || d.name,
+        name: d.name || d.id,
+        count: employeeList.filter((e) => e.department?.toLowerCase() === (d.name || d.id)?.toLowerCase()).length
+      }));
+    }
+    return DEFAULT_DEPARTMENT_LIST;
+  }, [propDepartmentList, apiDepartments, employeeList]);
 
   // Handle master select all for employees
   const handleSelectAllEmployees = (e) => {
     if (e.target.checked) {
-      setSelectedEmpIds(filteredEmployees.map((emp) => emp.id));
+      const allFilteredUids = employeeList.map((emp) => emp.empId);
+      setSelectedEmpIds((prev) => Array.from(new Set([...prev, ...allFilteredUids])));
     } else {
-      setSelectedEmpIds([]);
+      const filteredUidSet = new Set(employeeList.map((emp) => emp.empId));
+      setSelectedEmpIds((prev) => prev.filter((id) => !filteredUidSet.has(id)));
     }
   };
 
-  // Toggle individual employee selection
-  const handleToggleEmployee = (id) => {
-    setSelectedEmpIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  // Toggle individual employee selection by UID
+  const handleToggleEmployee = (uid) => {
+    setSelectedEmpIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]));
   };
 
   // Toggle department selection
   const handleToggleDepartment = (deptId) => {
-    setSelectedDepartmentIds((prev) =>
-      prev.includes(deptId) ? prev.filter((item) => item !== deptId) : [...prev, deptId]
-    );
+    setSelectedDepartmentIds((prev) => (prev.includes(deptId) ? prev.filter((item) => item !== deptId) : [...prev, deptId]));
   };
 
   // Submit Assignment
-  const handleAssign = () => {
-    const payload = {
-      assignMode,
-      selectedEmpIds: assignMode === 'select_employees' ? selectedEmpIds : [],
-      selectedEmployees:
-        assignMode === 'select_employees'
-          ? employeeList.filter((emp) => selectedEmpIds.includes(emp.id))
-          : [],
-      selectedDepartmentIds: assignMode === 'assign_department' ? selectedDepartmentIds : [],
-      selectedDepartments:
-        assignMode === 'assign_department'
-          ? departmentList.filter((dept) => selectedDepartmentIds.includes(dept.id))
-          : []
-    };
+  const handleAssign = async () => {
+    if (assignMode === 'select_employees') {
+      if (selectedEmpIds.length === 0) {
+        toast.error('Please select at least one employee to assign');
+        return;
+      }
 
-    if (onAssign) {
-      onAssign(payload);
+      if (!shift?.id) {
+        toast.error('No shift selected for assignment');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await assignEmployeesToShift(shift.id, selectedEmpIds);
+        toast.success(`Successfully assigned ${selectedEmpIds.length} employee(s) to ${shift.name || 'shift'}`);
+
+        const payload = {
+          assignMode,
+          shiftId: shift.id,
+          selectedEmpIds,
+          selectedEmployees: employeeList.filter((emp) => selectedEmpIds.includes(emp.empId)),
+          selectedDepartmentIds: [],
+          selectedDepartments: []
+        };
+
+        if (onAssign) {
+          await onAssign(payload);
+        }
+        onClose();
+      } catch (err) {
+        console.error('Error assigning employees to shift:', err);
+        const errMsg =
+          err?.response?.data?.message ||
+          (Array.isArray(err?.response?.data?.errors) ? err?.response?.data?.errors.join(', ') : null) ||
+          err?.message ||
+          'Failed to assign shift to selected employees';
+        toast.error(errMsg);
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      // Department mode
+      if (selectedDepartmentIds.length === 0) {
+        toast.error('Please select at least one department');
+        return;
+      }
+
+      if (!shift?.id) {
+        toast.error('No shift selected for assignment');
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        await assignMultipleDepartmentsToShift(shift.id, selectedDepartmentIds);
+        toast.success(`Successfully assigned ${selectedDepartmentIds.length} department(s) to ${shift.name || 'shift'}`);
+
+        const payload = {
+          assignMode,
+          shiftId: shift.id,
+          selectedEmpIds: [],
+          selectedEmployees: [],
+          selectedDepartmentIds,
+          selectedDepartments: effectiveDepartmentList.filter((dept) => selectedDepartmentIds.includes(dept.id))
+        };
+
+        if (onAssign) {
+          await onAssign(payload);
+        }
+        onClose();
+      } catch (err) {
+        console.error('Error assigning departments to shift:', err);
+        const errMsg =
+          err?.response?.data?.message ||
+          (Array.isArray(err?.response?.data?.errors) ? err?.response?.data?.errors.join(', ') : null) ||
+          err?.message ||
+          'Failed to assign departments to shift';
+        toast.error(errMsg);
+      } finally {
+        setSubmitting(false);
+      }
     }
-    onClose();
   };
 
-  const isAllEmployeesSelected =
-    filteredEmployees.length > 0 &&
-    filteredEmployees.every((emp) => selectedEmpIds.includes(emp.id));
+  const isAllEmployeesSelected = employeeList.length > 0 && employeeList.every((emp) => selectedEmpIds.includes(emp.empId));
 
-  const isSomeEmployeesSelected =
-    filteredEmployees.some((emp) => selectedEmpIds.includes(emp.id)) && !isAllEmployeesSelected;
+  const isSomeEmployeesSelected = employeeList.some((emp) => selectedEmpIds.includes(emp.empId)) && !isAllEmployeesSelected;
 
   return (
     <Dialog
@@ -417,11 +500,20 @@ const AssignEmployeeModal = ({
                       }
                     }}
                   >
-                    {DEPARTMENTS_FILTER.map((dept) => (
-                      <MenuItem key={dept} value={dept} sx={{ fontSize: '13px' }}>
-                        {dept}
-                      </MenuItem>
-                    ))}
+                    <MenuItem value="All Departments" sx={{ fontSize: '13px' }}>
+                      All Departments
+                    </MenuItem>
+                    {apiDepartments.length > 0
+                      ? apiDepartments.map((dept) => (
+                          <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
+                            {dept.name || dept.id}
+                          </MenuItem>
+                        ))
+                      : effectiveDepartmentList.map((dept) => (
+                          <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
+                            {dept.name || dept.id}
+                          </MenuItem>
+                        ))}
                   </Select>
                 </FormControl>
               </Box>
@@ -444,7 +536,7 @@ const AssignEmployeeModal = ({
                   <OutlinedInput
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search name, role, or ID..."
+                    placeholder="Search name, designation, or ID..."
                     startAdornment={
                       <InputAdornment position="start">
                         <SearchIcon sx={{ color: '#94A3B8', fontSize: 18 }} />
@@ -497,7 +589,7 @@ const AssignEmployeeModal = ({
                   color: '#5B4BF2'
                 }}
               >
-                {selectedEmpIds.length} of {totalEmployeesCount} selected
+                {selectedEmpIds.length} of {employeeList.length} selected
               </Typography>
             </Box>
 
@@ -535,14 +627,21 @@ const AssignEmployeeModal = ({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((emp) => {
-                      const isChecked = selectedEmpIds.includes(emp.id);
+                  {loadingEmployees ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                        <CircularProgress size={24} sx={{ color: '#5B4BF2' }} />
+                        <Typography sx={{ color: '#64748b', fontSize: '13px', mt: 1 }}>Loading employees from master...</Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : employeeList.length > 0 ? (
+                    employeeList.map((emp) => {
+                      const isChecked = selectedEmpIds.includes(emp.empId);
                       return (
                         <TableRow
                           key={emp.id}
                           hover
-                          onClick={() => handleToggleEmployee(emp.id)}
+                          onClick={() => handleToggleEmployee(emp.empId)}
                           sx={{
                             cursor: 'pointer',
                             '& td': { borderColor: '#F1F5F9', py: 1.2, fontSize: '13px' }
@@ -552,7 +651,7 @@ const AssignEmployeeModal = ({
                             <Checkbox
                               size="small"
                               checked={isChecked}
-                              onChange={() => handleToggleEmployee(emp.id)}
+                              onChange={() => handleToggleEmployee(emp.empId)}
                               onClick={(e) => e.stopPropagation()}
                               sx={{
                                 p: 0.5,
@@ -624,7 +723,7 @@ const AssignEmployeeModal = ({
                   color: '#5B4BF2'
                 }}
               >
-                {selectedDepartmentIds.length} of {departmentList.length} selected
+                {selectedDepartmentIds.length} of {effectiveDepartmentList.length} selected
               </Typography>
             </Box>
 
@@ -639,7 +738,7 @@ const AssignEmployeeModal = ({
                 overflowY: 'auto'
               }}
             >
-              {departmentList.map((dept, index) => {
+              {effectiveDepartmentList.map((dept, index) => {
                 const isChecked = selectedDepartmentIds.includes(dept.id);
                 return (
                   <Box
@@ -653,8 +752,7 @@ const AssignEmployeeModal = ({
                       py: 1.4,
                       cursor: 'pointer',
                       bgcolor: '#FFFFFF',
-                      borderBottom:
-                        index < departmentList.length - 1 ? '1px solid #F1F5F9' : 'none',
+                      borderBottom: index < effectiveDepartmentList.length - 1 ? '1px solid #F1F5F9' : 'none',
                       transition: 'background-color 0.15s ease',
                       '&:hover': {
                         bgcolor: '#F8FAFC'
@@ -715,6 +813,7 @@ const AssignEmployeeModal = ({
         {/* Cancel Button */}
         <Button
           onClick={onClose}
+          disabled={submitting}
           sx={{
             textTransform: 'none',
             fontSize: '14px',
@@ -735,6 +834,7 @@ const AssignEmployeeModal = ({
         <Button
           variant="contained"
           onClick={handleAssign}
+          disabled={submitting}
           sx={{
             bgcolor: '#5B4BF2',
             color: '#FFFFFF',
@@ -749,10 +849,14 @@ const AssignEmployeeModal = ({
             '&:hover': {
               bgcolor: '#4B3EE0',
               boxShadow: '0 2px 6px rgba(91, 75, 242, 0.3)'
+            },
+            '&.Mui-disabled': {
+              bgcolor: '#a5b4fc',
+              color: '#ffffff'
             }
           }}
         >
-          Assign
+          {submitting ? <CircularProgress size={20} sx={{ color: '#FFFFFF' }} /> : 'Assign'}
         </Button>
       </DialogActions>
     </Dialog>
