@@ -15,7 +15,8 @@ export { getShiftDetails };
  * Fetch all shift records directly from backend API
  */
 export const getShifts = async (params = {}) => {
-  return await getShiftDetails(params);
+  const res = await getShiftDetails(params);
+  return res?.items || (Array.isArray(res) ? res : []);
 };
 
 export const fetchShiftsApi = getShifts;
@@ -24,7 +25,8 @@ export const fetchShiftsApi = getShifts;
  * Assign a shift to selected departments or individual employees
  */
 export const assignShift = async () => {
-  return await getShiftDetails();
+  const res = await getShiftDetails();
+  return res?.items || (Array.isArray(res) ? res : []);
 };
 
 /**

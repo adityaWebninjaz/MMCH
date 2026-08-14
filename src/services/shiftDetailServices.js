@@ -117,28 +117,46 @@ export const mapShiftEmployee = (emp, index) => {
   };
 };
 
-// Fetch all shifts from backend
-export const getShiftDetails = async () => {
+// Fetch all shifts from backend with search and pagination
+export const getShiftDetails = async ({ search = '', page = 1, limit = 10 } = {}) => {
   const token = Cookies.get('Token') || Cookies.get('token');
+  const term = typeof search === 'string' ? search.trim() : '';
+
+  const params = {
+    page: Number(page) || 1,
+    limit: Number(limit) || 10
+  };
+
+  if (term !== '') {
+    params.search = term;
+    params.name = term;
+    params.q = term;
+  }
 
   try {
     const response = await axios.get(`${BASE_URL}/shifts`, {
       headers: {
         Authorization: token ? `Bearer ${token}` : '',
         'Content-Type': 'application/json'
-      }
+      },
+      params
     });
 
-    const list = response?.data?.data || [];
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+      ? resData
+      : [];
 
-    // This makes the shifts appear in the table in the order they were created (newest first)
+    // Order shifts by creation time (newest first)
     const sortedList = [...list].sort((a, b) => {
       const timeA = new Date(a.createdAt || 0).getTime();
       const timeB = new Date(b.createdAt || 0).getTime();
       return timeB - timeA;
     });
 
-    return sortedList.map((shift) => {
+    const mappedShifts = sortedList.map((shift) => {
       const startTime = formatTimeTo12h(shift.startTime || shift.start_time);
       const endTime = formatTimeTo12h(shift.endTime || shift.end_time);
 
@@ -156,9 +174,56 @@ export const getShiftDetails = async () => {
         raw: shift
       };
     });
+
+    // Ensure search matching (filters correctly whether backend filtered or returned unpaginated list)
+    const qLower = term.toLowerCase();
+    const filteredShifts = term
+      ? mappedShifts.filter((s) => {
+          const name = String(s.name || '').toLowerCase();
+          const desc = String(s.description || '').toLowerCase();
+          const days = String(s.workingDays || '').toLowerCase();
+          const time = String(s.timeRange || '').toLowerCase();
+          return name.includes(qLower) || desc.includes(qLower) || days.includes(qLower) || time.includes(qLower);
+        })
+      : mappedShifts;
+
+    const total =
+      resData.total ??
+      resData.total_count ??
+      resData.totalCount ??
+      resData.count ??
+      resData.pagination?.total ??
+      filteredShifts.length;
+
+    const totalPages =
+      resData.totalPages ??
+      resData.total_pages ??
+      resData.pagination?.totalPages ??
+      (limit ? Math.max(1, Math.ceil(Number(total) / Number(limit))) : 1);
+
+    // Apply pagination slice if response returned full list
+    let paginatedItems = filteredShifts;
+    if (limit && filteredShifts.length > limit) {
+      const startIdx = (Math.max(1, Number(page)) - 1) * Number(limit);
+      paginatedItems = filteredShifts.slice(startIdx, startIdx + Number(limit));
+    }
+
+    return {
+      items: paginatedItems,
+      total: Number(total) || 0,
+      totalPages: Math.max(1, Number(totalPages) || 1),
+      page: Number(resData.page || page) || 1,
+      limit: Number(resData.limit || limit) || 10
+    };
   } catch (error) {
     console.error('Error fetching shift details:', error);
-    return [];
+    return {
+      items: [],
+      total: 0,
+      totalPages: 1,
+      page: 1,
+      limit: 10
+    };
   }
 };
 
