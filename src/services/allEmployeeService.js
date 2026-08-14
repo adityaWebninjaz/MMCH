@@ -54,7 +54,7 @@ export const getBlobAvatar = async (imagePath) => {
   }
 };
 
-export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) => {
+export const getEmployees = async ({ search = '', page = 1, limit = 10, department_id = '' } = {}) => {
   const token = Cookies.get('Token') || Cookies.get('token');
 
   const params = {
@@ -64,6 +64,16 @@ export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) =
 
   if (search && typeof search === 'string' && search.trim() !== '') {
     params.search = search.trim();
+  }
+
+  if (
+    department_id &&
+    typeof department_id === 'string' &&
+    department_id.trim() !== '' &&
+    department_id !== 'all' &&
+    department_id !== 'All Departments'
+  ) {
+    params.department_id = department_id.trim();
   }
 
   try {
@@ -143,6 +153,67 @@ export const getEmployees = async ({ search = '', page = 1, limit = 10 } = {}) =
   }
 };
 
+export const exportEmployeesMaster = async ({ search = '', department_id = '' } = {}) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const params = {};
+  if (search && typeof search === 'string' && search.trim() !== '') {
+    params.search = search.trim();
+  }
+  if (
+    department_id &&
+    typeof department_id === 'string' &&
+    department_id.trim() !== '' &&
+    department_id !== 'all' &&
+    department_id !== 'All Departments'
+  ) {
+    params.department_id = department_id.trim();
+  }
+
+  try {
+    const response = await axios.get(`${BASE_URL}/employees/master/export`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      },
+      params,
+      responseType: 'blob'
+    });
+
+    if (response.data && response.data.type === 'application/json') {
+      const text = await response.data.text();
+      const parsed = JSON.parse(text);
+      if (parsed.success === false) {
+        throw new Error(parsed.message || 'Export failed');
+      }
+    }
+
+    let filename = `Employee_Master_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    const contentDisposition = response.headers['content-disposition'];
+    if (contentDisposition) {
+      const match = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (match && match[1]) {
+        filename = match[1];
+      }
+    } else if (response.headers['content-type']?.includes('csv')) {
+      filename = `Employee_Master_${new Date().toISOString().slice(0, 10)}.csv`;
+    }
+
+    const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.parentNode.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to export employee master:', error);
+    throw error;
+  }
+};
+
 export const updateEmployeeDevice = async (employeeId, deviceData) => {
   const token = Cookies.get('Token') || Cookies.get('token');
 
@@ -213,6 +284,41 @@ export const updateEmployeeReportingManager = async (employeeId, managerData) =>
   }
 };
 
+export const updateEmployeeShift = async (employeeId, shiftData) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  const shift_id =
+    typeof shiftData === 'object' && shiftData !== null
+      ? shiftData.shift_id || shiftData.shiftId || shiftData.id
+      : shiftData;
+
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/employees/${employeeId}/shift`,
+      { shift_id },
+      {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      return error.response.data;
+    }
+    return {
+      success: false,
+      statusCode: error.response?.status || 500,
+      data: null,
+      message: error.response?.data?.message || error.message || 'Failed to update employee shift',
+      errors: null
+    };
+  }
+};
+
 export const getDesignations = async () => {
   const token = Cookies.get('Token') || Cookies.get('token');
   try {
@@ -243,6 +349,36 @@ export const getDesignations = async () => {
   }
 };
 
+export const getDepartments = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+  try {
+    const response = await axios.get(`${BASE_URL}/departments`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    });
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items)
+      ? resData.items
+      : Array.isArray(resData)
+        ? resData
+        : [];
+
+    return list.map((dept) => {
+      if (typeof dept === 'string') return { id: dept, name: dept };
+      return {
+        id: dept.id || dept._id || dept.department_id || dept.name,
+        name: dept.name || dept.department_name || dept.title || dept.id,
+        ...dept
+      };
+    });
+  } catch (error) {
+    console.error('Failed to fetch departments from API:', error);
+    return [];
+  }
+};
+
 export const getManagers = getDesignations;
 
 export const getShifts = async () => {
@@ -261,12 +397,26 @@ export const getShifts = async () => {
         ? resData
         : [];
 
-    return list.map((s) => ({
-      id: s.id || s._id || s.shift_id,
-      name: s.name || s.shift_name || s.title || s.id,
-      timeRange: s.time_range || s.timeRange || (s.start_time && s.end_time ? `${s.start_time} - ${s.end_time}` : ''),
-      ...s
-    }));
+    return list.map((s) => {
+      const shiftId = s.id || s._id || s.shift_id || s.shiftId;
+      const startTime = s.startTime || s.start_time || '';
+      const endTime = s.endTime || s.end_time || '';
+      const timeRange =
+        s.timeRange ||
+        s.time_range ||
+        (startTime && endTime ? `${startTime} - ${endTime}` : '');
+
+      return {
+        id: shiftId,
+        shift_id: shiftId,
+        shiftId: shiftId,
+        name: s.name || s.shift_name || s.title || shiftId,
+        timeRange,
+        startTime,
+        endTime,
+        raw: s
+      };
+    });
   } catch (error) {
     console.error('Failed to fetch shifts from API:', error);
     return [];
@@ -400,9 +550,12 @@ export const approveOrRejectProfile = async (id, { action = 'APPROVE', device_id
 
 export default {
   getEmployees,
+  exportEmployeesMaster,
   updateEmployeeDevice,
   updateEmployeeReportingManager,
+  updateEmployeeShift,
   getDesignations,
+  getDepartments,
   getManagers,
   getShifts,
   getProfileApprovals,

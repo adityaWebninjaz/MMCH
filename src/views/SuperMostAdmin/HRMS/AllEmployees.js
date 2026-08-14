@@ -38,9 +38,18 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getEmployees, updateEmployeeDevice, updateEmployeeReportingManager, getDesignations, getManagers } from 'services/allEmployeeService';
+import {
+  getEmployees,
+  exportEmployeesMaster,
+  updateEmployeeDevice,
+  updateEmployeeReportingManager,
+  updateEmployeeShift,
+  getDesignations,
+  getDepartments,
+  getManagers,
+  getShifts
+} from 'services/allEmployeeService';
 import { getDevices } from 'services/deviceServices';
-import { updateEmployee } from './shiftService';
 
 const DEPARTMENTS = [
   'All Departments',
@@ -84,7 +93,7 @@ const AllEmployees = () => {
   const [limit, setLimit] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [selectedDept, setSelectedDept] = useState('');
 
   // Menu State
   const [anchorEl, setAnchorEl] = useState(null);
@@ -100,9 +109,13 @@ const AllEmployees = () => {
   const [newShift, setNewShift] = useState('');
   const [newDevice, setNewDevice] = useState('');
   const [updatingDevice, setUpdatingDevice] = useState(false);
+  const [updatingShift, setUpdatingShift] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
-  // Devices State
+  // Devices & Shifts & Departments State
   const [devicesList, setDevicesList] = useState(DEVICES_LIST);
+  const [shiftsList, setShiftsList] = useState([]);
+  const [apiDepartments, setApiDepartments] = useState([]);
   const [managersList, setManagersList] = useState(MANAGERS_LIST);
   const [updatingHod, setUpdatingHod] = useState(false);
 
@@ -123,6 +136,38 @@ const AllEmployees = () => {
       .catch((err) => {
         console.error('Failed to load devices:', err);
       });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch Shifts list from API
+  useEffect(() => {
+    let isMounted = true;
+    getShifts()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setShiftsList(data);
+        }
+      })
+      .catch((err) => console.error('Failed to load shifts in AllEmployees:', err));
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch Departments from API
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setApiDepartments(data);
+        }
+      })
+      .catch((err) => console.error('Failed to load departments in AllEmployees:', err));
 
     return () => {
       isMounted = false;
@@ -163,7 +208,7 @@ const AllEmployees = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch employees from API with debounced search, page, and limit parameters
+  // Fetch employees from API with debounced search, page, limit, and department_id parameters
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -172,7 +217,8 @@ const AllEmployees = () => {
     getEmployees({
       search: debouncedSearch,
       page,
-      limit
+      limit,
+      department_id: selectedDept || undefined
     })
       .then((data) => {
         if (isMounted) {
@@ -205,7 +251,7 @@ const AllEmployees = () => {
     return () => {
       isMounted = false;
     };
-  }, [debouncedSearch, page, limit]);
+  }, [debouncedSearch, page, limit, selectedDept]);
 
   // Handle 3 Dots Menu Open
   const handleOpenMenu = (event, emp) => {
@@ -233,7 +279,22 @@ const AllEmployees = () => {
 
   const handleOpenShiftModal = () => {
     if (selectedEmp) {
-      setNewShift('');
+      const matched = shiftsList.find(
+        (s) =>
+          typeof s === 'object' &&
+          (s.id === selectedEmp.shiftId ||
+            s.id === selectedEmp.current_shift_id ||
+            s.id === selectedEmp.shift_id ||
+            (s.name && selectedEmp.shift && s.name.trim().toLowerCase() === String(selectedEmp.shift).trim().toLowerCase()))
+      );
+      setNewShift(matched ? matched.id : (selectedEmp.shiftId || selectedEmp.current_shift_id || ''));
+
+      getShifts()
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) setShiftsList(data);
+        })
+        .catch((err) => console.error('Failed to load shifts:', err));
+
       setShiftModalOpen(true);
     }
     handleCloseMenu();
@@ -280,7 +341,7 @@ const AllEmployees = () => {
 
         setHodModalOpen(false);
 
-        getEmployees({ search: debouncedSearch, page, limit })
+        getEmployees({ search: debouncedSearch, page, limit, department_id: selectedDept || undefined })
           .then((data) => {
             const items = data?.items || (Array.isArray(data) ? data : []);
             if (items.length > 0) setEmployees(items);
@@ -297,14 +358,49 @@ const AllEmployees = () => {
     }
   };
 
-  const handleUpdateShift = () => {
-    if (selectedEmp && newShift) {
-      updateEmployee(selectedEmp.id, { shift: newShift });
-      setEmployees((prev) =>
-        prev.map((emp) => (emp.id === selectedEmp.id ? { ...emp, shift: newShift } : emp))
-      );
+  const handleUpdateShift = async () => {
+    if (!selectedEmp || !newShift) return;
+
+    setUpdatingShift(true);
+    try {
+      const response = await updateEmployeeShift(selectedEmp.id, { shift_id: newShift });
+
+      if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
+        toast.success(response.message || 'Shift updated successfully');
+
+        const matchedShift = shiftsList.find((s) => (typeof s === 'object' ? s.id === newShift : s === newShift));
+        const updatedLabel = matchedShift
+          ? typeof matchedShift === 'object'
+            ? matchedShift.name || matchedShift.id
+            : matchedShift
+          : newShift;
+
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === selectedEmp.id
+              ? { ...emp, shift: updatedLabel, shiftId: newShift, current_shift_id: newShift }
+              : emp
+          )
+        );
+
+        setShiftModalOpen(false);
+
+        // Re-fetch in background
+        getEmployees({ search: debouncedSearch, page, limit, department_id: selectedDept || undefined })
+          .then((data) => {
+            const items = data?.items || (Array.isArray(data) ? data : []);
+            if (items.length > 0) setEmployees(items);
+          })
+          .catch((e) => console.error('Background fetch failed:', e));
+      } else {
+        toast.error(response?.message || 'Failed to update shift');
+      }
+    } catch (err) {
+      console.error('Failed to update shift:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update shift');
+    } finally {
+      setUpdatingShift(false);
     }
-    setShiftModalOpen(false);
   };
 
   const handleUpdateDevice = async () => {
@@ -334,7 +430,7 @@ const AllEmployees = () => {
         setDeviceModalOpen(false);
 
         // Re-fetch employee list in background to ensure fresh data
-        getEmployees({ search: debouncedSearch, page, limit })
+        getEmployees({ search: debouncedSearch, page, limit, department_id: selectedDept || undefined })
           .then((data) => {
             const items = data?.items || (Array.isArray(data) ? data : []);
             if (items.length > 0) {
@@ -353,44 +449,58 @@ const AllEmployees = () => {
     }
   };
 
-  // Export CSV Handler
-  const handleExportExcel = () => {
-    const headers = ['Emp ID,Emp Name,Department,Designation,HOD,Mobile Number,Current Shift,Device Assigned\n'];
-    const rows = filteredEmployees.map(
-      (e) => `"${e.empId}","${e.name}","${e.department}","${e.designation}","${e.hod}","${e.mobile}","${e.shift}","${e.device}"\n`
-    );
-    const blob = new Blob([...headers, ...rows], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Employee_Master_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
+  // Export Excel Handler
+  const handleExportExcel = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      await exportEmployeesMaster({
+        search: debouncedSearch,
+        department_id: selectedDept || undefined
+      });
+      toast.success('Employee Master exported successfully');
+    } catch (err) {
+      console.error('API export failed, falling back to CSV export:', err);
+      try {
+        const headers = ['Emp ID,Emp Name,Department,Designation,HOD,Mobile Number,Current Shift,Device Assigned\n'];
+        const rows = filteredEmployees.map(
+          (e) => `"${e.empId}","${e.name}","${e.department}","${e.designation}","${e.hod}","${e.mobile}","${e.shift}","${e.device}"\n`
+        );
+        const blob = new Blob([...headers, ...rows], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Employee_Master_${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        toast.success('Employee Master exported successfully');
+      } catch (fallbackErr) {
+        toast.error(err?.response?.data?.message || err?.message || 'Failed to export employee master');
+      }
+    } finally {
+      setExporting(false);
+    }
   };
 
-  // Dynamic Departments List
-  const departmentsList = useMemo(() => {
-    const list = new Set(DEPARTMENTS);
-    if (Array.isArray(employees)) {
-      employees.forEach((emp) => {
-        if (emp?.department && typeof emp.department === 'string' && emp.department !== '-') {
-          list.add(emp.department);
+  // Dynamic Departments Options with UUID ids
+  const departmentOptions = useMemo(() => {
+    const list = [{ id: '', name: 'All Departments' }];
+    if (Array.isArray(apiDepartments) && apiDepartments.length > 0) {
+      apiDepartments.forEach((d) => {
+        const id = typeof d === 'object' ? d.id || d._id || d.department_id : d;
+        const name = typeof d === 'object' ? d.name || d.department_name || d.title || id : d;
+        if (id && name && name !== 'All Departments') {
+          list.push({ id, name });
         }
       });
     }
-    return Array.from(list);
-  }, [employees]);
+    return list;
+  }, [apiDepartments]);
 
-  // Filtered employees list (Department Filter)
+  // Filtered employees list (server-side filtered)
   const filteredEmployees = useMemo(() => {
     if (!Array.isArray(employees)) return [];
-    if (selectedDept === 'All Departments') return employees;
-
-    return employees.filter((emp) => {
-      const empDept = String(emp?.department || '').trim().toLowerCase();
-      const selDept = String(selectedDept || '').trim().toLowerCase();
-      return empDept === selDept;
-    });
-  }, [employees, selectedDept]);
+    return employees;
+  }, [employees]);
 
   const startIndex = totalCount === 0 ? 0 : (page - 1) * limit + 1;
   const endIndex = Math.min(page * limit, totalCount);
@@ -439,7 +549,11 @@ const AllEmployees = () => {
               <FormControl size="small" sx={{ minWidth: 180 }}>
                 <Select
                   value={selectedDept}
-                  onChange={(e) => setSelectedDept(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedDept(e.target.value);
+                    setPage(1);
+                  }}
+                  displayEmpty
                   sx={{
                     bgcolor: '#ffffff',
                     height: '38px',
@@ -460,9 +574,9 @@ const AllEmployees = () => {
                     }
                   }}
                 >
-                  {departmentsList.map((dept) => (
-                    <MenuItem key={dept} value={dept}>
-                      {dept}
+                  {departmentOptions.map((dept) => (
+                    <MenuItem key={dept.id || 'all'} value={dept.id}>
+                      {dept.name}
                     </MenuItem>
                   ))}
                 </Select>
@@ -518,7 +632,8 @@ const AllEmployees = () => {
             <Button
               variant="contained"
               onClick={handleExportExcel}
-              startIcon={<FileDownloadIcon sx={{ fontSize: 18 }} />}
+              disabled={exporting}
+              startIcon={exporting ? <CircularProgress size={16} sx={{ color: '#ffffff' }} /> : <FileDownloadIcon sx={{ fontSize: 18 }} />}
               sx={{
                 bgcolor: 'rgba(100, 78, 229, 1)',
                 color: '#ffffff',
@@ -532,10 +647,14 @@ const AllEmployees = () => {
                 '&:hover': {
                   bgcolor: '#4f46e5',
                   boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
+                },
+                '&.Mui-disabled': {
+                  bgcolor: 'rgba(100, 78, 229, 0.7)',
+                  color: '#ffffff'
                 }
               }}
             >
-              Export Excel
+              {exporting ? 'Exporting...' : 'Export Excel'}
             </Button>
           </Box>
         </Box>
@@ -1070,7 +1189,7 @@ const AllEmployees = () => {
             </Typography>
             <FormControl fullWidth size="small">
               <Select
-                value={selectedEmp?.shift || SHIFTS_LIST[0]}
+                value={selectedEmp?.shift || '-'}
                 disabled
                 IconComponent={KeyboardArrowDownIcon}
                 sx={{
@@ -1090,8 +1209,8 @@ const AllEmployees = () => {
                   }
                 }}
               >
-                <MenuItem value={selectedEmp?.shift || SHIFTS_LIST[0]}>
-                  {selectedEmp?.shift || SHIFTS_LIST[0]}
+                <MenuItem value={selectedEmp?.shift || '-'}>
+                  {selectedEmp?.shift || '-'}
                 </MenuItem>
               </Select>
             </FormControl>
@@ -1112,7 +1231,13 @@ const AllEmployees = () => {
                   if (!selected) {
                     return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select Shift</Typography>;
                   }
-                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
+                  const matched = shiftsList.find((s) => (typeof s === 'object' ? s.id === selected : s === selected));
+                  const label = matched
+                    ? typeof matched === 'object'
+                      ? `${matched.name}${matched.timeRange ? ` (${matched.timeRange})` : ''}`
+                      : matched
+                    : selected;
+                  return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{label}</Typography>;
                 }}
                 sx={{
                   height: '46px',
@@ -1132,11 +1257,20 @@ const AllEmployees = () => {
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
                   Select Shift
                 </MenuItem>
-                {SHIFTS_LIST.map((s) => (
-                  <MenuItem key={s} value={s} sx={{ fontSize: '14px', color: '#0F172A' }}>
-                    {s}
-                  </MenuItem>
-                ))}
+                {shiftsList.map((s) => {
+                  const sId = typeof s === 'object' ? s.id : s;
+                  const sLabel =
+                    typeof s === 'object'
+                      ? s.timeRange
+                        ? `${s.name} (${s.timeRange})`
+                        : s.name || s.id
+                      : s;
+                  return (
+                    <MenuItem key={sId} value={sId} sx={{ fontSize: '14px', color: '#0F172A' }}>
+                      {sLabel}
+                    </MenuItem>
+                  );
+                })}
               </Select>
             </FormControl>
           </Box>
@@ -1146,6 +1280,7 @@ const AllEmployees = () => {
           <Button
             variant="outlined"
             onClick={() => setShiftModalOpen(false)}
+            disabled={updatingShift}
             sx={{
               flex: 1,
               height: '48px',
@@ -1168,7 +1303,7 @@ const AllEmployees = () => {
           <Button
             variant="contained"
             onClick={handleUpdateShift}
-            disabled={!newShift}
+            disabled={!newShift || updatingShift}
             sx={{
               flex: 1,
               height: '48px',
@@ -1189,7 +1324,7 @@ const AllEmployees = () => {
               }
             }}
           >
-            Update
+            {updatingShift ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
           </Button>
         </DialogActions>
       </Dialog>

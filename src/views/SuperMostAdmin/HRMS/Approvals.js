@@ -28,7 +28,7 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getProfileApprovals, approveOrRejectProfile, getShifts } from 'services/allEmployeeService';
+import { getProfileApprovals, approveOrRejectProfile, getShifts, getDepartments } from 'services/allEmployeeService';
 import { getDevices } from 'services/deviceServices';
 
 const DEPARTMENTS = [
@@ -64,6 +64,7 @@ const Approvals = () => {
   const [selectedDept, setSelectedDept] = useState('All Departments');
   const [devicesList, setDevicesList] = useState([]);
   const [shiftsList, setShiftsList] = useState([]);
+  const [apiDepartments, setApiDepartments] = useState([]);
 
   // Review Drawer State
   const [reviewDrawerOpen, setReviewDrawerOpen] = useState(false);
@@ -77,7 +78,7 @@ const Approvals = () => {
   const [reasonError, setReasonError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch approval requests, devices, and shifts on mount
+  // Fetch approval requests, devices, shifts, and departments on mount
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
@@ -124,6 +125,17 @@ const Approvals = () => {
         console.warn('Failed to load shifts:', err?.message || err);
       });
 
+    // Fetch departments options
+    getDepartments()
+      .then((depts) => {
+        if (isMounted && Array.isArray(depts) && depts.length > 0) {
+          setApiDepartments(depts);
+        }
+      })
+      .catch((err) => {
+        console.warn('Failed to load departments:', err?.message || err);
+      });
+
     return () => {
       isMounted = false;
     };
@@ -134,16 +146,27 @@ const Approvals = () => {
 
     const matchedDevice = devicesList.find(
       (d) =>
-        (typeof d === 'object' && (d.id === row.deviceId || d.deviceCode === row.device || d.id === row.device))
+        typeof d === 'object' &&
+        (d.id === row.deviceId ||
+          d.id === row.device_id ||
+          d.deviceCode === row.device ||
+          d.id === row.device)
     );
     setAssignedDevice(matchedDevice ? matchedDevice.id : (row.deviceId || row.device_id || ''));
 
     const matchedShift = shiftsList.find(
       (s) =>
-        (typeof s === 'object' && (s.id === row.shiftId || s.name === row.shift || s.id === row.current_shift_id))
+        typeof s === 'object' &&
+        (s.id === row.shiftId ||
+          s.id === row.current_shift_id ||
+          s.id === row.shift_id ||
+          (s.name && row.shift && s.name.trim().toLowerCase() === String(row.shift).trim().toLowerCase()))
     );
-    setAssignedShift(matchedShift ? matchedShift.id : (row.shiftId || row.current_shift_id || ''));
+    const initialShiftId = matchedShift
+      ? matchedShift.id
+      : row.shiftId || row.current_shift_id || row.shift_id || (shiftsList[0] ? shiftsList[0].id : '');
 
+    setAssignedShift(initialShiftId);
     setAssignedHod(row.hod && HOD_LIST.includes(row.hod) ? row.hod : 'Department HOD');
     setRejectionReason('');
     setReasonError('');
@@ -162,10 +185,26 @@ const Approvals = () => {
 
     setSubmitting(true);
     try {
+      const shiftIdToSend =
+        assignedShift ||
+        selectedRequest.shiftId ||
+        selectedRequest.current_shift_id ||
+        selectedRequest.shift_id ||
+        (shiftsList.find((s) => s.name?.toLowerCase() === selectedRequest.shift?.toLowerCase())?.id) ||
+        (shiftsList[0]?.id) ||
+        undefined;
+
+      const deviceIdToSend =
+        assignedDevice ||
+        selectedRequest.deviceId ||
+        selectedRequest.device_id ||
+        (devicesList[0]?.id) ||
+        undefined;
+
       const payload = {
         action: 'APPROVE',
-        device_id: assignedDevice || selectedRequest.deviceId || selectedRequest.device_id || undefined,
-        shift_id: assignedShift || selectedRequest.shiftId || selectedRequest.current_shift_id || undefined,
+        device_id: deviceIdToSend,
+        shift_id: shiftIdToSend,
         remarks: rejectionReason.trim() || undefined
       };
 
@@ -233,18 +272,26 @@ const Approvals = () => {
     elem.click();
   };
 
-  // Dynamic Departments List
+  // Dynamic Departments List (from API + dynamic approval requests)
   const departmentsList = useMemo(() => {
-    const set = new Set(DEPARTMENTS);
+    const set = new Set(['All Departments']);
+    if (Array.isArray(apiDepartments)) {
+      apiDepartments.forEach((d) => {
+        const name = typeof d === 'object' ? d.name || d.department_name : d;
+        if (name && typeof name === 'string' && name.trim() !== '' && name !== '-') {
+          set.add(name.trim());
+        }
+      });
+    }
     if (Array.isArray(approvalsList)) {
       approvalsList.forEach((item) => {
         if (item?.department && typeof item.department === 'string' && item.department !== '-') {
-          set.add(item.department);
+          set.add(item.department.trim());
         }
       });
     }
     return Array.from(set);
-  }, [approvalsList]);
+  }, [apiDepartments, approvalsList]);
 
   // Filtered requests list
   const filteredApprovals = useMemo(() => {
