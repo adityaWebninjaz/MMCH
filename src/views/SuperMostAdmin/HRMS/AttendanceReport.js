@@ -493,25 +493,40 @@ const AttendanceReport = () => {
           <Button
             variant="contained"
             onClick={handleExportExcel}
-            disabled={exportLoading || loading || attendanceData.length === 0}
+            disabled={exportLoading || loading}
             startIcon={exportLoading ? <CircularProgress size={16} sx={{ color: '#ffffff' }} /> : <FileDownloadIcon />}
             sx={{
-              bgcolor: '#644EE5',
-              color: '#ffffff',
+              width: '148px',
+              height: '36px',
+              gap: '8px',
+              opacity: 1,
+              pt: '6px',
+              pr: '16px',
+              pb: '6px',
+              pl: '16px',
+              borderRadius: '6px',
+              background: '#644EE5',
+              backgroundColor: '#644EE5',
+              color: '#FFFFFF',
+              fontFamily: 'Inter, sans-serif',
               fontWeight: 500,
               fontSize: '14px',
-              borderRadius: '8px',
               lineHeight: '24px',
-              px: 2,
-              height: '40px',
+              letterSpacing: '0%',
+              textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#4f46e5',
-                boxShadow: '0 2px 4px rgba(99,102,241,0.2)'
+                background: '#533ec7',
+                backgroundColor: '#533ec7',
+                boxShadow: 'none'
               },
               '&.Mui-disabled': {
-                bgcolor: '#E2E8F0',
-                color: '#94A3B8'
+                background: 'rgba(100, 78, 229, 0.6)',
+                backgroundColor: 'rgba(100, 78, 229, 0.6)',
+                color: '#ffffff'
+              },
+              '& .MuiButton-startIcon': {
+                margin: 0
               }
             }}
           >

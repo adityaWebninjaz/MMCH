@@ -1344,22 +1344,38 @@ const ShiftDetails = () => {
               variant="contained"
               onClick={handleOpenCreateView}
               sx={{
-                bgcolor: '#644EE5',
-                color: '#ffffff',
-                fontWeight: 500,
-                fontSize: '14px',
+                width: '137px',
+                height: '37px',
+                gap: '8px',
+                opacity: 1,
+                pt: '10px',
+                pr: '16px',
+                pb: '10px',
+                pl: '16px',
+                background: '#644EE5',
+                backgroundColor: '#644EE5',
                 borderRadius: '8px',
-                lineHeight: '24px',
-                px: 2,
-                height: '40px',
+                color: '#FFFFFF',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textTransform: 'none',
                 boxShadow: 'none',
                 '&:hover': {
-                  bgcolor: '#4f46e5',
-                  boxShadow: '0 2px 4px rgba(99,102,241,0.2)'
+                  background: '#533ec7',
+                  backgroundColor: '#533ec7',
+                  boxShadow: 'none'
+                },
+                '&.Mui-disabled': {
+                  background: 'rgba(100, 78, 229, 0.6)',
+                  backgroundColor: 'rgba(100, 78, 229, 0.6)',
+                  color: '#ffffff'
                 }
               }}
             >
-              <span style={{ fontSize: '1.2rem', fontWeight: 600, lineHeight: 1 }}>+</span> Create Shift
+              <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>+</span> Create Shift
             </Button>
           </Box>
 
