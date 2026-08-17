@@ -64,27 +64,72 @@ export const formatTimeTo24h = (time12h, includeSeconds = true) => {
 export const mapShiftEmployee = (emp, index) => {
   if (!emp) return null;
 
-  const empId = emp.empId || emp.employeeId || emp.employee_id || emp.code || emp.employeeCode || emp.id || `EMP-${index + 1}`;
+  const u = emp.user || emp.employee || {};
+
+  const empId =
+    emp.empId ||
+    emp.uid ||
+    u.uid ||
+    u.empId ||
+    emp.employee_uid ||
+    emp.employeeId ||
+    emp.employee_id ||
+    emp.code ||
+    emp.employeeCode ||
+    emp.id ||
+    u.id ||
+    `EMP-${index + 1}`;
 
   const empName =
     emp.empName ||
+    emp.full_name ||
+    u.full_name ||
     emp.name ||
+    u.name ||
+    emp.employee_name ||
+    u.employee_name ||
     emp.fullName ||
     (emp.firstName ? `${emp.firstName} ${emp.lastName || ''}`.trim() : '') ||
+    (u.firstName ? `${u.firstName} ${u.lastName || ''}`.trim() : '') ||
     emp.user?.name ||
     emp.employee?.name ||
-    'Employee';
+    '-';
 
-  const designation = emp.designation?.name || emp.designation || emp.role || emp.designation_name || emp.employee?.designation || '-';
+  const designation =
+    (typeof emp.designation === 'object' ? emp.designation?.name : emp.designation) ||
+    (typeof u.designation === 'object' ? u.designation?.name : u.designation) ||
+    emp.designation_name ||
+    u.designation_name ||
+    emp.role ||
+    u.role ||
+    '-';
 
-  const department = emp.department?.name || emp.department || emp.dept || emp.department_name || emp.employee?.department || '-';
+  const department =
+    (typeof emp.department === 'object' ? emp.department?.name : emp.department) ||
+    (typeof u.department === 'object' ? u.department?.name : u.department) ||
+    emp.dept ||
+    u.dept ||
+    emp.department_name ||
+    u.department_name ||
+    '-';
 
-  const mobileNo = emp.mobileNo || emp.mobile || emp.phone || emp.contact || emp.phoneNumber || '-';
+  const mobileNo =
+    emp.mobile_number ||
+    u.mobile_number ||
+    emp.mobileNo ||
+    u.mobileNo ||
+    emp.mobile ||
+    u.mobile ||
+    emp.phone ||
+    u.phone ||
+    emp.contact ||
+    u.contact ||
+    '-';
 
   return {
-    id: emp.id || emp.userId || empId,
-    empId,
-    empName,
+    id: emp.id || u.id || emp.userId || empId,
+    empId: empId && empId !== '-' ? empId : (emp.id || `EMP-${index + 1}`),
+    empName: empName && empName !== '-' ? empName : 'Employee',
     designation,
     department,
     mobileNo,

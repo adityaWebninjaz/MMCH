@@ -153,6 +153,57 @@ export const getEmployees = async ({ search = '', page = 1, limit = 10, departme
   }
 };
 
+export const getAllEmployees = async ({ search = '', department_id = '', batchSize = 100 } = {}) => {
+  try {
+    const firstPage = await getEmployees({
+      search,
+      department_id,
+      page: 1,
+      limit: batchSize
+    });
+
+    let allItems = Array.isArray(firstPage?.items) ? [...firstPage.items] : [];
+    const totalPages = Number(firstPage?.totalPages) || 1;
+
+    if (totalPages > 1) {
+      const pagePromises = [];
+      for (let p = 2; p <= totalPages; p++) {
+        pagePromises.push(
+          getEmployees({
+            search,
+            department_id,
+            page: p,
+            limit: batchSize
+          })
+        );
+      }
+      const restPages = await Promise.all(pagePromises);
+      restPages.forEach((res) => {
+        if (Array.isArray(res?.items)) {
+          allItems = allItems.concat(res.items);
+        }
+      });
+    }
+
+    return {
+      items: allItems,
+      total: allItems.length,
+      totalPages: 1,
+      page: 1,
+      limit: allItems.length
+    };
+  } catch (error) {
+    console.error('Failed to fetch all employees:', error);
+    return {
+      items: [],
+      total: 0,
+      totalPages: 1,
+      page: 1,
+      limit: 10
+    };
+  }
+};
+
 export const exportEmployeesMaster = async ({ search = '', department_id = '' } = {}) => {
   const token = Cookies.get('Token') || Cookies.get('token');
 
@@ -664,6 +715,7 @@ export const deleteUser = deleteEmployee;
 
 export default {
   getEmployees,
+  getAllEmployees,
   exportEmployeesMaster,
   updateEmployeeDevice,
   updateEmployeeReportingManager,

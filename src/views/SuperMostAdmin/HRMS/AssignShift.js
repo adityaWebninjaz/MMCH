@@ -27,9 +27,17 @@ import {
   IconButton,
   CircularProgress
 } from '@mui/material';
-import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
+import {
+  Search as SearchIcon,
+  Close as CloseIcon,
+  UnfoldMore as UnfoldMoreIcon,
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getEmployees, getDepartments } from 'services/allEmployeeService';
+import { getAllEmployees, getDepartments } from 'services/allEmployeeService';
 import { getShiftDetails, assignEmployeesToShift, assignMultipleDepartmentsToShift } from '../../../services/shiftDetailServices';
 
 const AssignShift = () => {
@@ -44,6 +52,10 @@ const AssignShift = () => {
   // Master employees list from API
   const [employeesList, setEmployeesList] = useState([]);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
+
+  // Pagination States
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // Available shifts list from API
   const [availableShifts, setAvailableShifts] = useState([]);
@@ -60,8 +72,11 @@ const AssignShift = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  // Selected Employees (Array of employee objects e.g. [{ empId, empName, designation, department }])
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+
   // Selected Employee UIDs (e.g. ["PMCH0101", "PMCH0104"])
-  const [selectedIds, setSelectedIds] = useState([]);
+  const selectedIds = useMemo(() => selectedEmployees.map((e) => e.empId), [selectedEmployees]);
 
   // Shift Selection Modal States
   const [selectShiftModalOpen, setSelectShiftModalOpen] = useState(false);
@@ -116,17 +131,16 @@ const AssignShift = () => {
     };
   }, []);
 
-  // Fetch employees from API with search and department_id
+  // Fetch all employees from API with search and department_id across all backend pages
   const fetchEmployeesFromApi = useCallback(async () => {
     setLoadingEmployees(true);
     try {
       const deptId = department && department !== 'All Departments' && department !== 'all' ? department : '';
 
-      const res = await getEmployees({
+      const res = await getAllEmployees({
         search: debouncedSearch.trim(),
         department_id: deptId,
-        limit: 100,
-        page: 1
+        batchSize: 100
       });
 
       const items = Array.isArray(res?.items) ? res.items : [];
@@ -150,8 +164,9 @@ const AssignShift = () => {
     }
   }, [department, debouncedSearch]);
 
-  // Trigger employee API fetch whenever department or debounced search changes
+  // Trigger employee API fetch whenever department or debounced search changes and reset page
   useEffect(() => {
+    setPage(1);
     fetchEmployeesFromApi();
   }, [fetchEmployeesFromApi]);
 
@@ -228,23 +243,68 @@ const AssignShift = () => {
     }
   };
 
+  // Sort selected employees to the top of the table list
+  const orderedEmployeesList = useMemo(() => {
+    // Selected employees matching current filters
+    const matchingSelected = selectedEmployees.filter((emp) => {
+      if (department && department !== 'All Departments' && department !== 'all') {
+        if (emp.departmentId && emp.departmentId !== department && emp.department !== department) {
+          return false;
+        }
+      }
+      if (debouncedSearch.trim()) {
+        const q = debouncedSearch.trim().toLowerCase();
+        return (
+          emp.empName?.toLowerCase().includes(q) ||
+          emp.empId?.toLowerCase().includes(q) ||
+          emp.designation?.toLowerCase().includes(q) ||
+          emp.mobileNo?.toLowerCase().includes(q) ||
+          emp.department?.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+
+    const matchingSelectedIdSet = new Set(matchingSelected.map((e) => e.empId));
+    const unselected = employeesList.filter((e) => !matchingSelectedIdSet.has(e.empId));
+
+    return [...matchingSelected, ...unselected];
+  }, [selectedEmployees, employeesList, debouncedSearch, department]);
+
   // Checkbox Selection Handlers
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      const allFilteredUids = employeesList.map((emp) => emp.empId);
-      setSelectedIds((prev) => Array.from(new Set([...prev, ...allFilteredUids])));
+      const existingIdSet = new Set(selectedEmployees.map((emp) => emp.empId));
+      const toAdd = orderedEmployeesList.filter((emp) => !existingIdSet.has(emp.empId));
+      setSelectedEmployees((prev) => [...prev, ...toAdd]);
     } else {
-      const filteredUidSet = new Set(employeesList.map((emp) => emp.empId));
-      setSelectedIds((prev) => prev.filter((id) => !filteredUidSet.has(id)));
+      const currentListIdSet = new Set(orderedEmployeesList.map((emp) => emp.empId));
+      setSelectedEmployees((prev) => prev.filter((emp) => !currentListIdSet.has(emp.empId)));
     }
   };
 
-  const handleToggleSelect = (uid) => {
-    setSelectedIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]));
+  const handleToggleSelect = (emp) => {
+    setSelectedEmployees((prev) =>
+      prev.some((item) => item.empId === emp.empId)
+        ? prev.filter((item) => item.empId !== emp.empId)
+        : [emp, ...prev]
+    );
   };
 
-  const isAllSelected = employeesList.length > 0 && employeesList.every((emp) => selectedIds.includes(emp.empId));
-  const isSomeSelected = employeesList.some((emp) => selectedIds.includes(emp.empId)) && !isAllSelected;
+  const isAllSelected = orderedEmployeesList.length > 0 && orderedEmployeesList.every((emp) => selectedIds.includes(emp.empId));
+  const isSomeSelected = orderedEmployeesList.some((emp) => selectedIds.includes(emp.empId)) && !isAllSelected;
+
+  // Pagination calculations based on orderedEmployeesList
+  const totalCount = orderedEmployeesList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
+  const startIndex = totalCount === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const endIndex = Math.min(page * rowsPerPage, totalCount);
+
+  // Paginated employees for current page
+  const paginatedEmployees = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    return orderedEmployeesList.slice(start, start + rowsPerPage);
+  }, [orderedEmployeesList, page, rowsPerPage]);
 
   return (
     <Box sx={{ width: '100%', bgcolor: '#F8FAFC', minHeight: '100vh', p: 4 }}>
@@ -628,8 +688,31 @@ const AssignShift = () => {
                 </FormControl>
               </Box>
 
-              {/* Selection Counter Badge */}
-              <Box>
+              {/* Selection Counter Badge & Assign Button */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+               <Button
+            variant="contained"
+            onClick={handleOpenSelectShiftModal}
+            sx={{
+              minWidth: 95,
+              bgcolor: '#644EE5',
+              color: '#ffffff',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '14px',
+              borderRadius: '8px',
+              px: '24px',
+              height: '37px',
+              boxShadow: 'none',
+              '&:hover': {
+                bgcolor: '#4f46e5',
+                boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
+              }
+            }}
+          >
+            Assign
+          </Button>
+
                 <Typography
                   variant="body2"
                   sx={{
@@ -639,10 +722,13 @@ const AssignShift = () => {
                     fontSize: '14px',
                     px: 2,
                     py: 0.8,
+                    height: '38px',
+                    display: 'flex',
+                    alignItems: 'center',
                     borderRadius: '8px'
                   }}
                 >
-                  {selectedIds.length} of {employeesList.length} selected
+                  {selectedIds.length} of {orderedEmployeesList.length} selected
                 </Typography>
               </Box>
             </Box>
@@ -700,17 +786,18 @@ const AssignShift = () => {
                         </Typography>
                       </TableCell>
                     </TableRow>
-                  ) : employeesList.length > 0 ? (
-                    employeesList.map((row) => {
+                  ) : paginatedEmployees.length > 0 ? (
+                    paginatedEmployees.map((row) => {
                       const isChecked = selectedIds.includes(row.empId);
                       return (
                         <TableRow
                           key={row.id}
                           hover
-                          onClick={() => handleToggleSelect(row.empId)}
+                          onClick={() => handleToggleSelect(row)}
                           sx={{
                             cursor: 'pointer',
-                            '&:hover': { bgcolor: '#f8fafc' },
+                            bgcolor: isChecked ? '#EEF2FF' : '#ffffff',
+                            '&:hover': { bgcolor: isChecked ? '#E0E7FF' : '#f8fafc' },
                             '& td': { borderColor: '#f1f5f9', py: 1.6, fontSize: '0.875rem', color: '#1e293b' }
                           }}
                         >
@@ -719,7 +806,7 @@ const AssignShift = () => {
                               size="small"
                               checked={isChecked}
                               onClick={(e) => e.stopPropagation()}
-                              onChange={() => handleToggleSelect(row.empId)}
+                              onChange={() => handleToggleSelect(row)}
                               sx={{
                                 height: 18,
                                 width: 18,
@@ -767,6 +854,183 @@ const AssignShift = () => {
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Pagination Bar */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 2,
+                pt: 1,
+                pb: 2.5
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ color: '#64748B', fontSize: '14px', fontWeight: '400', lineHeight: '20px' }}
+              >
+                Showing {startIndex}-{endIndex} of {totalCount}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                {/* Rows per page */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'Inter, sans-serif',
+                      color: '#1E293B',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      lineHeight: '20px'
+                    }}
+                  >
+                    Rows per page
+                  </Typography>
+                  <Select
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    size="small"
+                    IconComponent={UnfoldMoreIcon}
+                    sx={{
+                      height: '36px',
+                      borderRadius: '6px',
+                      bgcolor: '#FFFFFF',
+                      color: '#1E293B',
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      minWidth: '78px',
+                      overflow: 'hidden',
+                      lineHeight: '20px',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#D0D5DD',
+                        borderRadius: '6px',
+                        borderWidth: '1px',
+                        top: 0,
+                        '& legend': {
+                          display: 'none'
+                        }
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#94A3B8'
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#644EE5'
+                      },
+                      '& .MuiSelect-select': {
+                        py: '8px',
+                        pl: '14px',
+                        pr: '34px !important',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '14px',
+                        fontWeight: 400,
+                        lineHeight: '20px',
+                        color: '#1E293B'
+                      },
+                      '& .MuiSelect-icon': {
+                        color: '#1E293B',
+                        fontSize: '18px',
+                        right: '8px'
+                      }
+                    }}
+                  >
+                    <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                      10
+                    </MenuItem>
+                    <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                      20
+                    </MenuItem>
+                    <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                      50
+                    </MenuItem>
+                    <MenuItem value={100} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                      100
+                    </MenuItem>
+                  </Select>
+                </Box>
+
+                {/* Page counter text */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#1E293B',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    lineHeight: '20px'
+                  }}
+                >
+                  Page {page} of {Math.max(1, totalPages)}
+                </Typography>
+
+                {/* Navigation Buttons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1 || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '4px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <FirstPageIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={page === 1 || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '4px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <NavigateBeforeIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={page >= totalPages || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '4px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <NavigateNextIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page >= totalPages || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '4px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <LastPageIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+            </Box>
           </>
         )}
 
@@ -794,7 +1058,7 @@ const AssignShift = () => {
             Back
           </Button>
 
-          <Button
+          {/* <Button
             variant="contained"
             onClick={handleOpenSelectShiftModal}
             sx={{
@@ -815,7 +1079,7 @@ const AssignShift = () => {
             }}
           >
             Assign
-          </Button>
+          </Button> */}
         </Box>
       </Paper>
 

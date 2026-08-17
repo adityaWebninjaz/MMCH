@@ -48,7 +48,8 @@ import {
   createShift,
   createShiftDetail,
   deleteShift,
-  deleteShiftDetail
+  deleteShiftDetail,
+  assignEmployeesToShift
 } from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
@@ -289,6 +290,8 @@ const ShiftDetails = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [changeShiftModalOpen, setChangeShiftModalOpen] = useState(false);
+  const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
+  const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
   const [selectedEmployeeForShiftChange, setSelectedEmployeeForShiftChange] = useState(null);
   const [assignedSearchQuery, setAssignedSearchQuery] = useState('');
   const [assignedDepartmentFilter, setAssignedDepartmentFilter] = useState('All Departments');
@@ -323,9 +326,36 @@ const ShiftDetails = () => {
   };
 
   // Handle Confirm from ChangeShiftModal
-  const handleConfirmShiftChange = (selectedShift, employee) => {
+  const handleConfirmShiftChange = async (selectedShift, employee) => {
     if (!selectedShift || !employee) return;
-    setChangeShiftModalOpen(false);
+    const empUid = employee.empId || employee.uid || employee.id;
+    if (!empUid) {
+      toast.error('Employee ID is missing');
+      return;
+    }
+
+    try {
+      await assignEmployeesToShift(selectedShift.id, [empUid]);
+      toast.success(`Successfully moved ${employee.empName || 'employee'} to ${selectedShift.name}`);
+
+      const currentShiftId = selectedDetailShift?.id;
+      if (currentShiftId) {
+        setLoadingEmployees(true);
+        const emps = await getShiftEmployees(currentShiftId);
+        setAssignedEmployeesList(Array.isArray(emps) ? emps : []);
+        setLoadingEmployees(false);
+      }
+      fetchApiShifts();
+      setChangeShiftModalOpen(false);
+    } catch (err) {
+      console.error('Error changing shift for employee:', err);
+      const errMsg =
+        err?.response?.data?.message ||
+        (Array.isArray(err?.response?.data?.errors) ? err?.response?.data?.errors.join(', ') : null) ||
+        err?.message ||
+        'Failed to change shift';
+      toast.error(errMsg);
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -918,7 +948,7 @@ const ShiftDetails = () => {
                 '&:hover': { textDecoration: 'underline', bgcolor: 'transparent' }
               }}
             >
-              Shift Management
+             Shift Management 
             </Button>
             <span>/</span>
             <span style={{ color: '#6366f1', fontWeight: 600 }}>{editingShift ? 'Edit Shift' : 'Create New Shift'}</span>
@@ -982,12 +1012,30 @@ const ShiftDetails = () => {
                       Start Time <span style={{ color: '#ef4444' }}>*</span>
                     </Typography>
                     <TimePicker
+                      open={startTimePickerOpen}
+                      onOpen={() => setStartTimePickerOpen(true)}
+                      onClose={() => setStartTimePickerOpen(false)}
                       value={parseTimeString(formData.startTime)}
                       onChange={(newValue) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          startTime: newValue && newValue.isValid() ? newValue.format('hh:mm A') : ''
-                        }));
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: newValue.format('hh:mm A')
+                          }));
+                        } else if (!newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: ''
+                          }));
+                        }
+                      }}
+                      onAccept={(newValue) => {
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: newValue.format('hh:mm A')
+                          }));
+                        }
                       }}
                       format="hh:mm A"
                       slotProps={{
@@ -1004,12 +1052,14 @@ const ShiftDetails = () => {
                           sx: timePickerPopperSx
                         },
                         textField: {
+                          onClick: () => setStartTimePickerOpen(true),
                           placeholder: '09:00 AM',
                           size: 'small',
                           sx: {
                             width: { xs: '100%', sm: 312 },
                             bgcolor: '#ffffff',
                             borderRadius: '8px',
+                            cursor: 'pointer',
                             '& .MuiOutlinedInput-root': {
                               height: '42px',
                               borderRadius: '8px',
@@ -1027,11 +1077,13 @@ const ShiftDetails = () => {
                             },
                             '& .MuiInputBase-input': {
                               py: '9px',
-                              fontSize: '0.875rem'
+                              fontSize: '0.875rem',
+                              cursor: 'text'
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '1.25rem',
-                              color: '#64748b'
+                              color: '#64748b',
+                              cursor: 'pointer'
                             }
                           }
                         }
@@ -1044,12 +1096,30 @@ const ShiftDetails = () => {
                       End Time <span style={{ color: '#ef4444' }}>*</span>
                     </Typography>
                     <TimePicker
+                      open={endTimePickerOpen}
+                      onOpen={() => setEndTimePickerOpen(true)}
+                      onClose={() => setEndTimePickerOpen(false)}
                       value={parseTimeString(formData.endTime)}
                       onChange={(newValue) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          endTime: newValue && newValue.isValid() ? newValue.format('hh:mm A') : ''
-                        }));
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: newValue.format('hh:mm A')
+                          }));
+                        } else if (!newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: ''
+                          }));
+                        }
+                      }}
+                      onAccept={(newValue) => {
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: newValue.format('hh:mm A')
+                          }));
+                        }
                       }}
                       format="hh:mm A"
                       slotProps={{
@@ -1066,12 +1136,14 @@ const ShiftDetails = () => {
                           sx: timePickerPopperSx
                         },
                         textField: {
+                          onClick: () => setEndTimePickerOpen(true),
                           placeholder: '07:00 PM',
                           size: 'small',
                           sx: {
                             width: { xs: '100%', sm: 312 },
                             bgcolor: '#ffffff',
                             borderRadius: '8px',
+                            cursor: 'pointer',
                             '& .MuiOutlinedInput-root': {
                               height: '42px',
                               borderRadius: '8px',
@@ -1089,11 +1161,13 @@ const ShiftDetails = () => {
                             },
                             '& .MuiInputBase-input': {
                               py: '9px',
-                              fontSize: '0.875rem'
+                              fontSize: '0.875rem',
+                              cursor: 'text'
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '1.25rem',
-                              color: '#64748b'
+                              color: '#64748b',
+                              cursor: 'pointer'
                             }
                           }
                         }
@@ -1215,7 +1289,7 @@ const ShiftDetails = () => {
               mb: '2px'
             }}
           >
-            Shift Managment
+           Shift Management 
           </Typography>
           <Typography
             variant="body2"
@@ -1766,6 +1840,7 @@ const ShiftDetails = () => {
         onClose={() => setChangeShiftModalOpen(false)}
         onConfirm={handleConfirmShiftChange}
         employee={selectedEmployeeForShiftChange}
+        initialShiftId={selectedDetailShift?.id || ''}
       />
     </>
   );

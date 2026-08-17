@@ -10,6 +10,7 @@ import SearchSection from './SearchSection';
 import ProfileSection from './ProfileSection';
 import NotificationSection from './NotificationSection';
 import Cookies from 'js-cookie';
+import { drawerWidth } from 'store/constant';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -101,10 +102,20 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/* logo & toggler button */}
       <Box
         sx={{
-          // width: 228,
+          width: { xs: 'auto', md: `${drawerWidth}px` },
+          minWidth: { md: `${drawerWidth}px` },
+          height: '88px',
           display: 'flex',
+          alignItems: 'center',
+          borderRight: { xs: 'none', md: '1px solid #CBD5E1' },
+          px: { xs: 2, md: 3 },
+          boxSizing: 'border-box',
           [theme.breakpoints.down('md')]: {
-            width: 'auto'
+            width: 'auto',
+            minWidth: 'auto',
+            borderRight: 'none',
+            height: '88px',
+            px: 2
           }
         }}
       >
@@ -152,34 +163,13 @@ const Header = ({ handleLeftDrawerToggle }) => {
         >
           <LogoSection />
         </Box>
-
-        {/* <ButtonBase sx={{ borderRadius: '12px', overflow: 'hidden' }}>
-          <Avatar
-            variant="rounded"
-            sx={{
-              ...theme.typography.commonAvatar,
-              ...theme.typography.mediumAvatar,
-              transition: 'all .2s ease-in-out',
-              background: theme.palette.secondary.light,
-              color: theme.palette.secondary.dark,
-              '&:hover': {
-                background: theme.palette.secondary.dark,
-                color: theme.palette.secondary.light
-              }
-            }}
-            onClick={handleLeftDrawerToggle}
-            color="inherit"
-          >
-            <IconMenu2 stroke={1.5} size="1.3rem" />
-          </Avatar>
-        </ButtonBase> */}
       </Box>
 
       {user?.role?.toLowerCase() === 'customer' ? (
         <Typography
           variant="h3"
           sx={{
-            mx: 5,
+            pl: 3,
             color: '#644EE5',
             display: { xs: 'none', sm: 'none', md: 'block' }
           }}
@@ -191,7 +181,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
         <Typography
           variant="h3"
           sx={{
-            mx: '96px',
+            pl: 3,
             color: '#644EE5',
             display: { xs: 'none', sm: 'none', md: 'block' }
           }}
@@ -201,19 +191,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
         </Typography>
       )}
       <Box sx={{ flexGrow: 1 }} />
-
-      {/* <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <Typography variant="h4" sx={{ color: 'grey.600' }}>
-          Today is {new Date().toLocaleDateString('en-US', { weekday: 'long' })}, {new Date().toLocaleDateString('en-GB')}
-        </Typography>
-      </Box> */}
-
-      {/* <Box sx={{ flexGrow: 1 }} /> */}
-      {/* <Box sx={{ flexGrow: 1 }} /> */}
-
-      {/* notification & profile */}
-      {/* <NotificationSection /> */}
-      <ProfileSection />
+      <Box sx={{ pr: 3 }}>
+        <ProfileSection />
+      </Box>
     </>
   );
 };

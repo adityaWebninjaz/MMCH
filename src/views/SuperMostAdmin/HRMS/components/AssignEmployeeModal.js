@@ -23,9 +23,17 @@ import {
   Chip,
   CircularProgress
 } from '@mui/material';
-import { Close as CloseIcon, Search as SearchIcon } from '@mui/icons-material';
+import {
+  Close as CloseIcon,
+  Search as SearchIcon,
+  UnfoldMore as UnfoldMoreIcon,
+  FirstPage as FirstPageIcon,
+  LastPage as LastPageIcon,
+  NavigateBefore as NavigateBeforeIcon,
+  NavigateNext as NavigateNextIcon
+} from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getEmployees, getDepartments } from 'services/allEmployeeService';
+import { getAllEmployees, getDepartments } from 'services/allEmployeeService';
 import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from 'services/shiftDetailServices';
 
 const DEFAULT_DEPARTMENT_LIST = [
@@ -54,11 +62,18 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
   const [apiDepartments, setApiDepartments] = useState([]);
   const [submitting, setSubmitting] = useState(false);
 
+  // Pagination States
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
   // State 1: Individual Employee Selection states
   const [selectedDepartmentFilter, setSelectedDepartmentFilter] = useState('All Departments');
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedEmpIds, setSelectedEmpIds] = useState([]); // Stores employee UIDs (e.g. "PMCH0101")
+  const [selectedEmployees, setSelectedEmployees] = useState([]); // Stores employee objects
+
+  // Selected Employee UIDs (e.g. ["PMCH0101", "PMCH0104"])
+  const selectedEmpIds = useMemo(() => selectedEmployees.map((e) => e.empId), [selectedEmployees]);
 
   // State 2: Department Selection states
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState([]);
@@ -89,12 +104,13 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
       setSearchQuery('');
       setDebouncedSearch('');
       setSelectedDepartmentFilter('All Departments');
-      setSelectedEmpIds([]);
+      setSelectedEmployees([]);
       setSelectedDepartmentIds([]);
+      setPage(1);
     }
   }, [open, initialMode]);
 
-  // Fetch employees from API using search and department_id filter
+  // Fetch all employees from API using search and department_id filter across all backend pages
   const fetchEmployeesFromApi = useCallback(async () => {
     if (!open) return;
     setLoadingEmployees(true);
@@ -104,11 +120,10 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
           ? selectedDepartmentFilter
           : '';
 
-      const res = await getEmployees({
+      const res = await getAllEmployees({
         search: debouncedSearch.trim(),
         department_id: deptId,
-        limit: 100,
-        page: 1
+        batchSize: 100
       });
 
       const items = Array.isArray(res?.items) ? res.items : [];
@@ -132,8 +147,9 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
     }
   }, [open, selectedDepartmentFilter, debouncedSearch]);
 
-  // Trigger API employee fetch on search or filter changes
+  // Trigger API employee fetch on search or filter changes and reset page
   useEffect(() => {
+    setPage(1);
     fetchEmployeesFromApi();
   }, [fetchEmployeesFromApi]);
 
@@ -152,26 +168,74 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
     return DEFAULT_DEPARTMENT_LIST;
   }, [propDepartmentList, apiDepartments, employeeList]);
 
+  // Sort selected employees to the top of the table list
+  const orderedEmployeesList = useMemo(() => {
+    const matchingSelected = selectedEmployees.filter((emp) => {
+      if (selectedDepartmentFilter && selectedDepartmentFilter !== 'All Departments' && selectedDepartmentFilter !== 'all') {
+        if (emp.departmentId && emp.departmentId !== selectedDepartmentFilter && emp.department !== selectedDepartmentFilter) {
+          return false;
+        }
+      }
+      if (debouncedSearch.trim()) {
+        const q = debouncedSearch.trim().toLowerCase();
+        return (
+          emp.empName?.toLowerCase().includes(q) ||
+          emp.empId?.toLowerCase().includes(q) ||
+          emp.designation?.toLowerCase().includes(q) ||
+          emp.mobileNo?.toLowerCase().includes(q) ||
+          emp.department?.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+
+    const matchingSelectedIdSet = new Set(matchingSelected.map((e) => e.empId));
+    const unselected = employeeList.filter((e) => !matchingSelectedIdSet.has(e.empId));
+
+    return [...matchingSelected, ...unselected];
+  }, [selectedEmployees, employeeList, debouncedSearch, selectedDepartmentFilter]);
+
   // Handle master select all for employees
   const handleSelectAllEmployees = (e) => {
     if (e.target.checked) {
-      const allFilteredUids = employeeList.map((emp) => emp.empId);
-      setSelectedEmpIds((prev) => Array.from(new Set([...prev, ...allFilteredUids])));
+      const existingIdSet = new Set(selectedEmployees.map((emp) => emp.empId));
+      const toAdd = orderedEmployeesList.filter((emp) => !existingIdSet.has(emp.empId));
+      setSelectedEmployees((prev) => [...prev, ...toAdd]);
     } else {
-      const filteredUidSet = new Set(employeeList.map((emp) => emp.empId));
-      setSelectedEmpIds((prev) => prev.filter((id) => !filteredUidSet.has(id)));
+      const currentListIdSet = new Set(orderedEmployeesList.map((emp) => emp.empId));
+      setSelectedEmployees((prev) => prev.filter((emp) => !currentListIdSet.has(emp.empId)));
     }
   };
 
-  // Toggle individual employee selection by UID
-  const handleToggleEmployee = (uid) => {
-    setSelectedEmpIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]));
+  // Toggle individual employee selection
+  const handleToggleEmployee = (emp) => {
+    setSelectedEmployees((prev) =>
+      prev.some((item) => item.empId === emp.empId)
+        ? prev.filter((item) => item.empId !== emp.empId)
+        : [emp, ...prev]
+    );
   };
 
   // Toggle department selection
   const handleToggleDepartment = (deptId) => {
     setSelectedDepartmentIds((prev) => (prev.includes(deptId) ? prev.filter((item) => item !== deptId) : [...prev, deptId]));
   };
+
+  // Pagination calculations based on orderedEmployeesList
+  const totalCount = orderedEmployeesList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
+  const startIndex = totalCount === 0 ? 0 : (page - 1) * rowsPerPage + 1;
+  const endIndex = Math.min(page * rowsPerPage, totalCount);
+
+  // Paginated employees for current page
+  const paginatedEmployees = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    return orderedEmployeesList.slice(start, start + rowsPerPage);
+  }, [orderedEmployeesList, page, rowsPerPage]);
+
+  const isAllEmployeesSelected = orderedEmployeesList.length > 0 && orderedEmployeesList.every((emp) => selectedEmpIds.includes(emp.empId));
+
+  const isSomeEmployeesSelected = orderedEmployeesList.some((emp) => selectedEmpIds.includes(emp.empId)) && !isAllEmployeesSelected;
 
   // Submit Assignment
   const handleAssign = async () => {
@@ -195,7 +259,7 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
           assignMode,
           shiftId: shift.id,
           selectedEmpIds,
-          selectedEmployees: employeeList.filter((emp) => selectedEmpIds.includes(emp.empId)),
+          selectedEmployees: selectedEmployees,
           selectedDepartmentIds: [],
           selectedDepartments: []
         };
@@ -258,10 +322,6 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
       }
     }
   };
-
-  const isAllEmployeesSelected = employeeList.length > 0 && employeeList.every((emp) => selectedEmpIds.includes(emp.empId));
-
-  const isSomeEmployeesSelected = employeeList.some((emp) => selectedEmpIds.includes(emp.empId)) && !isAllEmployeesSelected;
 
   return (
     <Dialog
@@ -590,7 +650,7 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
                   color: '#5B4BF2'
                 }}
               >
-                {selectedEmpIds.length} of {employeeList.length} selected
+                {selectedEmpIds.length} of {orderedEmployeesList.length} selected
               </Typography>
             </Box>
 
@@ -635,16 +695,18 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
                         <Typography sx={{ color: '#64748b', fontSize: '13px', mt: 1 }}>Loading employees from master...</Typography>
                       </TableCell>
                     </TableRow>
-                  ) : employeeList.length > 0 ? (
-                    employeeList.map((emp) => {
+                  ) : paginatedEmployees.length > 0 ? (
+                    paginatedEmployees.map((emp) => {
                       const isChecked = selectedEmpIds.includes(emp.empId);
                       return (
                         <TableRow
                           key={emp.id}
                           hover
-                          onClick={() => handleToggleEmployee(emp.empId)}
+                          onClick={() => handleToggleEmployee(emp)}
                           sx={{
                             cursor: 'pointer',
+                            bgcolor: isChecked ? '#EEF2FF' : '#ffffff',
+                            '&:hover': { bgcolor: isChecked ? '#E0E7FF' : '#F8FAFC' },
                             '& td': { borderColor: '#F1F5F9', py: 1.2, fontSize: '13px' }
                           }}
                         >
@@ -652,7 +714,7 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
                             <Checkbox
                               size="small"
                               checked={isChecked}
-                              onChange={() => handleToggleEmployee(emp.empId)}
+                              onChange={() => handleToggleEmployee(emp)}
                               onClick={(e) => e.stopPropagation()}
                               sx={{
                                 p: 0.5,
@@ -692,6 +754,177 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
                 </TableBody>
               </Table>
             </TableContainer>
+
+            {/* Pagination Bar */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1.5,
+                pt: 1.5,
+                pb: 0.5
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ color: '#64748B', fontSize: '13px', fontWeight: '400' }}
+              >
+                Showing {startIndex}-{endIndex} of {totalCount}
+              </Typography>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                {/* Rows per page */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'Inter, sans-serif',
+                      color: '#1E293B',
+                      fontSize: '13px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Rows per page
+                  </Typography>
+                  <Select
+                    value={rowsPerPage}
+                    onChange={(e) => {
+                      setRowsPerPage(Number(e.target.value));
+                      setPage(1);
+                    }}
+                    size="small"
+                    IconComponent={UnfoldMoreIcon}
+                    sx={{
+                      height: '32px',
+                      borderRadius: '6px',
+                      bgcolor: '#FFFFFF',
+                      color: '#1E293B',
+                      fontSize: '13px',
+                      fontWeight: 400,
+                      minWidth: '68px',
+                      overflow: 'hidden',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#D0D5DD',
+                        borderRadius: '6px',
+                        borderWidth: '1px',
+                        top: 0,
+                        '& legend': {
+                          display: 'none'
+                        }
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#94A3B8'
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#5B4BF2'
+                      },
+                      '& .MuiSelect-select': {
+                        py: '6px',
+                        pl: '10px',
+                        pr: '28px !important',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontSize: '13px',
+                        color: '#1E293B'
+                      },
+                      '& .MuiSelect-icon': {
+                        color: '#1E293B',
+                        fontSize: '16px',
+                        right: '6px'
+                      }
+                    }}
+                  >
+                    <MenuItem value={10} sx={{ fontSize: '13px', color: '#1E293B' }}>
+                      10
+                    </MenuItem>
+                    <MenuItem value={20} sx={{ fontSize: '13px', color: '#1E293B' }}>
+                      20
+                    </MenuItem>
+                    <MenuItem value={50} sx={{ fontSize: '13px', color: '#1E293B' }}>
+                      50
+                    </MenuItem>
+                    <MenuItem value={100} sx={{ fontSize: '13px', color: '#1E293B' }}>
+                      100
+                    </MenuItem>
+                  </Select>
+                </Box>
+
+                {/* Page counter text */}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'Inter, sans-serif',
+                    color: '#1E293B',
+                    fontSize: '13px',
+                    fontWeight: 500
+                  }}
+                >
+                  Page {page} of {Math.max(1, totalPages)}
+                </Typography>
+
+                {/* Navigation Buttons */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage(1)}
+                    disabled={page === 1 || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '3px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <FirstPageIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                    disabled={page === 1 || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '3px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <NavigateBeforeIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={page >= totalPages || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '3px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <NavigateNextIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setPage(totalPages)}
+                    disabled={page >= totalPages || loadingEmployees}
+                    sx={{
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '6px',
+                      p: '3px',
+                      color: '#475569',
+                      '&.Mui-disabled': { borderColor: '#f1f5f9', color: '#cbd5e1' }
+                    }}
+                  >
+                    <LastPageIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+            </Box>
           </Box>
         )}
 

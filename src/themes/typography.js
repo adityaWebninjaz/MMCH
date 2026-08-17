@@ -87,14 +87,16 @@ export default function themeTypography(theme) {
       }
     },
     mainContent: {
-      backgroundColor: theme.background,
+      backgroundColor: '#F8FAFC',
       width: '100%',
       minHeight: 'calc(100vh - 88px)',
       flexGrow: 1,
-      padding: '10px 20px 20px 20px',
-      marginTop: '66px',
+      padding: '0px',
+      marginTop: '88px',
       marginRight: '20px',
-      borderRadius: `${theme?.customization?.borderRadius}px`
+      // borderRadius: `${theme?.customization?.borderRadius}px`,
+      // border: "1px solid #CBD5E1",
+      overflow: 'hidden'
     },
     menuCaption: {
       fontSize: '0.875rem',
@@ -109,6 +111,7 @@ export default function themeTypography(theme) {
       fontWeight: 500,
       color: theme.darkTextSecondary,
       textTransform: 'capitalize'
+      
     },
     commonAvatar: {
       cursor: 'pointer',
