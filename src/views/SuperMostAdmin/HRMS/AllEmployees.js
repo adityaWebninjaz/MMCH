@@ -560,17 +560,22 @@ const AllEmployees = () => {
                     fontSize: '13px',
                     color: '#1e293b',
                     fontWeight: 400,
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     overflow: 'hidden',
                     '& .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#e2e8f0',
-                      borderRadius: '6px'
+                      borderColor: '#cbd5e1',
+                      borderRadius: '8px',
+                      top: 0,
+                      '& legend': {
+                        display: 'none'
+                      }
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#cbd5e1'
+                      borderColor: '#94a3b8'
                     },
                     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                      borderColor: '#6366f1'
+                      borderColor: '#6366f1',
+                      borderWidth: '1.5px'
                     }
                   }}
                 >
@@ -611,16 +616,27 @@ const AllEmployees = () => {
                   ) : null
                 }
                 sx={{
+                  width: 392,
                   fontSize: '13px',
                   borderRadius: '8px',
                   bgcolor: '#ffffff',
                   height: '38px',
-                  width: '280px',
                   color: 'rgba(100, 116, 139, 1)',
                   overflow: 'hidden',
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: '#cbd5e1',
-                    borderRadius: '8px'
+                    borderRadius: '8px',
+                    top: 0,
+                    '& legend': {
+                      display: 'none'
+                    }
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#94a3b8'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#6366f1',
+                    borderWidth: '1.5px'
                   }
                 }}
               />
@@ -670,10 +686,10 @@ const AllEmployees = () => {
           }}
         >
           <Table sx={{ minWidth: 1000 }} size="medium">
-            <TableHead sx={{ bgcolor: '#f8fafc' }}>
+            <TableHead sx={{ bgcolor: '#F1F5F9' }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px", }}>Emp ID</TableCell>
-                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px", textAlign: 'center' }}>Emp Name</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px" }}>Emp Name</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px" }}>Department</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px" }}>Designation</TableCell>
                 <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: "24px" }}>HOD</TableCell>
@@ -699,7 +715,7 @@ const AllEmployees = () => {
                     key={row.id}
                     sx={{
                       '&:hover': { bgcolor: '#f8fafc' },
-                      '& td': { borderColor: '#f1f5f9', py: 1.5, fontSize: '0.85rem', color: '#1e293b' }
+                      '& td': { borderColor: '#E2E8F0', py: 1.5, fontSize: '0.85rem', color: '#1e293b' }
                     }}
                   >
                     {/* Emp ID */}
@@ -795,7 +811,7 @@ const AllEmployees = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
               <Typography
                 variant="body2"
-                sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}
+                sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}
               >
                 Rows per page
               </Typography>
@@ -820,7 +836,11 @@ const AllEmployees = () => {
                   '& .MuiOutlinedInput-notchedOutline': {
                     borderColor: '#D0D5DD',
                     borderRadius: '6px',
-                    borderWidth: '1px'
+                    borderWidth: '1px',
+                    top: 0,
+                    '& legend': {
+                      display: 'none'
+                    }
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
                     borderColor: '#94A3B8'
@@ -833,7 +853,12 @@ const AllEmployees = () => {
                     pl: '14px',
                     pr: '34px !important',
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '14px',
+                    fontWeight: 400,
+                    lineHeight: '20px',
+                    color: '#1E293B'
                   },
                   '& .MuiSelect-icon': {
                     color: '#1E293B',
@@ -842,16 +867,16 @@ const AllEmployees = () => {
                   }
                 }}
               >
-                <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                   10
                 </MenuItem>
-                <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                   20
                 </MenuItem>
-                <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                   50
                 </MenuItem>
-                <MenuItem value={100} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                <MenuItem value={100} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                   100
                 </MenuItem>
               </Select>
@@ -860,7 +885,7 @@ const AllEmployees = () => {
             {/* Page counter text */}
             <Typography
               variant="body2"
-              sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}
+              sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}
             >
               Page {page} of {Math.max(1, totalPages)}
             </Typography>

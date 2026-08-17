@@ -388,10 +388,11 @@ const LeaveReport = () => {
           }}
           sx={{
             minHeight: '38px',
+            borderBottom: '1px solid #E2E8F0',
             '& .MuiTabs-indicator': {
               bgcolor: '#6366f1',
               height: '3px',
-              borderRadius: '3px'
+              borderRadius: '3px 3px 0 0'
             }
           }}
         >
@@ -461,16 +462,24 @@ const LeaveReport = () => {
                 fontWeight: 400,
                 lineHeight: '100%',
                 color: '#1E293B',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                overflow: 'hidden',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#cbd5e1',
+                  borderRadius: '8px',
+                  top: 0,
+                  '& legend': {
+                    display: 'none'
+                  }
+                },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1', borderWidth: '1.5px' }
               }}
             >
               <MenuItem value="" sx={{ fontSize: '0.875rem' }}>
                 All Departments
               </MenuItem>
               {departmentsList.map((dept) => (
-                <MenuItem key={dept.id || dept.name} value={dept.id} sx={{ fontSize: '0.875rem' }}>
+                <MenuItem key={dept.id || dept.name} value={dept.id} sx={{ fontSize: '0.875rem', borderRadius: '6px' }}>
                   {dept.name}
                 </MenuItem>
               ))}
@@ -501,9 +510,17 @@ const LeaveReport = () => {
                 height: '40px',
                 fontSize: '13px',
                 color: '#334155',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                overflow: 'hidden',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#cbd5e1',
+                  borderRadius: '8px',
+                  top: 0,
+                  '& legend': {
+                    display: 'none'
+                  }
+                },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1', borderWidth: '1.5px' }
               }}
             >
               {DATE_PRESETS.map((p) => (
@@ -543,9 +560,17 @@ const LeaveReport = () => {
                     bgcolor: '#ffffff',
                     height: '40px',
                     fontSize: '13px',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    overflow: 'hidden',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#cbd5e1',
+                      borderRadius: '8px',
+                      top: 0,
+                      '& legend': {
+                        display: 'none'
+                      }
+                    },
                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1', borderWidth: '1.5px' }
                   }}
                 />
               </FormControl>
@@ -576,9 +601,17 @@ const LeaveReport = () => {
                     bgcolor: '#ffffff',
                     height: '40px',
                     fontSize: '13px',
-                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                    overflow: 'hidden',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#cbd5e1',
+                      borderRadius: '8px',
+                      top: 0,
+                      '& legend': {
+                        display: 'none'
+                      }
+                    },
                     '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1', borderWidth: '1.5px' }
                   }}
                 />
               </FormControl>
@@ -637,9 +670,17 @@ const LeaveReport = () => {
                 fontWeight: 400,
                 lineHeight: '100%',
                 color: '#64748B',
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' },
+                overflow: 'hidden',
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#cbd5e1',
+                  borderRadius: '8px',
+                  top: 0,
+                  '& legend': {
+                    display: 'none'
+                  }
+                },
                 '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' }
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1', borderWidth: '1.5px' }
               }}
             />
           </FormControl>
@@ -720,129 +761,54 @@ const LeaveReport = () => {
         elevation={0}
         sx={{
           borderRadius: '12px',
-          borderWidth: '1px 1px 0px 1px',
-          borderStyle: 'solid',
-          borderColor: '#E2E8F0',
+          border: '1px solid #E2E8F0',
           overflowX: 'auto',
           mb: '20px'
         }}
       >
         <Table sx={{ minWidth: 950 }} size="medium">
           <TableHead sx={{ bgcolor: '#F1F5F9' }}>
-            <TableRow>
-              <TableCell
-                sx={{
+            <TableRow
+              sx={{
+                '& th': {
+                  borderBottom: '1px solid #E2E8F0',
+                  py: '12px',
+                  px: '24px',
                   fontWeight: 600,
                   color: '#16151C',
                   fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px',
-                  pl: '24px'
-                }}
-              >
-                Emp ID
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px',
-                  pl: '24px'
-                }}
-              >
-                Emp Name
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
                   lineHeight: '20px'
-                }}
-              >
-                Department
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px'
-                }}
-              >
-                Leave Category / Type
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px'
-                }}
-              >
-                From Date
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px'
-                }}
-              >
-                To Date
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px',
-                  textAlign: 'center'
-                }}
-              >
-                Total Days
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px'
-                }}
-              >
-                Applied Date
-              </TableCell>
-              <TableCell
-                sx={{
-                  fontWeight: 600,
-                  color: '#16151C',
-                  fontSize: '14px',
-                  py: '12px',
-                  lineHeight: '20px',
-                  textAlign: 'center'
-                }}
-              >
-                Status
-              </TableCell>
+                }
+              }}
+            >
+              <TableCell>Emp ID</TableCell>
+              <TableCell>Emp Name</TableCell>
+              <TableCell>Department</TableCell>
+              <TableCell>Leave Category / Type</TableCell>
+              <TableCell>From Date</TableCell>
+              <TableCell>To Date</TableCell>
+              <TableCell align="center">Total Days</TableCell>
+              <TableCell>Applied Date</TableCell>
+              <TableCell align="center">Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               Array.from({ length: rowsPerPage }).map((_, index) => (
-                <TableRow key={`skeleton-${index}`}>
-                  <TableCell sx={{ pl: '24px' }}>
+                <TableRow
+                  key={`skeleton-${index}`}
+                  sx={{
+                    '& td': {
+                      borderBottom: '1px solid #E2E8F0',
+                      py: '12px',
+                      px: '24px'
+                    }
+                  }}
+                >
+                  <TableCell>
                     <Skeleton width={80} />
                   </TableCell>
-                  <TableCell sx={{ pl: '24px' }}>
+                  <TableCell>
                     <Skeleton width={120} />
                   </TableCell>
                   <TableCell>
@@ -967,14 +933,14 @@ const LeaveReport = () => {
           pt: 1
         }}
       >
-        <Typography variant="body2" sx={{ color: '#64748B', fontSize: '14px', fontWeight: 400, lineHeight: '20px' }}>
+        <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#64748B', fontSize: '14px', fontWeight: 400, lineHeight: '20px', letterSpacing: '0%' }}>
           Showing {startIndex}-{endIndex} of {totalCount}
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
           {/* Rows per page */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}>
+            <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
               Rows per page
             </Typography>
             <Select
@@ -990,15 +956,21 @@ const LeaveReport = () => {
                 borderRadius: '6px',
                 bgcolor: '#FFFFFF',
                 color: '#1E293B',
+                fontFamily: 'Inter, sans-serif',
                 fontSize: '14px',
                 fontWeight: 400,
+                lineHeight: '20px',
+                letterSpacing: '0%',
                 minWidth: '78px',
                 overflow: 'hidden',
-                lineHeight: '20px',
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#D0D5DD',
                   borderRadius: '6px',
-                  borderWidth: '1px'
+                  borderWidth: '1px',
+                  top: 0,
+                  '& legend': {
+                    display: 'none'
+                  }
                 },
                 '&:hover .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#94A3B8'
@@ -1011,7 +983,13 @@ const LeaveReport = () => {
                   pl: '14px',
                   pr: '34px !important',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                  letterSpacing: '0%',
+                  color: '#1E293B'
                 },
                 '& .MuiSelect-icon': {
                   color: '#1E293B',
@@ -1020,23 +998,23 @@ const LeaveReport = () => {
                 }
               }}
             >
-              <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+              <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '20px', letterSpacing: '0%', color: '#1E293B' }}>
                 10
               </MenuItem>
-              <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+              <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '20px', letterSpacing: '0%', color: '#1E293B' }}>
                 20
               </MenuItem>
-              <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+              <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '20px', letterSpacing: '0%', color: '#1E293B' }}>
                 50
               </MenuItem>
-              <MenuItem value={100} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+              <MenuItem value={100} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '20px', letterSpacing: '0%', color: '#1E293B' }}>
                 100
               </MenuItem>
             </Select>
           </Box>
 
           {/* Page counter text */}
-          <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px' }}>
+          <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
             Page {page} of {totalPages}
           </Typography>
 

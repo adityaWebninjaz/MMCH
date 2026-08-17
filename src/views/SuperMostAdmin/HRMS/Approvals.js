@@ -314,7 +314,7 @@ const Approvals = () => {
   }, [approvalsList, selectedDept, searchQuery]);
 
   return (
-    <Box sx={{ width: '100%', minHeight: '100vh', p: '32px' }}>
+    <Box sx={{ width: '100%', bgcolor: '#F8FAFC', minHeight: '100vh', p: '32px' }}>
       {/* Page Title */}
       <Typography
         variant="h3"
@@ -356,17 +356,22 @@ const Approvals = () => {
                   fontSize: '13px',
                   color: '#1e293b',
                   fontWeight: 400,
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   overflow: 'hidden',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#E2E8F0',
-                    borderRadius: '6px'
+                    borderColor: '#cbd5e1',
+                    borderRadius: '8px',
+                    top: 0,
+                    '& legend': {
+                      display: 'none'
+                    }
                   },
                   '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#cbd5e1'
+                    borderColor: '#94a3b8'
                   },
                   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#6366f1'
+                    borderColor: '#6366f1',
+                    borderWidth: '1.5px'
                   }
                 }}
               >
@@ -394,16 +399,27 @@ const Approvals = () => {
                 </InputAdornment>
               }
               sx={{
+                width: 392,
                 fontSize: '13px',
                 borderRadius: '8px',
                 bgcolor: '#ffffff',
                 height: '38px',
-                width: '260px',
                 color: 'rgba(100, 116, 139, 1)',
                 overflow: 'hidden',
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#cbd5e1',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  top: 0,
+                  '& legend': {
+                    display: 'none'
+                  }
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#94a3b8'
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: '#6366f1',
+                  borderWidth: '1.5px'
                 }
               }}
             />
@@ -450,7 +466,7 @@ const Approvals = () => {
         }}
       >
         <Table sx={{ minWidth: 950 }} size="medium">
-          <TableHead sx={{ bgcolor: '#f8fafc' }}>
+          <TableHead sx={{ bgcolor: '#F1F5F9' }}>
             <TableRow>
               <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp Name</TableCell>
               <TableCell sx={{ fontWeight: 600, color: 'rgba(22, 21, 28, 1)', fontSize: '14px', py: 1.5, lineHeight: '24px' }}>Emp ID</TableCell>
@@ -473,7 +489,7 @@ const Approvals = () => {
                   key={row.id}
                   sx={{
                     '&:hover': { bgcolor: '#f8fafc' },
-                    '& td': { borderColor: '#f1f5f9', py: 1.5, fontSize: '13px', color: '#0F172A' }
+                    '& td': { borderColor: '#E2E8F0', py: 1.5, fontSize: '13px', color: '#0F172A' }
                   }}
                 >
                   {/* Emp Name with Avatar */}
@@ -506,20 +522,33 @@ const Approvals = () => {
                   {/* Submitted Date */}
                   <TableCell sx={{ fontWeight: 400, fontSize: '13px', color: '#0F172A', lineHeight: '100%' }}>{row.submitted}</TableCell>
 
-                  {/* Status Chip */}
+                  {/* Status Badge */}
                   <TableCell align="center">
-                    <Chip
-                      label={row.status}
-                      size="small"
+                    <Box
                       sx={{
-                        bgcolor: row.status === 'Approved' ? '#ECFDF5' : row.status === 'Rejected' ? '#FEF2F2' : '#FEF3C7',
-                        color: row.status === 'Approved' ? '#059669' : row.status === 'Rejected' ? '#DC2626' : '#D97706',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: row.status === 'Pending' ? '72px' : row.status === 'Rejected' ? '76px' : '82px',
+                        height: '24px',
+                        opacity: 1,
+                        borderRadius: '100px',
+                        pt: '4px',
+                        pr: '10px',
+                        pb: '4px',
+                        pl: '10px',
+                        boxSizing: 'border-box',
+                        bgcolor: row.status === 'Approved' ? '#DCFCE7' : row.status === 'Rejected' ? '#FECACA' : '#FEF3C7',
+                        color: row.status === 'Approved' ? '#15803D' : row.status === 'Rejected' ? '#DC2626' : '#D97706',
+                        fontFamily: 'Inter, sans-serif',
                         fontWeight: 600,
                         fontSize: '13px',
                         lineHeight: '100%',
-                        px: 1
+                        letterSpacing: '0%'
                       }}
-                    />
+                    >
+                      {row.status}
+                    </Box>
                   </TableCell>
 
                   {/* Action Button */}
@@ -815,7 +844,7 @@ const Approvals = () => {
             </Box>
 
             {/* Action Buttons Row */}
-            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: '12px', mt: 1, pt: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: '12px', mt: 'auto', pt: 2 }}>
               {/* Reject Light Red Button */}
               <Button
                 variant="outlined"

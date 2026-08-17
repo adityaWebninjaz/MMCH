@@ -48,7 +48,13 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, submitting }) => {
       maxWidth="sm"
       fullWidth
       PaperProps={{
-        sx: { borderRadius: '12px', maxWidth: '520px' }
+        sx: {
+          borderRadius: '16px',
+          width: '560px',
+          maxWidth: '560px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.08)'
+        }
       }}
     >
       <DialogTitle className={styles.modalTitle}>
@@ -99,7 +105,7 @@ const AddDeviceModal = ({ open, onClose, onAddDevice, submitting }) => {
             Cancel
           </Button>
           <Button type="submit" variant="contained" className={styles.saveBtn} disabled={submitting}>
-            {submitting ? <CircularProgress size={24} color="inherit" /> : 'Save'}
+            {submitting ? <CircularProgress size={20} color="inherit" /> : 'Save'}
           </Button>
         </DialogActions>
       </form>

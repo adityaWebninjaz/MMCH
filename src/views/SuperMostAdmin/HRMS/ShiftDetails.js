@@ -665,16 +665,45 @@ const ShiftDetails = () => {
                       placeholder="Search name, role, or ID..."
                       startAdornment={
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#94a3b8', fontSize: 19 }} />
+                          <SearchIcon sx={{ color: 'rgba(100, 116, 139, 1)', fontSize: 16 }} />
                         </InputAdornment>
                       }
+                      endAdornment={
+                        assignedSearchQuery ? (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => setAssignedSearchQuery('')}
+                              sx={{ p: 0.25, color: '#94a3b8', '&:hover': { color: '#475569' } }}
+                            >
+                              <CloseIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </InputAdornment>
+                        ) : null
+                      }
                       sx={{
+                        width: 392,
+                        fontSize: '13px',
                         borderRadius: '8px',
                         bgcolor: '#ffffff',
                         height: '38px',
-                        fontSize: '0.85rem',
-                        color: '#334155',
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' }
+                        color: 'rgba(100, 116, 139, 1)',
+                        overflow: 'hidden',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#cbd5e1',
+                          borderRadius: '8px',
+                          top: 0,
+                          '& legend': {
+                            display: 'none'
+                          }
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#94a3b8'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#6366f1',
+                          borderWidth: '1.5px'
+                        }
                       }}
                     />
                   </FormControl>
@@ -1182,8 +1211,8 @@ const ShiftDetails = () => {
             }}
           >
             {/* Shift Search */}
-            <FormControl size="small" sx={{ minWidth: 280, flex: 1, maxWidth: 360 }}>
-              <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
+            <Box>
+              <Typography variant="caption" sx={{ color: 'rgba(30, 41, 59, 1)', fontWeight: 400, display: 'block', mb: '6px', fontSize: '13px' }}>
                 Shift Search
               </Typography>
               <OutlinedInput
@@ -1192,10 +1221,10 @@ const ShiftDetails = () => {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                placeholder="Search by shift name"
+                placeholder="Search by shift name..."
                 startAdornment={
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#64748B', fontSize: 20 }} />
+                    <SearchIcon sx={{ color: 'rgba(100, 116, 139, 1)', fontSize: 16 }} />
                   </InputAdornment>
                 }
                 endAdornment={
@@ -1205,7 +1234,7 @@ const ShiftDetails = () => {
                         size="small"
                         onClick={handleClearSearch}
                         edge="end"
-                        sx={{ color: '#94a3b8', p: 0.5 }}
+                        sx={{ p: 0.25, color: '#94a3b8', '&:hover': { color: '#475569' } }}
                       >
                         <CloseIcon sx={{ fontSize: 16 }} />
                       </IconButton>
@@ -1213,21 +1242,31 @@ const ShiftDetails = () => {
                   ) : null
                 }
                 sx={{
-                  minHeight: '32px',
+                  width: 392,
+                  fontSize: '13px',
                   borderRadius: '8px',
                   bgcolor: '#ffffff',
-                  width: '392px',
-                  fontSize: '13px',
-                  color: '#64748B',
+                  height: '38px',
+                  color: 'rgba(100, 116, 139, 1)',
                   overflow: 'hidden',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#E2E8F0',
-                    borderRadius: '8px'
+                    borderColor: '#cbd5e1',
+                    borderRadius: '8px',
+                    top: 0,
+                    '& legend': {
+                      display: 'none'
+                    }
                   },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' }
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#94a3b8'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#6366f1',
+                    borderWidth: '1.5px'
+                  }
                 }}
               />
-            </FormControl>
+            </Box>
 
             {/* + Create Shift Button */}
             <Button
@@ -1373,7 +1412,7 @@ const ShiftDetails = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               {/* Rows per page */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}>
+                <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
                   Rows per page
                 </Typography>
                 <Select
@@ -1395,9 +1434,13 @@ const ShiftDetails = () => {
                     overflow: 'hidden',
                     lineHeight:"20px",
                     '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#D0D5DD',
+                      borderColor: '#D0D5DD',
                       borderRadius: '6px',
-                      borderWidth: '1px'
+                      borderWidth: '1px',
+                      top: 0,
+                      '& legend': {
+                        display: 'none'
+                      }
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: '#94A3B8'
@@ -1410,7 +1453,12 @@ const ShiftDetails = () => {
                       pl: '14px',
                       pr: '34px !important',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      lineHeight: '20px',
+                      color: '#1E293B'
                     },
                     '& .MuiSelect-icon': {
                       color: '#1E293B',
@@ -1419,14 +1467,14 @@ const ShiftDetails = () => {
                     }
                   }}
                 >
-                  <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>10</MenuItem>
-                  <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>20</MenuItem>
-                  <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>50</MenuItem>
+                  <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>10</MenuItem>
+                  <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>20</MenuItem>
+                  <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>50</MenuItem>
                 </Select>
               </Box>
 
               {/* Page counter text */}
-              <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}>
+              <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
                 Page {page} of {totalPages}
               </Typography>
 

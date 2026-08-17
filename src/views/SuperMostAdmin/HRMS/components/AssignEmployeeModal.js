@@ -89,9 +89,6 @@ const AssignEmployeeModal = ({
   // State 2: Department Selection states
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState(['cardiology', 'emergency']);
 
-  // Total employee pool size for counter display (e.g. 340)
-  const totalEmployeesCount = 340;
-
   // Reset or initialize state when modal opens
   useEffect(() => {
     if (open) {
@@ -126,6 +123,9 @@ const AssignEmployeeModal = ({
       return matchesDept && matchesSearch;
     });
   }, [employeeList, selectedDepartmentFilter, searchQuery]);
+
+  // Total employee pool size for counter display
+  const totalEmployeesCount = filteredEmployees.length;
 
   // Handle master select all for employees
   const handleSelectAllEmployees = (e) => {

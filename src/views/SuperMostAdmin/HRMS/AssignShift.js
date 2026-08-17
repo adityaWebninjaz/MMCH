@@ -170,7 +170,7 @@ const AssignShift = () => {
     filteredEmployees.some((emp) => selectedIds.includes(emp.id)) && !isAllSelected;
 
   return (
-    <Box sx={{ width: '100%', bgcolor: '#F8FAFC', minHeight: '100vh', p: 3 }}>
+    <Box sx={{ width: '100%', bgcolor: '#F8FAFC', minHeight: '100vh', p: 4 }}>
       {/* Page Title & Subtitle */}
       <Typography
         variant="h3"
@@ -458,7 +458,7 @@ const AssignShift = () => {
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2, flex: 1 }}>
                 {/* Department Select */}
                 <FormControl size="small" sx={{ minWidth: 180 }}>
-                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block',fontSize:"14px",lineHeight:"100%"  }}>
+                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
                     Department
                   </Typography>
                   <Select
@@ -471,12 +471,21 @@ const AssignShift = () => {
                       height: '40px',
                       fontSize: '0.875rem',
                       color: '#334155',
-                      '& .MuiOutlinedInput-notchedOutline': { borderColor: '#cbd5e1' },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' }
+                      overflow: 'hidden',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#E2E8F0',
+                        borderRadius: '8px',
+                        top: 0,
+                        '& legend': {
+                          display: 'none'
+                        }
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1', borderWidth: '1.5px' }
                     }}
                   >
                     {DEPARTMENTS.map((dept) => (
-                      <MenuItem key={dept} value={dept} sx={{color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block',fontSize:"14px",lineHeight:"100%"  }}>
+                      <MenuItem key={dept} value={dept} sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
                         {dept}
                       </MenuItem>
                     ))}
@@ -485,7 +494,7 @@ const AssignShift = () => {
 
                 {/* Employee Search */}
                 <FormControl size="small" sx={{ flex: 1, maxWidth: 400 }}>
-                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block',fontSize:"14px",lineHeight:"100%"  }}>
+                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
                     Employee Search
                   </Typography>
                   <OutlinedInput
@@ -498,7 +507,7 @@ const AssignShift = () => {
                       </InputAdornment>
                     }
                     sx={{
-                      minHeight: '32px',
+                      height: '40px',
                       borderRadius: '8px',
                       bgcolor: '#ffffff',
                       width: '392px',
@@ -506,10 +515,15 @@ const AssignShift = () => {
                       color: '#64748B',
                       overflow: 'hidden',
                       '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: '#cbd5e1',
-                        borderRadius: '8px'
+                        borderColor: '#E2E8F0',
+                        borderRadius: '8px',
+                        top: 0,
+                        '& legend': {
+                          display: 'none'
+                        }
                       },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' }
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1', borderWidth: '1.5px' }
                     }}
                   />
                 </FormControl>
@@ -529,7 +543,7 @@ const AssignShift = () => {
                     borderRadius: '8px'
                   }}
                 >
-                  {selectedIds.length} of 340 selected
+                  {selectedIds.length} of {filteredEmployees.length} selected
                 </Typography>
               </Box>
             </Box>
