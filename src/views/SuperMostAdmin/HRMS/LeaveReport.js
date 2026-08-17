@@ -88,6 +88,17 @@ const computePresetDates = (presetKey) => {
   return { from: '', to: '' };
 };
 
+const formatStatusLabel = (status) => {
+  if (!status) return '-';
+  const str = String(status).trim();
+  const upper = str.toUpperCase();
+  if (upper === 'PENDING') return 'Pending';
+  if (upper === 'APPROVED') return 'Approved';
+  if (upper === 'REJECTED') return 'Rejected';
+  if (upper === 'CANCELLED') return 'Cancelled';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 const LeaveReport = () => {
   // Tab State: 'All', 'Pending', 'Approved', 'Rejected', 'Cancelled'
   const [activeTab, setActiveTab] = useState('All');
@@ -255,7 +266,7 @@ const LeaveReport = () => {
           `"${row.to_date || '-'}"`,
           row.total_days ?? 0,
           `"${row.applied_date || '-'}"`,
-          `"${row.status || '-'}"`
+          `"${formatStatusLabel(row.status)}"`
         ];
         csvRows.push(line.join(','));
       });
@@ -905,7 +916,7 @@ const LeaveReport = () => {
                     <TableCell>{formatDisplayDate(row.applied_date)}</TableCell>
                     <TableCell align="center">
                       <Chip
-                        label={row.status || 'UNKNOWN'}
+                        label={formatStatusLabel(row.status)}
                         size="small"
                         sx={{
                           bgcolor: chipBg,

@@ -75,7 +75,6 @@ const LogoSection = () => {
         width: '171px',
         height: '100%',
         overflow: 'hidden',
-        paddingLeft:"55px"
       }}
       disableRipple
     >

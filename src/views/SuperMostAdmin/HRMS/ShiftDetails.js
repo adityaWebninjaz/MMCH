@@ -1465,7 +1465,7 @@ const ShiftDetails = () => {
             }}
           >
             <Table sx={{ minWidth: 900 }} size="medium">
-              <TableHead sx={{ bgcolor: '#f8fafc' }}>
+              <TableHead sx={{ bgcolor: '#F1F5F9' }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>
                     Shift Name
