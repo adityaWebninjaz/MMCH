@@ -42,10 +42,13 @@ import {
   getEmployees,
   exportEmployeesMaster,
   updateEmployeeDevice,
+  updateEmployeeHOD,
   updateEmployeeReportingManager,
   updateEmployeeShift,
+  deleteEmployee,
   getDesignations,
   getDepartments,
+  getHODs,
   getManagers,
   getShifts
 } from 'services/allEmployeeService';
@@ -103,6 +106,7 @@ const AllEmployees = () => {
   const [hodModalOpen, setHodModalOpen] = useState(false);
   const [shiftModalOpen, setShiftModalOpen] = useState(false);
   const [deviceModalOpen, setDeviceModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   // Form Fields inside Modals
   const [newHod, setNewHod] = useState('');
@@ -110,6 +114,7 @@ const AllEmployees = () => {
   const [newDevice, setNewDevice] = useState('');
   const [updatingDevice, setUpdatingDevice] = useState(false);
   const [updatingShift, setUpdatingShift] = useState(false);
+  const [deletingEmployee, setDeletingEmployee] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Devices & Shifts & Departments State
@@ -174,15 +179,16 @@ const AllEmployees = () => {
     };
   }, []);
 
+  // Fetch HODs from API
   useEffect(() => {
     let isMounted = true;
-    getDesignations()
+    getHODs()
       .then((data) => {
         if (isMounted && Array.isArray(data) && data.length > 0) {
           setManagersList(data);
         }
       })
-      .catch((err) => console.error('Failed to load designations:', err));
+      .catch((err) => console.error('Failed to load HODs in AllEmployees:', err));
     return () => { isMounted = false; };
   }, []);
 
@@ -267,11 +273,11 @@ const AllEmployees = () => {
   const handleOpenHodModal = () => {
     if (selectedEmp) {
       setNewHod('');
-      getDesignations()
+      getHODs()
         .then((data) => {
           if (Array.isArray(data) && data.length > 0) setManagersList(data);
         })
-        .catch((err) => console.error('Failed to load designations:', err));
+        .catch((err) => console.error('Failed to load HODs:', err));
       setHodModalOpen(true);
     }
     handleCloseMenu();
@@ -315,21 +321,85 @@ const AllEmployees = () => {
     handleCloseMenu();
   };
 
+  const handleOpenDeleteModal = () => {
+    if (selectedEmp) {
+      setDeleteModalOpen(true);
+    }
+    handleCloseMenu();
+  };
+
+  const handleDeleteEmployee = async () => {
+    if (!selectedEmp || !selectedEmp.id) return;
+
+    setDeletingEmployee(true);
+    try {
+      const response = await deleteEmployee(selectedEmp.id);
+
+      if (
+        response &&
+        (response.success || response.statusCode === 200 || response.status === 200 || response.data || !response.errors)
+      ) {
+        toast.success(response?.message || 'Employee deleted successfully');
+        setDeleteModalOpen(false);
+
+        // Optimistically remove employee from local state and update total
+        setEmployees((prev) => prev.filter((emp) => emp.id !== selectedEmp.id));
+        setTotalCount((prev) => Math.max(0, prev - 1));
+
+        // Re-fetch employee list in background to sync state and update pagination
+        getEmployees({
+          search: debouncedSearch,
+          page,
+          limit,
+          department_id: selectedDept || undefined
+        })
+          .then((data) => {
+            const items = data?.items || (Array.isArray(data) ? data : []);
+            setEmployees(items);
+            setTotalCount(Number(data?.total ?? items.length) || 0);
+            setTotalPages(
+              Math.max(
+                1,
+                Number(data?.totalPages) ||
+                Math.ceil((Number(data?.total ?? items.length) || 0) / limit)
+              )
+            );
+          })
+          .catch((e) => console.error('Background fetch failed:', e));
+      } else {
+        toast.error(response?.message || 'Failed to delete employee');
+      }
+    } catch (err) {
+      console.error('Failed to delete employee:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to delete employee');
+    } finally {
+      setDeletingEmployee(false);
+    }
+  };
+
   // Update Handlers
   const handleUpdateHod = async () => {
     if (!selectedEmp || !newHod) return;
 
     setUpdatingHod(true);
     try {
-      const response = await updateEmployeeReportingManager(selectedEmp.id, { reporting_manager_id: newHod });
+      const response = await updateEmployeeHOD(selectedEmp.id, { hod_id: newHod });
 
       if (response && (response.success || response.statusCode === 200 || response.status === 200 || response.data)) {
-        toast.success(response.message || 'Reporting manager updated successfully');
+        toast.success(response.message || 'HOD updated successfully');
 
-        const matchedManager = managersList.find((m) => (typeof m === 'object' ? m.id === newHod || m.name === newHod : m === newHod));
+        const matchedManager = managersList.find((m) =>
+          typeof m === 'object' ? m.id === newHod || m.name === newHod : m === newHod
+        );
         const updatedLabel = matchedManager
           ? typeof matchedManager === 'object'
-            ? matchedManager.name || matchedManager.designation || matchedManager.designation_name || matchedManager.full_name || matchedManager.title || matchedManager.id
+            ? matchedManager.name ||
+              matchedManager.full_name ||
+              matchedManager.hod_name ||
+              matchedManager.designation ||
+              matchedManager.designation_name ||
+              matchedManager.title ||
+              matchedManager.id
             : matchedManager
           : newHod;
 
@@ -348,11 +418,11 @@ const AllEmployees = () => {
           })
           .catch((e) => console.error('Background fetch failed:', e));
       } else {
-        toast.error(response?.message || 'Failed to update reporting manager');
+        toast.error(response?.message || 'Failed to update HOD');
       }
     } catch (err) {
-      console.error('Failed to update reporting manager:', err);
-      toast.error(err?.response?.data?.message || err?.message || 'Failed to update reporting manager');
+      console.error('Failed to update HOD:', err);
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to update HOD');
     } finally {
       setUpdatingHod(false);
     }
@@ -985,6 +1055,12 @@ const AllEmployees = () => {
         >
           Change Device
         </MenuItem>
+        <MenuItem
+          onClick={handleOpenDeleteModal}
+          sx={{ fontSize: '14px', fontWeight: 400, lineHeight: "100%", color: '#EF4444', py: "10px" }}
+        >
+          Delete
+        </MenuItem>
       </Menu>
 
       {/* MODAL 1: CHANGE HOD MODAL */}
@@ -1026,14 +1102,14 @@ const AllEmployees = () => {
         </DialogTitle>
 
         <DialogContent sx={{ p: 0, mb: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* Current Manager */}
+          {/* Current HOD */}
           <Box>
             <Typography sx={{ color: '#475569', fontWeight: 500, display: 'block', mb: '6px', fontSize: '14px', lineHeight: '20px' }}>
-              Current Manager
+              Current HOD
             </Typography>
             <FormControl fullWidth size="small">
               <Select
-                value={selectedEmp?.hod || 'Annette Black'}
+                value={selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}
                 disabled
                 IconComponent={KeyboardArrowDownIcon}
                 sx={{
@@ -1053,17 +1129,17 @@ const AllEmployees = () => {
                   }
                 }}
               >
-                <MenuItem value={selectedEmp?.hod || 'Annette Black'}>
-                  {selectedEmp?.hod || 'Annette Black'}
+                <MenuItem value={selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}>
+                  {selectedEmp?.hod && selectedEmp.hod !== '-' ? selectedEmp.hod : 'No HOD assigned'}
                 </MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          {/* New Manager */}
+          {/* New HOD */}
           <Box>
             <Typography sx={{ color: '#475569', fontWeight: 500, display: 'block', mb: '6px', fontSize: '14px', lineHeight: '20px' }}>
-              New Manager
+              New HOD
             </Typography>
             <FormControl fullWidth size="small">
               <Select
@@ -1074,13 +1150,12 @@ const AllEmployees = () => {
                 IconComponent={KeyboardArrowDownIcon}
                 renderValue={(selected) => {
                   if (!selected) {
-                    return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select Manager</Typography>;
+                    return <Typography sx={{ color: '#64748B', fontSize: '15px', fontWeight: 400 }}>Select HOD</Typography>;
                   }
-                  // return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{selected}</Typography>;
                   const match = managersList.find((m) => (typeof m === 'object' ? m.id === selected || m.name === selected : m === selected));
                   const label = match
                     ? typeof match === 'object'
-                      ? match.name || match.designation || match.designation_name || match.full_name || match.title || match.id
+                      ? match.name || match.full_name || match.hod_name || match.designation || match.designation_name || match.title || match.id
                       : match
                     : selected;
                   return <Typography sx={{ color: '#0F172A', fontSize: '15px', fontWeight: 500 }}>{label}</Typography>;
@@ -1101,11 +1176,11 @@ const AllEmployees = () => {
                 }}
               >
                 <MenuItem value="" disabled sx={{ display: 'none' }}>
-                  Select Manager
+                  Select HOD
                 </MenuItem>
                 {managersList.map((m) => {
                   const mId = typeof m === 'object' ? (m.id || m.name) : m;
-                  const mLabel = typeof m === 'object' ? (m.name || m.designation || m.designation_name || m.full_name || m.title || m.id) : m;
+                  const mLabel = typeof m === 'object' ? (m.name || m.full_name || m.hod_name || m.designation || m.designation_name || m.title || m.id) : m;
                   return (
                     <MenuItem key={mId} value={mId} sx={{ fontSize: '14px', color: '#0F172A' }}>
                       {mLabel}
@@ -1541,6 +1616,110 @@ const AllEmployees = () => {
             }}
           >
             {updatingDevice ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* MODAL 4: DELETE EMPLOYEE CONFIRMATION MODAL */}
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => {
+          if (!deletingEmployee) setDeleteModalOpen(false);
+        }}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '24px',
+            p: '24px',
+            maxWidth: '430px',
+            boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.08)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ p: 0, mb: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography sx={{ fontWeight: 600, color: '#0F172A', fontSize: '18px', lineHeight: '24px' }}>
+            Delete Employee
+          </Typography>
+          <IconButton
+            onClick={() => {
+              if (!deletingEmployee) setDeleteModalOpen(false);
+            }}
+            disabled={deletingEmployee}
+            size="small"
+            sx={{
+              width: 32,
+              height: 32,
+              bgcolor: '#F8FAFC',
+              border: '1px solid #F1F5F9',
+              color: '#64748B',
+              '&:hover': { bgcolor: '#F1F5F9' }
+            }}
+          >
+            <CloseIcon sx={{ fontSize: '18px' }} />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent sx={{ p: 0, mb: '24px' }}>
+          <Typography sx={{ color: '#475569', fontSize: '14px', lineHeight: '22px', mb: '12px' }}>
+            Are you sure you want to delete{' '}
+            <strong style={{ color: '#0F172A' }}>{selectedEmp?.name || 'this employee'}</strong>
+            {selectedEmp?.empId && selectedEmp?.empId !== '-' ? ` (${selectedEmp.empId})` : ''}?
+          </Typography>
+          <Typography sx={{ color: '#EF4444', fontSize: '13px', fontWeight: 500, lineHeight: '18px' }}>
+            This action cannot be undone. All data associated with this employee will be permanently removed.
+          </Typography>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+          <Button
+            variant="outlined"
+            onClick={() => setDeleteModalOpen(false)}
+            disabled={deletingEmployee}
+            sx={{
+              flex: 1,
+              height: '44px',
+              borderRadius: '12px',
+              border: '1px solid #CBD5E1',
+              bgcolor: '#FFFFFF',
+              color: '#334155',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '14px',
+              '&:hover': {
+                bgcolor: '#F8FAFC',
+                borderColor: '#94A3B8'
+              }
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleDeleteEmployee}
+            disabled={deletingEmployee}
+            sx={{
+              flex: 1,
+              height: '44px',
+              borderRadius: '12px',
+              bgcolor: '#EF4444',
+              color: '#FFFFFF',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '14px',
+              boxShadow: 'none',
+              '&:hover': {
+                bgcolor: '#DC2626',
+                boxShadow: 'none'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#FCA5A5',
+                color: '#FFFFFF'
+              }
+            }}
+          >
+            {deletingEmployee ? <CircularProgress size={20} sx={{ color: '#FFFFFF' }} /> : 'Delete'}
           </Button>
         </DialogActions>
       </Dialog>

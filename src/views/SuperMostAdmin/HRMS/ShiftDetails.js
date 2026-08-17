@@ -42,7 +42,14 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { toast } from 'react-toastify';
-import { getShiftDetails, getShiftEmployees, createShift, createShiftDetail, deleteShift, deleteShiftDetail } from '../../../services/shiftDetailServices';
+import {
+  getShiftDetails,
+  getShiftEmployees,
+  createShift,
+  createShiftDetail,
+  deleteShift,
+  deleteShiftDetail
+} from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
 
@@ -66,7 +73,7 @@ const timePickerPopperSx = {
   },
   '& .MuiMultiSectionDigitalClock-root': {
     maxHeight: '210px',
-    padding: '10px 0px',
+    padding: '10px 0px'
   },
   '& .MuiMultiSectionDigitalClockSection-root': {
     '&::after': {
@@ -125,15 +132,78 @@ const DeleteBinIcon = ({ size = 18, color = '#475569' }) => (
 
 // Initial Shift dataset
 const INITIAL_SHIFTS = [
-  { id: 1, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 2, name: 'Night ICU', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 3, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 4, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 5, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 6, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 7, name: 'Morning General', description: 'Full system access with all permissions', timeRange: '06:00 AM - 02:00 PM', assignedCount: 24, workingDays: 'Mon, Tue, Wed' },
-  { id: 8, name: 'Evening OPD', description: 'Outpatient consultation evening rotation', timeRange: '02:00 PM - 10:00 PM', assignedCount: 18, workingDays: 'Mon, Tue, Wed, Thu, Fri' },
-  { id: 9, name: 'Night Emergency', description: 'Dedicated shift layout for overnight trauma response and emergency ward triage management.', timeRange: '09:00 AM - 07:00 PM', assignedCount: 15, workingDays: 'Mon, Tue, Wed, Thu, Fri' }
+  {
+    id: 1,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 2,
+    name: 'Night ICU',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 3,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 4,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 5,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 6,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 7,
+    name: 'Morning General',
+    description: 'Full system access with all permissions',
+    timeRange: '06:00 AM - 02:00 PM',
+    assignedCount: 24,
+    workingDays: 'Mon, Tue, Wed'
+  },
+  {
+    id: 8,
+    name: 'Evening OPD',
+    description: 'Outpatient consultation evening rotation',
+    timeRange: '02:00 PM - 10:00 PM',
+    assignedCount: 18,
+    workingDays: 'Mon, Tue, Wed, Thu, Fri'
+  },
+  {
+    id: 9,
+    name: 'Night Emergency',
+    description: 'Dedicated shift layout for overnight trauma response and emergency ward triage management.',
+    timeRange: '09:00 AM - 07:00 PM',
+    assignedCount: 15,
+    workingDays: 'Mon, Tue, Wed, Thu, Fri'
+  }
 ];
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -180,13 +250,7 @@ const ShiftDetails = () => {
       setShifts(items);
       const total = Number(apiData?.total ?? items.length) || 0;
       setTotalCount(total);
-      setTotalPages(
-        Math.max(
-          1,
-          Number(apiData?.totalPages) ||
-          Math.ceil(total / rowsPerPage)
-        )
-      );
+      setTotalPages(Math.max(1, Number(apiData?.totalPages) || Math.ceil(total / rowsPerPage)));
     } catch (err) {
       console.error('Error fetching shift details:', err);
       setShifts([]);
@@ -242,52 +306,20 @@ const ShiftDetails = () => {
   }, [assignedEmployeesList]);
 
   // Handle Assignment from AssignEmployeeModal
-  const handleAssignEmployees = (payload) => {
-    const { assignMode, selectedEmployees, selectedDepartments } = payload;
-    let addedCount = 0;
-    const baseShift = selectedDetailShift || {
-      id: 'night_emergency',
-      name: 'Night Emergency',
-      timeRange: '09:00 AM - 07:00 PM',
-      assignedDepartments: 'Cardiology, Emergency',
-      description: 'Dedicated shift layout for overnight trauma response and emergency ward triage management.',
-      assignedCount: 42
-    };
-
-    let newDepartments = baseShift.assignedDepartments
-      ? baseShift.assignedDepartments.split(',').map((d) => d.trim()).filter(Boolean)
-      : [];
-
-    if (assignMode === 'assign_department') {
-      addedCount = selectedDepartments.reduce((acc, d) => acc + (d.count || 0), 0);
-      selectedDepartments.forEach((dept) => {
-        if (!newDepartments.includes(dept.name)) {
-          newDepartments.push(dept.name);
-        }
-      });
-    } else {
-      addedCount = selectedEmployees.length;
-      selectedEmployees.forEach((emp) => {
-        if (emp.department && !newDepartments.includes(emp.department)) {
-          newDepartments.push(emp.department);
-        }
-        setAssignedEmployeesList((prev) => {
-          if (!prev.some((item) => item.id === emp.id)) {
-            return [emp, ...prev];
-          }
-          return prev;
-        });
-      });
+  const handleAssignEmployees = async (payload) => {
+    const shiftId = payload?.shiftId || selectedDetailShift?.id;
+    if (shiftId) {
+      try {
+        setLoadingEmployees(true);
+        const emps = await getShiftEmployees(shiftId);
+        setAssignedEmployeesList(Array.isArray(emps) ? emps : []);
+        fetchApiShifts();
+      } catch (err) {
+        console.error('Error refreshing assigned employees:', err);
+      } finally {
+        setLoadingEmployees(false);
+      }
     }
-
-    const updatedShift = {
-      ...baseShift,
-      assignedCount: (baseShift.assignedCount || 0) + addedCount,
-      assignedDepartments: newDepartments.join(', ')
-    };
-
-    setSelectedDetailShift(updatedShift);
-    setShifts((prev) => prev.map((s) => (s.id === updatedShift.id ? updatedShift : s)));
   };
 
   // Handle Confirm from ChangeShiftModal
@@ -358,14 +390,21 @@ const ShiftDetails = () => {
   // Open Edit Shift View
   const handleOpenEditView = (shift) => {
     setEditingShift(shift);
-    const times = shift.timeRange.split(' - ');
-    const daysArr = shift.workingDays.split(', ').map((d) => d.trim());
+    const times = shift?.timeRange ? shift.timeRange.split(' - ') : [];
+    const daysArr = shift?.workingDays
+      ? Array.isArray(shift.workingDays)
+        ? shift.workingDays
+        : typeof shift.workingDays === 'string'
+        ? shift.workingDays.split(', ').map((d) => d.trim()).filter(Boolean)
+        : []
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
     setFormData({
-      name: shift.name,
-      description: shift.description,
-      startTime: times[0] || '09:00 AM',
-      endTime: times[1] || '07:00 PM',
-      workingDays: daysArr
+      name: shift?.name || '',
+      description: shift?.description === '-' ? '' : shift?.description || '',
+      startTime: times[0] || shift?.startTime || '09:00 AM',
+      endTime: times[1] || shift?.endTime || '07:00 PM',
+      workingDays: daysArr.length > 0 ? daysArr : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
     });
     setViewMode('create');
   };
@@ -390,7 +429,11 @@ const ShiftDetails = () => {
       }
     } catch (e) {
       console.error('API delete error:', e);
-      const errMsg = e?.response?.data?.message || (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) || e?.message || 'Failed to delete shift';
+      const errMsg =
+        e?.response?.data?.message ||
+        (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) ||
+        e?.message ||
+        'Failed to delete shift';
       toast.error(errMsg);
       setDeleteModalOpen(false);
     } finally {
@@ -410,7 +453,7 @@ const ShiftDetails = () => {
     });
   };
 
-  // Save Shift Form in the page of Shift Details in Shift Management 
+  // Save Shift Form in the page of Shift Details in Shift Management
   const handleSaveShift = async () => {
     const shiftName = formData.name?.trim();
     if (!shiftName) {
@@ -450,7 +493,11 @@ const ShiftDetails = () => {
       }
     } catch (e) {
       console.error('Error saving shift:', e);
-      const errMsg = e?.response?.data?.message || (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) || e?.message || 'Error creating shift';
+      const errMsg =
+        e?.response?.data?.message ||
+        (Array.isArray(e?.response?.data?.errors) ? e?.response?.data?.errors.join(', ') : null) ||
+        e?.message ||
+        'Error creating shift';
       toast.error(errMsg);
     } finally {
       setSubmitting(false);
@@ -462,7 +509,8 @@ const ShiftDetails = () => {
     return assignedEmployeesList.filter((emp) => {
       const matchesDept = assignedDepartmentFilter === 'All Departments' || emp.department === assignedDepartmentFilter;
       const q = assignedSearchQuery.trim().toLowerCase();
-      const matchesSearch = !q || emp.empId.toLowerCase().includes(q) || emp.empName.toLowerCase().includes(q) || emp.designation.toLowerCase().includes(q);
+      const matchesSearch =
+        !q || emp.empId.toLowerCase().includes(q) || emp.empName.toLowerCase().includes(q) || emp.designation.toLowerCase().includes(q);
       return matchesDept && matchesSearch;
     });
   }, [assignedEmployeesList, assignedDepartmentFilter, assignedSearchQuery]);
@@ -483,7 +531,10 @@ const ShiftDetails = () => {
       {viewMode === 'detail' && (
         <Box sx={{ width: '100%', minHeight: '100vh', p: 3 }}>
           {/* Breadcrumb */}
-          <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
             <Button
               variant="text"
               size="small"
@@ -504,7 +555,6 @@ const ShiftDetails = () => {
             <span style={{ color: '#6366f1', fontWeight: 600 }}>Shift Detail</span>
           </Typography>
 
-
           {/* Heading */}
           <Typography
             variant="h3"
@@ -521,24 +571,23 @@ const ShiftDetails = () => {
           </Typography>
 
           {/* Top Shift Info White Card */}
-          <Box sx={{
-            bgcolor: "#FFFFFF",
-            borderRadius: '16px',
-            border: '1px solid #e2e8f0',
-            p: 3.5,
-          }}>
-
+          <Box
+            sx={{
+              bgcolor: '#FFFFFF',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0',
+              p: 3.5
+            }}
+          >
             <Paper
               elevation={0}
               sx={{
-
                 mb: 3
               }}
             >
               {/* Info Grid (4 Columns) */}
               <Box
                 sx={{
-
                   bgcolor: '#ffffff',
                   mb: 3
                 }}
@@ -601,7 +650,7 @@ const ShiftDetails = () => {
                   }}
                 >
                   {/* Col 1: Shift Name */}
-                  <Box sx={{ maxWidth: 640, width: "100%" }}>
+                  <Box sx={{ maxWidth: 640, width: '100%' }}>
                     <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 500, display: 'block', mb: 0.5 }}>
                       Shift Name
                     </Typography>
@@ -725,7 +774,9 @@ const ShiftDetails = () => {
                     >
                       <MenuItem value="All Departments">All Departments</MenuItem>
                       {uniqueAssignedDepartments.map((dept) => (
-                        <MenuItem key={dept} value={dept}>{dept}</MenuItem>
+                        <MenuItem key={dept} value={dept}>
+                          {dept}
+                        </MenuItem>
                       ))}
                     </Select>
                   </FormControl>
@@ -745,10 +796,25 @@ const ShiftDetails = () => {
                 <Table sx={{ minWidth: 800 }} size="medium">
                   <TableHead sx={{ bgcolor: '#f8fafc' }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5, width:'130px' }}>Emp ID</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5, width: '130px' }}>Emp ID</TableCell>
                       <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5 }}>Emp Name</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5, width:'260px',}}>Department</TableCell>
-                      <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5, width: '160px', maxWidth: '160px', textAlign:'center', pr: 3 }}>Action</TableCell>
+                      <TableCell sx={{ fontWeight: 700, color: '#334155', fontSize: '0.85rem', py: 1.5, width: '260px' }}>
+                        Department
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          fontWeight: 700,
+                          color: '#334155',
+                          fontSize: '0.85rem',
+                          py: 1.5,
+                          width: '160px',
+                          maxWidth: '160px',
+                          textAlign: 'center',
+                          pr: 3
+                        }}
+                      >
+                        Action
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -756,25 +822,39 @@ const ShiftDetails = () => {
                       <TableRow>
                         <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
                           <CircularProgress size={32} sx={{ color: '#6366f1' }} />
-                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mt: 1 }}>
-                            Loading assigned employees...
-                          </Typography>
+                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem', mt: 1 }}>Loading assigned employees...</Typography>
                         </TableCell>
                       </TableRow>
                     ) : filteredAssignedEmps.length > 0 ? (
                       filteredAssignedEmps.map((emp) => {
                         const isEmpSelected = selectedEmpIds.includes(emp.id);
                         return (
-                          <TableRow key={emp.id} sx={{ '&:hover': { bgcolor: '#f8fafc' }, '& td': { borderColor: '#E2E8F0', py: 1.6, fontSize: '0.875rem' } }}>
+                          <TableRow
+                            key={emp.id}
+                            sx={{ '&:hover': { bgcolor: '#f8fafc' }, '& td': { borderColor: '#E2E8F0', py: 1.6, fontSize: '0.875rem' } }}
+                          >
                             <TableCell sx={{ fontWeight: 600, color: '#1e293b' }}>{emp.empId}</TableCell>
                             <TableCell>
                               <Box>
                                 <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.875rem' }}>{emp.empName}</Typography>
-                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem' }}>{emp.designation}</Typography>
+                                <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.75rem' }}>
+                                  {emp.designation}
+                                </Typography>
                               </Box>
                             </TableCell>
                             <TableCell>
-                              <Chip label={emp.department} size="small" sx={{ bgcolor: '#f1f5f9', color: '#334155', fontWeight: 500, fontSize: '0.8rem', height: '24px', borderRadius: '12px' }} />
+                              <Chip
+                                label={emp.department}
+                                size="small"
+                                sx={{
+                                  bgcolor: '#f1f5f9',
+                                  color: '#334155',
+                                  fontWeight: 500,
+                                  fontSize: '0.8rem',
+                                  height: '24px',
+                                  borderRadius: '12px'
+                                }}
+                              />
                             </TableCell>
                             <TableCell align="right" sx={{ width: '140px', maxWidth: '140px', pr: 3 }}>
                               <Button
@@ -804,9 +884,7 @@ const ShiftDetails = () => {
                     ) : (
                       <TableRow>
                         <TableCell colSpan={4} align="center" sx={{ py: 6 }}>
-                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem' }}>
-                            No employees assigned to this shift.
-                          </Typography>
+                          <Typography sx={{ color: '#64748b', fontSize: '0.875rem' }}>No employees assigned to this shift.</Typography>
                         </TableCell>
                       </TableRow>
                     )}
@@ -822,7 +900,10 @@ const ShiftDetails = () => {
       {viewMode === 'create' && (
         <Box sx={{ width: '100%', minHeight: '100vh', p: 3 }}>
           {/* Breadcrumb */}
-          <Typography variant="caption" sx={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Typography
+            variant="caption"
+            sx={{ color: '#64748b', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
             <Button
               variant="text"
               size="small"
@@ -840,9 +921,7 @@ const ShiftDetails = () => {
               Shift Management
             </Button>
             <span>/</span>
-            <span style={{ color: '#6366f1', fontWeight: 600 }}>
-              {editingShift ? 'Edit Shift' : 'Create New Shift'}
-            </span>
+            <span style={{ color: '#6366f1', fontWeight: 600 }}>{editingShift ? 'Edit Shift' : 'Create New Shift'}</span>
           </Typography>
 
           {/* Heading */}
@@ -1114,13 +1193,7 @@ const ShiftDetails = () => {
                     }
                   }}
                 >
-                  {submitting ? (
-                    <CircularProgress size={22} sx={{ color: '#ffffff' }} />
-                  ) : editingShift ? (
-                    'Save shift'
-                  ) : (
-                    'Create shift'
-                  )}
+                  {submitting ? <CircularProgress size={22} sx={{ color: '#ffffff' }} /> : editingShift ? 'Save shift' : 'Create shift'}
                 </Button>
               </Box>
             </Box>
@@ -1211,8 +1284,11 @@ const ShiftDetails = () => {
             }}
           >
             {/* Shift Search */}
-            <Box>
-              <Typography variant="caption" sx={{ color: 'rgba(30, 41, 59, 1)', fontWeight: 400, display: 'block', mb: '6px', fontSize: '13px' }}>
+            <FormControl size="small" sx={{ minWidth: 280, flex: 1, maxWidth: 392 }}>
+              <Typography
+                variant="caption"
+                sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
+              >
                 Shift Search
               </Typography>
               <OutlinedInput
@@ -1230,19 +1306,14 @@ const ShiftDetails = () => {
                 endAdornment={
                   searchQuery ? (
                     <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={handleClearSearch}
-                        edge="end"
-                        sx={{ p: 0.25, color: '#94a3b8', '&:hover': { color: '#475569' } }}
-                      >
+                      <IconButton size="small" onClick={handleClearSearch} edge="end" sx={{ color: '#94a3b8', p: 0.5 }}>
                         <CloseIcon sx={{ fontSize: 16 }} />
                       </IconButton>
                     </InputAdornment>
                   ) : null
                 }
                 sx={{
-                  width: 392,
+                  width: '100%',
                   fontSize: '13px',
                   borderRadius: '8px',
                   bgcolor: '#ffffff',
@@ -1266,7 +1337,7 @@ const ShiftDetails = () => {
                   }
                 }}
               />
-            </Box>
+            </FormControl>
 
             {/* + Create Shift Button */}
             <Button
@@ -1306,12 +1377,28 @@ const ShiftDetails = () => {
             <Table sx={{ minWidth: 900 }} size="medium">
               <TableHead sx={{ bgcolor: '#f8fafc' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>Shift Name</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', width: '360px' }}>Description</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>Time Range</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', textAlign: 'center' }}>Employees Assigned</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>Working Days</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', textAlign: 'center' }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>
+                    Shift Name
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', width: '360px' }}>
+                    Description
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>
+                    Time Range
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', textAlign: 'center' }}
+                  >
+                    Employees Assigned
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>
+                    Working Days
+                  </TableCell>
+                  <TableCell
+                    sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px', textAlign: 'center' }}
+                  >
+                    Actions
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1319,9 +1406,7 @@ const ShiftDetails = () => {
                   <TableRow>
                     <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                       <CircularProgress size={32} sx={{ color: '#6366f1' }} />
-                      <Typography sx={{ mt: 1.5, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>
-                        Loading shifts...
-                      </Typography>
+                      <Typography sx={{ mt: 1.5, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>Loading shifts...</Typography>
                     </TableCell>
                   </TableRow>
                 ) : shifts.length > 0 ? (
@@ -1334,8 +1419,12 @@ const ShiftDetails = () => {
                       }}
                     >
                       <TableCell sx={{ fontWeight: 700, color: '#1F2937', lineHeight: '20px', fontSize: '14px' }}>{row.name}</TableCell>
-                      <TableCell sx={{ color: '#1F2937', fontSize: '14px', fontWeight: 400, lineHeight: '20px' }}>{row.description}</TableCell>
-                      <TableCell sx={{ fontWeight: 500, fontSize: '14px', lineHeight: '100%', color: '#0F172A' }}>{row.timeRange}</TableCell>
+                      <TableCell sx={{ color: '#1F2937', fontSize: '14px', fontWeight: 400, lineHeight: '20px' }}>
+                        {row.description}
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 500, fontSize: '14px', lineHeight: '100%', color: '#0F172A' }}>
+                        {row.timeRange}
+                      </TableCell>
                       <TableCell align="center" sx={{ fontWeight: 600, color: '#0F172A', fontSize: '14px', lineHeight: '100%' }}>
                         {row.assignedCount}
                       </TableCell>
@@ -1432,7 +1521,7 @@ const ShiftDetails = () => {
                     fontWeight: 400,
                     minWidth: '78px',
                     overflow: 'hidden',
-                    lineHeight:"20px",
+                    lineHeight: '20px',
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: '#D0D5DD',
                       borderRadius: '6px',
@@ -1467,9 +1556,15 @@ const ShiftDetails = () => {
                     }
                   }}
                 >
-                  <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>10</MenuItem>
-                  <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>20</MenuItem>
-                  <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>50</MenuItem>
+                  <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                    10
+                  </MenuItem>
+                  <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                    20
+                  </MenuItem>
+                  <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
+                    50
+                  </MenuItem>
                 </Select>
               </Box>
 
@@ -1555,7 +1650,9 @@ const ShiftDetails = () => {
           }
         }}
       >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: "26.5px", borderBottom: "1px solid #E2E8F0" }}>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: '26.5px', borderBottom: '1px solid #E2E8F0' }}
+        >
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '16px' }}>
             Delete Shift
           </Typography>
@@ -1564,16 +1661,25 @@ const ShiftDetails = () => {
           </IconButton>
         </DialogTitle>
 
-        <DialogContent sx={{ py: "24px", borderBottom: "1px solid #E2E8F0" }}>
-          <Typography variant="body2" sx={{ color: '#475569', fontSize: '14px', lineHeight: "20px", mb: "16px", fontWeight: 400, pt: "24px" }}>
-            This shift has <strong>{selectedDetailShift?.assignedCount ?? 0} employees</strong> assigned across <strong>{uniqueAssignedDepartments.length} {uniqueAssignedDepartments.length === 1 ? 'department' : 'departments'}</strong>. Deleting will remove their shift assignment and notify all affected employees.
+        <DialogContent sx={{ py: '24px', borderBottom: '1px solid #E2E8F0' }}>
+          <Typography
+            variant="body2"
+            sx={{ color: '#475569', fontSize: '14px', lineHeight: '20px', mb: '16px', fontWeight: 400, pt: '24px' }}
+          >
+            This shift has <strong>{selectedDetailShift?.assignedCount ?? 0} employees</strong> assigned across{' '}
+            <strong>
+              {uniqueAssignedDepartments.length} {uniqueAssignedDepartments.length === 1 ? 'department' : 'departments'}
+            </strong>
+            . Deleting will remove their shift assignment and notify all affected employees.
           </Typography>
           <Typography variant="body2" sx={{ color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>
             This action cannot be undone.
           </Typography>
         </DialogContent>
 
-        <DialogActions sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', px: 2, pt: "26px", pb: "16px", bgcolor: "#F8FAFC" }}>
+        <DialogActions
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', px: 2, pt: '26px', pb: '16px', bgcolor: '#F8FAFC' }}
+        >
           <Button
             onClick={() => setDeleteModalOpen(false)}
             sx={{

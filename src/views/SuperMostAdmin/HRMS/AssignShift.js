@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,47 +24,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton
+  IconButton,
+  CircularProgress
 } from '@mui/material';
-import {
-  Search as SearchIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
-import { assignShift, getShifts, DEPARTMENT_EMPLOYEE_LIST } from './shiftService';
-
-// Sample dataset of hospital employees for shift assignment
-const INITIAL_EMPLOYEES = [
-  { id: 'EM123456-1', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-2', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-3', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-4', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-5', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123456-6', empId: 'EM123456', empName: 'Dr. Ananya Sharma', designation: 'HOD Cardiology', mobileNo: '+91 7879536495', department: 'Cardiology' },
-  { id: 'EM123457', empId: 'EM123457', empName: 'Dr. Ravi Mehta', designation: 'Senior Surgeon', mobileNo: '+91 9876543210', department: 'Emergency' },
-  { id: 'EM123458', empId: 'EM123458', empName: 'Dr. Vikram Patel', designation: 'Neurologist', mobileNo: '+91 9876543211', department: 'Neurology' },
-  { id: 'EM123459', empId: 'EM123459', empName: 'Dr. Priya Nair', designation: 'Pediatrician', mobileNo: '+91 9876543212', department: 'Pediatrics' },
-  { id: 'EM123460', empId: 'EM123460', empName: 'Dr. Rajesh Gupta', designation: 'Orthopedic Surgeon', mobileNo: '+91 9876543213', department: 'Orthopedics' }
-];
-
-const DEPARTMENTS = [
-  'All Departments',
-  'Cardiology',
-  'Emergency',
-  'Neurology',
-  'Pediatrics',
-  'Orthopedics',
-  'ICU',
-  'Surgery',
-  'OPD'
-];
-
-const SHIFT_OPTIONS = [
-  { id: 'morning_shift', name: 'Morning Shift', timeRange: '6:00 AM - 2:00 PM' },
-  { id: 'evening_shift', name: 'Evening Shift', timeRange: '2:00 PM - 10:00 PM' },
-  { id: 'night_shift', name: 'Night Shift', timeRange: '10:00 PM - 6:00 AM' },
-  { id: 'general_shift', name: 'General Shift', timeRange: '9:00 AM - 5:00 PM' },
-  { id: 'new_sn_duty', name: 'New S/N Duty', timeRange: '9:00 AM - 5:00 PM' }
-];
+import { Search as SearchIcon, Close as CloseIcon } from '@mui/icons-material';
+import { toast } from 'react-toastify';
+import { getEmployees, getDepartments } from 'services/allEmployeeService';
+import { getShiftDetails, assignEmployeesToShift, assignMultipleDepartmentsToShift } from '../../../services/shiftDetailServices';
 
 const AssignShift = () => {
   const navigate = useNavigate();
@@ -75,52 +41,183 @@ const AssignShift = () => {
   // Assignment Mode: 'select_employees' or 'assign_department'
   const [assignMode, setAssignMode] = useState('select_employees');
 
+  // Master employees list from API
+  const [employeesList, setEmployeesList] = useState([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+
+  // Available shifts list from API
+  const [availableShifts, setAvailableShifts] = useState([]);
+  const [loadingShifts, setLoadingShifts] = useState(false);
+
+  // Departments from API
+  const [apiDepartments, setApiDepartments] = useState([]);
+
   // Selected Department IDs (empty by default)
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState([]);
 
   // Filter States
   const [department, setDepartment] = useState('All Departments');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Selected Employee IDs (empty by default)
+  // Selected Employee UIDs (e.g. ["PMCH0101", "PMCH0104"])
   const [selectedIds, setSelectedIds] = useState([]);
 
   // Shift Selection Modal States
   const [selectShiftModalOpen, setSelectShiftModalOpen] = useState(false);
-  const [selectedShiftId, setSelectedShiftId] = useState('morning_shift');
+  const [selectedShiftId, setSelectedShiftId] = useState('');
   const [shiftSearchQuery, setShiftSearchQuery] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Filtered Shifts inside Modal (matching design mockup exact 5 shifts)
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Fetch shifts and departments on component mount
+  useEffect(() => {
+    let isMounted = true;
+
+    // 1. Fetch all shifts from API
+    setLoadingShifts(true);
+    getShiftDetails({ limit: 100, page: 1 })
+      .then((res) => {
+        if (!isMounted) return;
+        const items = Array.isArray(res?.items) ? res.items : [];
+        setAvailableShifts(items);
+        if (items.length > 0) {
+          setSelectedShiftId(items[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load shifts in AssignShift:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingShifts(false);
+      });
+
+    // 2. Fetch departments
+    getDepartments()
+      .then((depts) => {
+        if (!isMounted) return;
+        if (Array.isArray(depts) && depts.length > 0) {
+          setApiDepartments(depts);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in AssignShift:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch employees from API with search and department_id
+  const fetchEmployeesFromApi = useCallback(async () => {
+    setLoadingEmployees(true);
+    try {
+      const deptId = department && department !== 'All Departments' && department !== 'all' ? department : '';
+
+      const res = await getEmployees({
+        search: debouncedSearch.trim(),
+        department_id: deptId,
+        limit: 100,
+        page: 1
+      });
+
+      const items = Array.isArray(res?.items) ? res.items : [];
+      const formatted = items.map((emp) => ({
+        id: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        uid: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        empId: emp.empId && emp.empId !== '-' ? emp.empId : emp.id,
+        empName: emp.name || emp.full_name || '-',
+        designation: emp.designation || '-',
+        mobileNo: emp.mobile || emp.mobile_number || '-',
+        department: emp.department || '-',
+        departmentId: emp.departmentId || '',
+        raw: emp
+      }));
+      setEmployeesList(formatted);
+    } catch (err) {
+      console.error('Failed to load employees in AssignShift:', err);
+      setEmployeesList([]);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  }, [department, debouncedSearch]);
+
+  // Trigger employee API fetch whenever department or debounced search changes
+  useEffect(() => {
+    fetchEmployeesFromApi();
+  }, [fetchEmployeesFromApi]);
+
+  // Filtered Shifts inside Modal
   const filteredShifts = useMemo(() => {
     const q = shiftSearchQuery.trim().toLowerCase();
-    if (!q) return SHIFT_OPTIONS;
-    return SHIFT_OPTIONS.filter(
-      (s) => s.name.toLowerCase().includes(q) || s.timeRange.toLowerCase().includes(q)
+    if (!q) return availableShifts;
+    return availableShifts.filter(
+      (s) => s.name?.toLowerCase().includes(q) || s.timeRange?.toLowerCase().includes(q) || s.workingDays?.toLowerCase().includes(q)
     );
-  }, [shiftSearchQuery]);
+  }, [availableShifts, shiftSearchQuery]);
 
   // Open Shift Modal
   const handleOpenSelectShiftModal = () => {
+    if (assignMode === 'select_employees' && selectedIds.length === 0) {
+      toast.error('Please select at least one employee to assign');
+      return;
+    }
+    if (assignMode === 'assign_department' && selectedDepartmentIds.length === 0) {
+      toast.error('Please select at least one department to assign');
+      return;
+    }
+    if (!selectedShiftId && availableShifts.length > 0) {
+      setSelectedShiftId(availableShifts[0].id);
+    }
     setSelectShiftModalOpen(true);
   };
 
   // Confirm Assignment Handler
-  const handleConfirmAssignment = () => {
-    assignShift({
-      shiftId: selectedShiftId,
-      assignMode,
-      selectedDepartmentIds,
-      selectedIds
-    });
-    setSelectShiftModalOpen(false);
-    navigate('/supermostadmin/hrms/shift-details');
+  const handleConfirmAssignment = async () => {
+    if (!selectedShiftId) {
+      toast.error('Please select a shift');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      if (assignMode === 'select_employees') {
+        await assignEmployeesToShift(selectedShiftId, selectedIds);
+        const shiftObj = availableShifts.find((s) => s.id === selectedShiftId);
+        toast.success(`Successfully assigned ${selectedIds.length} employee(s) to ${shiftObj?.name || 'shift'}`);
+      } else {
+        // Assign to department mode via POST /shifts/{id}/assign
+        await assignMultipleDepartmentsToShift(selectedShiftId, selectedDepartmentIds);
+        const shiftObj = availableShifts.find((s) => s.id === selectedShiftId);
+        toast.success(`Successfully assigned ${selectedDepartmentIds.length} department(s) to ${shiftObj?.name || 'shift'}`);
+      }
+
+      setSelectShiftModalOpen(false);
+      navigate('/supermostadmin/hrms/shift-details');
+    } catch (err) {
+      console.error('Error in handleConfirmAssignment:', err);
+      const errMsg =
+        err?.response?.data?.message ||
+        (Array.isArray(err?.response?.data?.errors) ? err?.response?.data?.errors.join(', ') : null) ||
+        err?.message ||
+        'Failed to assign shift';
+      toast.error(errMsg);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Toggle Department Selection
   const handleToggleDepartment = (id) => {
-    setSelectedDepartmentIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    setSelectedDepartmentIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
   };
 
   // Tab navigation handler
@@ -131,43 +228,23 @@ const AssignShift = () => {
     }
   };
 
-  // Filtered Employee list
-  const filteredEmployees = useMemo(() => {
-    return INITIAL_EMPLOYEES.filter((emp) => {
-      const matchesDept = department === 'All Departments' || emp.department === department;
-      const q = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !q ||
-        emp.empId.toLowerCase().includes(q) ||
-        emp.empName.toLowerCase().includes(q) ||
-        emp.designation.toLowerCase().includes(q) ||
-        emp.mobileNo.includes(q) ||
-        emp.department.toLowerCase().includes(q);
-
-      return matchesDept && matchesSearch;
-    });
-  }, [department, searchQuery]);
-
   // Checkbox Selection Handlers
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedIds(filteredEmployees.map((emp) => emp.id));
+      const allFilteredUids = employeesList.map((emp) => emp.empId);
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...allFilteredUids])));
     } else {
-      setSelectedIds([]);
+      const filteredUidSet = new Set(employeesList.map((emp) => emp.empId));
+      setSelectedIds((prev) => prev.filter((id) => !filteredUidSet.has(id)));
     }
   };
 
-  const handleToggleSelect = (id) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+  const handleToggleSelect = (uid) => {
+    setSelectedIds((prev) => (prev.includes(uid) ? prev.filter((item) => item !== uid) : [...prev, uid]));
   };
 
-  const isAllSelected =
-    filteredEmployees.length > 0 &&
-    filteredEmployees.every((emp) => selectedIds.includes(emp.id));
-  const isSomeSelected =
-    filteredEmployees.some((emp) => selectedIds.includes(emp.id)) && !isAllSelected;
+  const isAllSelected = employeesList.length > 0 && employeesList.every((emp) => selectedIds.includes(emp.empId));
+  const isSomeSelected = employeesList.some((emp) => selectedIds.includes(emp.empId)) && !isAllSelected;
 
   return (
     <Box sx={{ width: '100%', bgcolor: '#F8FAFC', minHeight: '100vh', p: 4 }}>
@@ -175,22 +252,22 @@ const AssignShift = () => {
       <Typography
         variant="h3"
         sx={{
-         fontWeight: 700,
+          fontWeight: 700,
           color: '#0F172A',
           fontSize: '24px',
           lineHeight: '32px',
-          mb:"2px"
+          mb: '2px'
         }}
       >
-        Shift Managment
+        Shift Management
       </Typography>
       <Typography
         variant="body2"
         sx={{
           color: '#64748B',
           fontSize: '14px',
-          fontWeight:"400",
-          mb: "20px"
+          fontWeight: '400',
+          mb: '20px'
         }}
       >
         Track and manage shift schedule
@@ -239,7 +316,7 @@ const AssignShift = () => {
         </Tabs>
       </Box>
 
-      {/* Outer White Card Container  the Container to show th info about table */}
+      {/* Outer White Card Container */}
       <Paper
         elevation={0}
         sx={{
@@ -250,7 +327,7 @@ const AssignShift = () => {
         }}
       >
         {/* Mode Toggle Options: Select Employees Individually vs Assign to Department */}
-        <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap:"16px", mb:"24px" }}>
+        <Box sx={{ display: 'flex', flexWrap: 'nowrap', gap: '16px', mb: '24px' }}>
           {/* Card Option 1: Select Employees Individually */}
           <Box
             role="button"
@@ -266,10 +343,10 @@ const AssignShift = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
               width: 457,
-              px: "20px",
-              py: "20.5px",
+              px: '20px',
+              py: '20.5px',
               borderRadius: '14px',
-              maxHeight:"60px",
+              maxHeight: '60px',
               cursor: 'pointer',
               bgcolor: '#ffffff',
               border: assignMode === 'select_employees' ? '2px solid #6366f1' : '1px solid #e2e8f0',
@@ -280,7 +357,7 @@ const AssignShift = () => {
               }
             }}
           >
-            <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#0F172A',lineHeight:"100%" }}>
+            <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#0F172A', lineHeight: '100%' }}>
               Select Employees Individually
             </Typography>
 
@@ -327,7 +404,7 @@ const AssignShift = () => {
               px: 3,
               py: 2,
               borderRadius: '14px',
-                maxHeight:"60px",
+              maxHeight: '60px',
               cursor: 'pointer',
               bgcolor: '#ffffff',
               border: assignMode === 'assign_department' ? '2px solid #6366f1' : '1px solid #e2e8f0',
@@ -338,9 +415,7 @@ const AssignShift = () => {
               }
             }}
           >
-            <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#0F172A',lineHeight:"100%" }}>
-              Assign to Department
-            </Typography>
+            <Typography sx={{ fontWeight: 600, fontSize: '16px', color: '#0F172A', lineHeight: '100%' }}>Assign to Department</Typography>
 
             {/* Custom Radio Circle */}
             <Box
@@ -367,18 +442,19 @@ const AssignShift = () => {
             </Box>
           </Box>
         </Box>
-          {/* Here we buil the department section in the Assignmenet Tab */}
+
+        {/* Section based on assignMode */}
         {assignMode === 'assign_department' ? (
-          /* Department Selection List View matching design mockup */
-          <Box sx={{ }}>
+          /* Department Selection List View */
+          <Box sx={{}}>
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 600,
-                fontSize: "16px",
+                fontSize: '16px',
                 color: '#0f172a',
-                lineHeight:"100%",
-                mb: "24px"
+                lineHeight: '100%',
+                mb: '24px'
               }}
             >
               Select Departments
@@ -387,58 +463,65 @@ const AssignShift = () => {
             <Box
               sx={{
                 borderRadius: '8px',
-                border: "1px solid #E2E8F0",
+                border: '1px solid #E2E8F0',
                 overflow: 'hidden',
                 bgcolor: '#ffffff'
               }}
             >
-              {DEPARTMENT_EMPLOYEE_LIST.map((dept, index) => {
-                const isChecked = selectedDepartmentIds.includes(dept.id);
-                return (
-                  <Box
-                    key={dept.id}
-                    onClick={() => handleToggleDepartment(dept.id)}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      px: "12px",
-                      py: "16px",
-                      cursor: 'pointer',
-                      bgcolor: '#ffffff',
-                      borderBottom:
-                        index < DEPARTMENT_EMPLOYEE_LIST.length - 1 ? '1px solid #f1f5f9' : 'none',
-                      transition: 'background-color 0.15s ease',
-                      '&:hover': {
-                        bgcolor: '#f8fafc'
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: "12px" }}>
-                      <Checkbox
-                        size="small"
-                        checked={isChecked}
-                        onChange={() => handleToggleDepartment(dept.id)}
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{
-                          height:18,
-                          width:18,
-                          p: 1,
-                          color: '#64748B',
-                          '&.Mui-checked': { color: '#6366f1' }
-                        }}
-                      />
-                      <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#0F172A',lineHeight:"100%" }}>
-                        {dept.name}
+              {apiDepartments.length > 0 ? (
+                apiDepartments.map((dept, index) => {
+                  const isChecked = selectedDepartmentIds.includes(dept.id);
+                  const deptCount = employeesList.filter((e) => e.department?.toLowerCase() === dept.name?.toLowerCase()).length;
+
+                  return (
+                    <Box
+                      key={dept.id}
+                      onClick={() => handleToggleDepartment(dept.id)}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        px: '12px',
+                        py: '16px',
+                        cursor: 'pointer',
+                        bgcolor: '#ffffff',
+                        borderBottom: index < apiDepartments.length - 1 ? '1px solid #f1f5f9' : 'none',
+                        transition: 'background-color 0.15s ease',
+                        '&:hover': {
+                          bgcolor: '#f8fafc'
+                        }
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Checkbox
+                          size="small"
+                          checked={isChecked}
+                          onChange={() => handleToggleDepartment(dept.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{
+                            height: 18,
+                            width: 18,
+                            p: 1,
+                            color: '#64748B',
+                            '&.Mui-checked': { color: '#6366f1' }
+                          }}
+                        />
+                        <Typography sx={{ fontWeight: 500, fontSize: '14px', color: '#0F172A', lineHeight: '100%' }}>
+                          {dept.name}
+                        </Typography>
+                      </Box>
+
+                      <Typography sx={{ color: '#64748B', fontSize: '13px', fontWeight: 500, lineHeight: '100%' }}>
+                        {deptCount} employees
                       </Typography>
                     </Box>
-
-                    <Typography sx={{ color: '#64748B', fontSize: '13px', fontWeight: 500,lineHeight:"100%" }}>
-                      {dept.count} employees
-                    </Typography>
-                  </Box>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <Typography variant="body2" sx={{ p: 3, color: '#64748b', textAlign: 'center' }}>
+                  Loading departments...
+                </Typography>
+              )}
             </Box>
           </Box>
         ) : (
@@ -451,14 +534,17 @@ const AssignShift = () => {
                 flexWrap: 'wrap',
                 alignItems: 'flex-end',
                 justifyContent: 'space-between',
-                gap: "16px",
-                mb: "24px"
+                gap: '16px',
+                mb: '24px'
               }}
             >
               <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2, flex: 1 }}>
                 {/* Department Select */}
                 <FormControl size="small" sx={{ minWidth: 180 }}>
-                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
+                  >
                     Department
                   </Typography>
                   <Select
@@ -484,9 +570,19 @@ const AssignShift = () => {
                       '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1', borderWidth: '1.5px' }
                     }}
                   >
-                    {DEPARTMENTS.map((dept) => (
-                      <MenuItem key={dept} value={dept} sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
-                        {dept}
+                    <MenuItem
+                      value="All Departments"
+                      sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
+                    >
+                      All Departments
+                    </MenuItem>
+                    {apiDepartments.map((dept) => (
+                      <MenuItem
+                        key={dept.id}
+                        value={dept.id}
+                        sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
+                      >
+                        {dept.name || dept.id}
                       </MenuItem>
                     ))}
                   </Select>
@@ -494,13 +590,16 @@ const AssignShift = () => {
 
                 {/* Employee Search */}
                 <FormControl size="small" sx={{ flex: 1, maxWidth: 400 }}>
-                  <Typography variant="caption" sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
+                  >
                     Employee Search
                   </Typography>
                   <OutlinedInput
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search name, role, or ID..."
+                    placeholder="Search name, designation, or ID..."
                     startAdornment={
                       <InputAdornment position="start">
                         <SearchIcon sx={{ color: '#64748B', fontSize: 20 }} />
@@ -543,7 +642,7 @@ const AssignShift = () => {
                     borderRadius: '8px'
                   }}
                 >
-                  {selectedIds.length} of {filteredEmployees.length} selected
+                  {selectedIds.length} of {employeesList.length} selected
                 </Typography>
               </Box>
             </Box>
@@ -562,70 +661,85 @@ const AssignShift = () => {
               <Table sx={{ minWidth: 900 }} size="medium">
                 <TableHead sx={{ bgcolor: '#f8fafc' }}>
                   <TableRow>
-                    <TableCell padding="checkbox" sx={{ py: "16px", pl: "24px",pr:"38px" }}>
+                    <TableCell padding="checkbox" sx={{ py: '16px', pl: '24px', pr: '38px' }}>
                       <Checkbox
                         size="small"
                         indeterminate={isSomeSelected}
                         checked={isAllSelected}
                         onChange={handleSelectAll}
                         sx={{
-                          height:18,
-                          width:18,
+                          height: 18,
+                          width: 18,
                           color: '#64748B',
                           '&.Mui-checked': { color: '#6366f1' }
                         }}
                       />
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5,lineHeight:"100%"}}>
-                      Emp ID
-                    </TableCell>
-                    <TableCell sx={{fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5,lineHeight:"100%"}}>
+                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5, lineHeight: '100%' }}>Emp ID</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5, lineHeight: '100%' }}>
                       Emp Name
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5,lineHeight:"100%"}}>
+                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5, lineHeight: '100%' }}>
                       Designation
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5,lineHeight:"100%"}}>
+                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5, lineHeight: '100%' }}>
                       Mobile No.
                     </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5,lineHeight:"100%"}}>
+                    <TableCell sx={{ fontWeight: 600, color: '#0F172A', fontSize: '13px', py: 1.5, lineHeight: '100%' }}>
                       Department
                     </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {filteredEmployees.length > 0 ? (
-                    filteredEmployees.map((row) => {
-                      const isChecked = selectedIds.includes(row.id);
+                  {loadingEmployees ? (
+                    <TableRow>
+                      <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                        <CircularProgress size={32} sx={{ color: '#6366f1' }} />
+                        <Typography sx={{ mt: 1.5, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>
+                          Loading employees from employee master...
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : employeesList.length > 0 ? (
+                    employeesList.map((row) => {
+                      const isChecked = selectedIds.includes(row.empId);
                       return (
                         <TableRow
                           key={row.id}
                           hover
-                          onClick={() => handleToggleSelect(row.id)}
+                          onClick={() => handleToggleSelect(row.empId)}
                           sx={{
                             cursor: 'pointer',
                             '&:hover': { bgcolor: '#f8fafc' },
                             '& td': { borderColor: '#f1f5f9', py: 1.6, fontSize: '0.875rem', color: '#1e293b' }
                           }}
                         >
-                          <TableCell padding="checkbox" sx={{  py: "16px", pl: "24px",pr:"38px"  }}>
+                          <TableCell padding="checkbox" sx={{ py: '16px', pl: '24px', pr: '38px' }}>
                             <Checkbox
                               size="small"
                               checked={isChecked}
                               onClick={(e) => e.stopPropagation()}
-                              onChange={() => handleToggleSelect(row.id)}
+                              onChange={() => handleToggleSelect(row.empId)}
                               sx={{
-                                  height:18,
-                                  width:18,
-                                  color: '#64748B',
-                                  '&.Mui-checked': { color: '#6366f1' }
+                                height: 18,
+                                width: 18,
+                                color: '#64748B',
+                                '&.Mui-checked': { color: '#6366f1' }
                               }}
                             />
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 600,fontSize:"14px" ,lineHeight:"100%",color:"#0F172A"}}>{row.empId}</TableCell>
-                          <TableCell sx={{ fontWeight: 600,fontSize:"14px" ,lineHeight:"100%",color:"#0F172A"}}>{row.empName}</TableCell>
-                          <TableCell sx={{ fontWeight: 400,fontSize:"12px" ,lineHeight:"100%",color:"#475569" }}>{row.designation}</TableCell>
-                          <TableCell sx={{ fontWeight: 400,fontSize:"12px" ,lineHeight:"100%",color:"#475569" }}>{row.mobileNo}</TableCell>
+                          <TableCell sx={{ fontWeight: 600, fontSize: '14px', lineHeight: '100%', color: '#0F172A' }}>
+                            {row.empId}
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 600, fontSize: '14px', lineHeight: '100%', color: '#0F172A' }}>
+                            {row.empName}
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 400, fontSize: '12px', lineHeight: '100%', color: '#475569' }}>
+                            {row.designation}
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 400, fontSize: '12px', lineHeight: '100%', color: '#475569' }}>
+                            {row.mobileNo}
+                          </TableCell>
                           <TableCell>
                             <Chip
                               label={row.department}
@@ -672,7 +786,7 @@ const AssignShift = () => {
               textTransform: 'none',
               fontWeight: 600,
               fontSize: '14px',
-              lineHeight:"100%",
+              lineHeight: '100%',
               px: 1,
               '&:hover': { bgcolor: 'transparent', textDecoration: 'underline' }
             }}
@@ -684,14 +798,14 @@ const AssignShift = () => {
             variant="contained"
             onClick={handleOpenSelectShiftModal}
             sx={{
-              width:95,
+              minWidth: 95,
               bgcolor: '#644EE5',
               color: '#ffffff',
               textTransform: 'none',
               fontWeight: 600,
               fontSize: '14px',
               borderRadius: '8px',
-              px: "24px",
+              px: '24px',
               height: '37px',
               boxShadow: 'none',
               '&:hover': {
@@ -708,7 +822,7 @@ const AssignShift = () => {
       {/* Select Shift Modal Dialog matching design mockup */}
       <Dialog
         open={selectShiftModalOpen}
-        onClose={() => setSelectShiftModalOpen(false)}
+        onClose={() => !submitting && setSelectShiftModalOpen(false)}
         maxWidth="xs"
         fullWidth
         PaperProps={{
@@ -733,8 +847,9 @@ const AssignShift = () => {
             Select Shift
           </Typography>
           <IconButton
-            onClick={() => setSelectShiftModalOpen(false)}
+            onClick={() => !submitting && setSelectShiftModalOpen(false)}
             size="small"
+            disabled={submitting}
             sx={{ color: '#64748b', p: 0.5 }}
           >
             <CloseIcon fontSize="small" />
@@ -747,7 +862,7 @@ const AssignShift = () => {
           <OutlinedInput
             value={shiftSearchQuery}
             onChange={(e) => setShiftSearchQuery(e.target.value)}
-            placeholder="Search shift"
+            placeholder="Search shift..."
             startAdornment={
               <InputAdornment position="start">
                 <SearchIcon sx={{ color: '#94a3b8', fontSize: 19 }} />
@@ -767,8 +882,12 @@ const AssignShift = () => {
           />
 
           {/* Shift Options List */}
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-            {filteredShifts.length > 0 ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, maxHeight: '320px', overflowY: 'auto' }}>
+            {loadingShifts ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                <CircularProgress size={28} sx={{ color: '#6366f1' }} />
+              </Box>
+            ) : filteredShifts.length > 0 ? (
               filteredShifts.map((shift) => {
                 const isSelected = selectedShiftId === shift.id;
                 return (
@@ -819,15 +938,29 @@ const AssignShift = () => {
                         )}
                       </Box>
 
-                      <Typography
-                        sx={{
-                          fontWeight: 600,
-                          fontSize: '0.875rem',
-                          color: '#0f172a'
-                        }}
-                      >
-                        {shift.name}
-                      </Typography>
+                      <Box>
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.875rem',
+                            color: '#0f172a'
+                          }}
+                        >
+                          {shift.name}
+                        </Typography>
+                        {shift.workingDays && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#64748b',
+                              fontSize: '0.75rem',
+                              display: 'block'
+                            }}
+                          >
+                            {shift.workingDays}
+                          </Typography>
+                        )}
+                      </Box>
                     </Box>
 
                     <Typography
@@ -863,6 +996,7 @@ const AssignShift = () => {
         >
           <Button
             onClick={() => setSelectShiftModalOpen(false)}
+            disabled={submitting}
             sx={{
               color: '#64748b',
               textTransform: 'none',
@@ -878,6 +1012,7 @@ const AssignShift = () => {
           <Button
             variant="contained"
             onClick={handleConfirmAssignment}
+            disabled={submitting || !selectedShiftId}
             sx={{
               bgcolor: '#6366f1',
               color: '#ffffff',
@@ -891,10 +1026,14 @@ const AssignShift = () => {
               '&:hover': {
                 bgcolor: '#4f46e5',
                 boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
+              },
+              '&.Mui-disabled': {
+                bgcolor: '#a5b4fc',
+                color: '#ffffff'
               }
             }}
           >
-            Confirm
+            {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : 'Confirm'}
           </Button>
         </DialogActions>
       </Dialog>
