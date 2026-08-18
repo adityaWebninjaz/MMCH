@@ -10,65 +10,123 @@ import {
   Button,
   FormControl,
   OutlinedInput,
-  InputAdornment
+  InputAdornment,
+  CircularProgress
 } from '@mui/material';
 import {
   Close as CloseIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
+import { getShiftDetails } from 'services/shiftDetailServices';
 
-// Standard shift list matching design mockup
-const DEFAULT_SHIFT_OPTIONS = [
-  { id: 'morning_shift', name: 'Morning Shift', timeRange: '6:00 AM - 2:00 PM' },
-  { id: 'evening_shift', name: 'Evening Shift', timeRange: '2:00 PM - 10:00 PM' },
-  { id: 'night_shift', name: 'Night Shift', timeRange: '10:00 PM - 6:00 AM' },
-  { id: 'general_shift', name: 'General Shift', timeRange: '9:00 AM - 5:00 PM' },
-  { id: 'new_sn_duty', name: 'New S/N Duty', timeRange: '9:00 AM - 5:00 PM' }
-];
+const DEFAULT_EMPTY_ARRAY = [];
 
 /**
  * ChangeShiftModal Component
  * 
- * Opens when clicking "Shift Change" on an employee row.
- * Allows searching and selecting a new shift and confirming the assignment.
+ * Opens when clicking "Shift Change" on an employee row in Shift Details.
+ * Dynamically fetches available shifts from the backend, allows searching and selecting a shift,
+ * and confirming the reassignment.
  */
 const ChangeShiftModal = ({
   open,
   onClose,
   onConfirm,
   employee,
-  initialShiftId = 'morning_shift',
-  shiftOptions = DEFAULT_SHIFT_OPTIONS
+  initialShiftId = '',
+  shiftOptions = DEFAULT_EMPTY_ARRAY
 }) => {
+  const [dynamicShifts, setDynamicShifts] = useState([]);
+  const [loadingShifts, setLoadingShifts] = useState(false);
   const [selectedShiftId, setSelectedShiftId] = useState(initialShiftId);
   const [searchQuery, setSearchQuery] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  // Reset or initialize when modal opens
+  // Fetch dynamic shifts only once when modal opens
   useEffect(() => {
-    if (open) {
-      setSelectedShiftId(initialShiftId || 'morning_shift');
+    if (!open) {
+      setDynamicShifts([]);
       setSearchQuery('');
+      setSubmitting(false);
+      setLoadingShifts(false);
+      return;
     }
-  }, [open, initialShiftId]);
+
+    let isMounted = true;
+    setSearchQuery('');
+    setSubmitting(false);
+    setLoadingShifts(true);
+
+    getShiftDetails({ limit: 100 })
+      .then((res) => {
+        if (!isMounted) return;
+        const items = Array.isArray(res?.items) ? res.items : [];
+        if (items.length > 0) {
+          setDynamicShifts(items);
+          const match = items.find((s) => s.id === initialShiftId);
+          setSelectedShiftId(match ? match.id : items[0].id);
+        } else if (Array.isArray(shiftOptions) && shiftOptions.length > 0) {
+          setDynamicShifts(shiftOptions);
+          const match = shiftOptions.find((s) => s.id === initialShiftId);
+          setSelectedShiftId(match ? match.id : shiftOptions[0].id);
+        } else {
+          setDynamicShifts([]);
+          setSelectedShiftId('');
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.error('Failed to load dynamic shifts in ChangeShiftModal:', err);
+        if (Array.isArray(shiftOptions) && shiftOptions.length > 0) {
+          setDynamicShifts(shiftOptions);
+          setSelectedShiftId(shiftOptions[0].id);
+        } else {
+          setDynamicShifts([]);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setLoadingShifts(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open]);
+
+  // Combined list of shifts
+  const effectiveShifts = dynamicShifts.length > 0 ? dynamicShifts : shiftOptions;
 
   // Filter shifts based on search query
   const filteredShifts = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return shiftOptions;
-    return shiftOptions.filter(
+    if (!q) return effectiveShifts;
+    return effectiveShifts.filter(
       (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.timeRange.toLowerCase().includes(q)
+        s.name?.toLowerCase().includes(q) ||
+        s.timeRange?.toLowerCase().includes(q) ||
+        s.workingDays?.toLowerCase().includes(q)
     );
-  }, [shiftOptions, searchQuery]);
+  }, [effectiveShifts, searchQuery]);
 
   // Handle confirm action
-  const handleConfirm = () => {
-    const selectedShift = shiftOptions.find((s) => s.id === selectedShiftId) || null;
+  const handleConfirm = async () => {
+    const selectedShift = effectiveShifts.find((s) => s.id === selectedShiftId) || null;
+    if (!selectedShift) return;
+
     if (onConfirm) {
-      onConfirm(selectedShift, employee);
+      setSubmitting(true);
+      try {
+        await onConfirm(selectedShift, employee);
+      } catch (err) {
+        console.error('Error in onConfirm:', err);
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      onClose();
     }
-    onClose();
   };
 
   return (
@@ -131,7 +189,7 @@ const ChangeShiftModal = ({
             <OutlinedInput
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search shift"
+              placeholder="Search shift by name or timing..."
               startAdornment={
                 <InputAdornment position="start">
                   <SearchIcon sx={{ color: '#94A3B8', fontSize: 19 }} />
@@ -157,9 +215,26 @@ const ChangeShiftModal = ({
           </FormControl>
         </Box>
 
-        {/* Shift Options List */}
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
-          {filteredShifts.length > 0 ? (
+        {/* Dynamic Shift Options List */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+            mb: 2,
+            maxHeight: '320px',
+            overflowY: 'auto',
+            pr: 0.5
+          }}
+        >
+          {loadingShifts ? (
+            <Box sx={{ py: 5, textAlign: 'center' }}>
+              <CircularProgress size={26} sx={{ color: '#5B4BF2' }} />
+              <Typography sx={{ color: '#64748B', fontSize: '13px', mt: 1.5 }}>
+                Loading available shifts...
+              </Typography>
+            </Box>
+          ) : filteredShifts.length > 0 ? (
             filteredShifts.map((shift) => {
               const isSelected = selectedShiftId === shift.id;
               return (
@@ -181,17 +256,17 @@ const ChangeShiftModal = ({
                     py: 1.8,
                     borderRadius: '10px',
                     cursor: 'pointer',
-                    bgcolor: '#FFFFFF',
+                    bgcolor: isSelected ? '#F5F3FF' : '#FFFFFF',
                     border: isSelected ? '2px solid #5B4BF2' : '1px solid #E2E8F0',
                     transition: 'all 0.15s ease',
                     outline: 'none',
                     '&:hover': {
                       borderColor: isSelected ? '#5B4BF2' : '#CBD5E1',
-                      bgcolor: isSelected ? '#FFFFFF' : '#FAFAFC'
+                      bgcolor: isSelected ? '#F5F3FF' : '#FAFAFC'
                     }
                   }}
                 >
-                  {/* Left: Radio + Shift Name */}
+                  {/* Left: Radio + Shift Name & Working Days */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     {/* Custom Radio Indicator */}
                     <Box
@@ -218,15 +293,29 @@ const ChangeShiftModal = ({
                       )}
                     </Box>
 
-                    <Typography
-                      sx={{
-                        fontWeight: isSelected ? 600 : 500,
-                        fontSize: '14.5px',
-                        color: isSelected ? '#0F172A' : '#334155'
-                      }}
-                    >
-                      {shift.name}
-                    </Typography>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontWeight: isSelected ? 600 : 500,
+                          fontSize: '14.5px',
+                          color: isSelected ? '#0F172A' : '#334155'
+                        }}
+                      >
+                        {shift.name}
+                      </Typography>
+                      {shift.workingDays && (
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: '#64748B',
+                            fontSize: '12px',
+                            display: 'block'
+                          }}
+                        >
+                          {shift.workingDays}
+                        </Typography>
+                      )}
+                    </Box>
                   </Box>
 
                   {/* Right: Time Range */}
@@ -243,9 +332,9 @@ const ChangeShiftModal = ({
               );
             })
           ) : (
-            <Box sx={{ py: 3, textAlign: 'center' }}>
+            <Box sx={{ py: 4, textAlign: 'center' }}>
               <Typography sx={{ color: '#94A3B8', fontSize: '13px' }}>
-                {`No shifts found matching "${searchQuery}"`}
+                {searchQuery ? `No shifts found matching "${searchQuery}"` : 'No available shifts found.'}
               </Typography>
             </Box>
           )}
@@ -266,6 +355,7 @@ const ChangeShiftModal = ({
         {/* Cancel Button */}
         <Button
           onClick={onClose}
+          disabled={submitting}
           sx={{
             textTransform: 'none',
             fontSize: '14px',
@@ -286,6 +376,7 @@ const ChangeShiftModal = ({
         <Button
           variant="contained"
           onClick={handleConfirm}
+          disabled={!selectedShiftId || loadingShifts || submitting}
           sx={{
             bgcolor: '#5B4BF2',
             color: '#FFFFFF',
@@ -300,10 +391,14 @@ const ChangeShiftModal = ({
             '&:hover': {
               bgcolor: '#4B3EE0',
               boxShadow: '0 2px 6px rgba(91, 75, 242, 0.3)'
+            },
+            '&.Mui-disabled': {
+              bgcolor: '#a5b4fc',
+              color: '#ffffff'
             }
           }}
         >
-          Confirm
+          {submitting ? <CircularProgress size={20} sx={{ color: '#FFFFFF' }} /> : 'Confirm'}
         </Button>
       </DialogActions>
     </Dialog>

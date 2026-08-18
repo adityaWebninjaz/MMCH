@@ -119,11 +119,12 @@ const MainLayout = () => {
         elevation={0}
         sx={{
           bgcolor: theme.palette.background.default,
+          borderBottom: '1px solid #CBD5E1',
           transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
           zIndex: (theme) => theme.zIndex.drawer + 2
         }}
       >
-        <Toolbar sx={{ padding: '16px 16px 0px 16px !important' }}>
+        <Toolbar sx={{ padding: '0px !important', minHeight: '88px !important', height: '88px' }}>
           <Header handleLeftDrawerToggle={handleLeftDrawerToggle} />
         </Toolbar>
       </AppBar>

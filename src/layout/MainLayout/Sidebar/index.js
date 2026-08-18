@@ -181,7 +181,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, roleLower }) => {
             },
             background: theme.palette.background.default,
             color: theme.palette.text.primary,
-            borderRight: 'none',
+            borderRight: '1px solid #CBD5E1',
             display: 'flex',
             flexDirection: 'column',
             [theme.breakpoints.up('md')]: {

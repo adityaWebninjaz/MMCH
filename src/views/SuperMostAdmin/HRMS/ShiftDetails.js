@@ -48,7 +48,8 @@ import {
   createShift,
   createShiftDetail,
   deleteShift,
-  deleteShiftDetail
+  deleteShiftDetail,
+  assignEmployeesToShift
 } from '../../../services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
@@ -289,6 +290,8 @@ const ShiftDetails = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [changeShiftModalOpen, setChangeShiftModalOpen] = useState(false);
+  const [startTimePickerOpen, setStartTimePickerOpen] = useState(false);
+  const [endTimePickerOpen, setEndTimePickerOpen] = useState(false);
   const [selectedEmployeeForShiftChange, setSelectedEmployeeForShiftChange] = useState(null);
   const [assignedSearchQuery, setAssignedSearchQuery] = useState('');
   const [assignedDepartmentFilter, setAssignedDepartmentFilter] = useState('All Departments');
@@ -323,9 +326,36 @@ const ShiftDetails = () => {
   };
 
   // Handle Confirm from ChangeShiftModal
-  const handleConfirmShiftChange = (selectedShift, employee) => {
+  const handleConfirmShiftChange = async (selectedShift, employee) => {
     if (!selectedShift || !employee) return;
-    setChangeShiftModalOpen(false);
+    const empUid = employee.empId || employee.uid || employee.id;
+    if (!empUid) {
+      toast.error('Employee ID is missing');
+      return;
+    }
+
+    try {
+      await assignEmployeesToShift(selectedShift.id, [empUid]);
+      toast.success(`Successfully moved ${employee.empName || 'employee'} to ${selectedShift.name}`);
+
+      const currentShiftId = selectedDetailShift?.id;
+      if (currentShiftId) {
+        setLoadingEmployees(true);
+        const emps = await getShiftEmployees(currentShiftId);
+        setAssignedEmployeesList(Array.isArray(emps) ? emps : []);
+        setLoadingEmployees(false);
+      }
+      fetchApiShifts();
+      setChangeShiftModalOpen(false);
+    } catch (err) {
+      console.error('Error changing shift for employee:', err);
+      const errMsg =
+        err?.response?.data?.message ||
+        (Array.isArray(err?.response?.data?.errors) ? err?.response?.data?.errors.join(', ') : null) ||
+        err?.message ||
+        'Failed to change shift';
+      toast.error(errMsg);
+    }
   };
 
   const [formData, setFormData] = useState({
@@ -390,14 +420,21 @@ const ShiftDetails = () => {
   // Open Edit Shift View
   const handleOpenEditView = (shift) => {
     setEditingShift(shift);
-    const times = shift.timeRange.split(' - ');
-    const daysArr = shift.workingDays.split(', ').map((d) => d.trim());
+    const times = shift?.timeRange ? shift.timeRange.split(' - ') : [];
+    const daysArr = shift?.workingDays
+      ? Array.isArray(shift.workingDays)
+        ? shift.workingDays
+        : typeof shift.workingDays === 'string'
+        ? shift.workingDays.split(', ').map((d) => d.trim()).filter(Boolean)
+        : []
+      : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+
     setFormData({
-      name: shift.name,
-      description: shift.description,
-      startTime: times[0] || '09:00 AM',
-      endTime: times[1] || '07:00 PM',
-      workingDays: daysArr
+      name: shift?.name || '',
+      description: shift?.description === '-' ? '' : shift?.description || '',
+      startTime: times[0] || shift?.startTime || '09:00 AM',
+      endTime: times[1] || shift?.endTime || '07:00 PM',
+      workingDays: daysArr.length > 0 ? daysArr : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
     });
     setViewMode('create');
   };
@@ -707,16 +744,45 @@ const ShiftDetails = () => {
                       placeholder="Search name, role, or ID..."
                       startAdornment={
                         <InputAdornment position="start">
-                          <SearchIcon sx={{ color: '#94a3b8', fontSize: 19 }} />
+                          <SearchIcon sx={{ color: 'rgba(100, 116, 139, 1)', fontSize: 16 }} />
                         </InputAdornment>
                       }
+                      endAdornment={
+                        assignedSearchQuery ? (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => setAssignedSearchQuery('')}
+                              sx={{ p: 0.25, color: '#94a3b8', '&:hover': { color: '#475569' } }}
+                            >
+                              <CloseIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </InputAdornment>
+                        ) : null
+                      }
                       sx={{
+                        width: 392,
+                        fontSize: '13px',
                         borderRadius: '8px',
                         bgcolor: '#ffffff',
                         height: '38px',
-                        fontSize: '0.85rem',
-                        color: '#334155',
-                        '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E2E8F0' }
+                        color: 'rgba(100, 116, 139, 1)',
+                        overflow: 'hidden',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#cbd5e1',
+                          borderRadius: '8px',
+                          top: 0,
+                          '& legend': {
+                            display: 'none'
+                          }
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#94a3b8'
+                        },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                          borderColor: '#6366f1',
+                          borderWidth: '1.5px'
+                        }
                       }}
                     />
                   </FormControl>
@@ -882,7 +948,7 @@ const ShiftDetails = () => {
                 '&:hover': { textDecoration: 'underline', bgcolor: 'transparent' }
               }}
             >
-              Shift Management
+             Shift Management 
             </Button>
             <span>/</span>
             <span style={{ color: '#6366f1', fontWeight: 600 }}>{editingShift ? 'Edit Shift' : 'Create New Shift'}</span>
@@ -946,12 +1012,30 @@ const ShiftDetails = () => {
                       Start Time <span style={{ color: '#ef4444' }}>*</span>
                     </Typography>
                     <TimePicker
+                      open={startTimePickerOpen}
+                      onOpen={() => setStartTimePickerOpen(true)}
+                      onClose={() => setStartTimePickerOpen(false)}
                       value={parseTimeString(formData.startTime)}
                       onChange={(newValue) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          startTime: newValue && newValue.isValid() ? newValue.format('hh:mm A') : ''
-                        }));
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: newValue.format('hh:mm A')
+                          }));
+                        } else if (!newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: ''
+                          }));
+                        }
+                      }}
+                      onAccept={(newValue) => {
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            startTime: newValue.format('hh:mm A')
+                          }));
+                        }
                       }}
                       format="hh:mm A"
                       slotProps={{
@@ -968,12 +1052,14 @@ const ShiftDetails = () => {
                           sx: timePickerPopperSx
                         },
                         textField: {
+                          onClick: () => setStartTimePickerOpen(true),
                           placeholder: '09:00 AM',
                           size: 'small',
                           sx: {
                             width: { xs: '100%', sm: 312 },
                             bgcolor: '#ffffff',
                             borderRadius: '8px',
+                            cursor: 'pointer',
                             '& .MuiOutlinedInput-root': {
                               height: '42px',
                               borderRadius: '8px',
@@ -991,11 +1077,13 @@ const ShiftDetails = () => {
                             },
                             '& .MuiInputBase-input': {
                               py: '9px',
-                              fontSize: '0.875rem'
+                              fontSize: '0.875rem',
+                              cursor: 'text'
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '1.25rem',
-                              color: '#64748b'
+                              color: '#64748b',
+                              cursor: 'pointer'
                             }
                           }
                         }
@@ -1008,12 +1096,30 @@ const ShiftDetails = () => {
                       End Time <span style={{ color: '#ef4444' }}>*</span>
                     </Typography>
                     <TimePicker
+                      open={endTimePickerOpen}
+                      onOpen={() => setEndTimePickerOpen(true)}
+                      onClose={() => setEndTimePickerOpen(false)}
                       value={parseTimeString(formData.endTime)}
                       onChange={(newValue) => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          endTime: newValue && newValue.isValid() ? newValue.format('hh:mm A') : ''
-                        }));
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: newValue.format('hh:mm A')
+                          }));
+                        } else if (!newValue) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: ''
+                          }));
+                        }
+                      }}
+                      onAccept={(newValue) => {
+                        if (newValue && dayjs.isDayjs(newValue) && newValue.isValid()) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            endTime: newValue.format('hh:mm A')
+                          }));
+                        }
                       }}
                       format="hh:mm A"
                       slotProps={{
@@ -1030,12 +1136,14 @@ const ShiftDetails = () => {
                           sx: timePickerPopperSx
                         },
                         textField: {
+                          onClick: () => setEndTimePickerOpen(true),
                           placeholder: '07:00 PM',
                           size: 'small',
                           sx: {
                             width: { xs: '100%', sm: 312 },
                             bgcolor: '#ffffff',
                             borderRadius: '8px',
+                            cursor: 'pointer',
                             '& .MuiOutlinedInput-root': {
                               height: '42px',
                               borderRadius: '8px',
@@ -1053,11 +1161,13 @@ const ShiftDetails = () => {
                             },
                             '& .MuiInputBase-input': {
                               py: '9px',
-                              fontSize: '0.875rem'
+                              fontSize: '0.875rem',
+                              cursor: 'text'
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '1.25rem',
-                              color: '#64748b'
+                              color: '#64748b',
+                              cursor: 'pointer'
                             }
                           }
                         }
@@ -1179,7 +1289,7 @@ const ShiftDetails = () => {
               mb: '2px'
             }}
           >
-            Shift Managment
+           Shift Management 
           </Typography>
           <Typography
             variant="body2"
@@ -1248,7 +1358,7 @@ const ShiftDetails = () => {
             }}
           >
             {/* Shift Search */}
-            <FormControl size="small" sx={{ minWidth: 280, flex: 1, maxWidth: 360 }}>
+            <FormControl size="small" sx={{ minWidth: 280, flex: 1, maxWidth: 392 }}>
               <Typography
                 variant="caption"
                 sx={{ color: '#1E293B', fontWeight: 400, mb: 0.5, display: 'block', fontSize: '14px', lineHeight: '100%' }}
@@ -1261,10 +1371,10 @@ const ShiftDetails = () => {
                   setSearchQuery(e.target.value);
                   setPage(1);
                 }}
-                placeholder="Search by shift name"
+                placeholder="Search by shift name..."
                 startAdornment={
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#64748B', fontSize: 20 }} />
+                    <SearchIcon sx={{ color: 'rgba(100, 116, 139, 1)', fontSize: 16 }} />
                   </InputAdornment>
                 }
                 endAdornment={
@@ -1277,18 +1387,28 @@ const ShiftDetails = () => {
                   ) : null
                 }
                 sx={{
-                  minHeight: '32px',
+                  width: '100%',
+                  fontSize: '13px',
                   borderRadius: '8px',
                   bgcolor: '#ffffff',
-                  width: '392px',
-                  fontSize: '13px',
-                  color: '#64748B',
+                  height: '38px',
+                  color: 'rgba(100, 116, 139, 1)',
                   overflow: 'hidden',
                   '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#E2E8F0',
-                    borderRadius: '8px'
+                    borderColor: '#cbd5e1',
+                    borderRadius: '8px',
+                    top: 0,
+                    '& legend': {
+                      display: 'none'
+                    }
                   },
-                  '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94a3b8' }
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#94a3b8'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#6366f1',
+                    borderWidth: '1.5px'
+                  }
                 }}
               />
             </FormControl>
@@ -1298,22 +1418,38 @@ const ShiftDetails = () => {
               variant="contained"
               onClick={handleOpenCreateView}
               sx={{
-                bgcolor: '#644EE5',
-                color: '#ffffff',
-                fontWeight: 500,
-                fontSize: '14px',
+                width: '137px',
+                height: '37px',
+                gap: '8px',
+                opacity: 1,
+                pt: '10px',
+                pr: '16px',
+                pb: '10px',
+                pl: '16px',
+                background: '#644EE5',
+                backgroundColor: '#644EE5',
                 borderRadius: '8px',
-                lineHeight: '24px',
-                px: 2,
-                height: '40px',
+                color: '#FFFFFF',
+                fontFamily: 'Inter, sans-serif',
+                fontWeight: 600,
+                fontSize: '14px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textTransform: 'none',
                 boxShadow: 'none',
                 '&:hover': {
-                  bgcolor: '#4f46e5',
-                  boxShadow: '0 2px 4px rgba(99,102,241,0.2)'
+                  background: '#533ec7',
+                  backgroundColor: '#533ec7',
+                  boxShadow: 'none'
+                },
+                '&.Mui-disabled': {
+                  background: 'rgba(100, 78, 229, 0.6)',
+                  backgroundColor: 'rgba(100, 78, 229, 0.6)',
+                  color: '#ffffff'
                 }
               }}
             >
-              <span style={{ fontSize: '1.2rem', fontWeight: 600, lineHeight: 1 }}>+</span> Create Shift
+              <span style={{ fontSize: '16px', fontWeight: 600, lineHeight: 1 }}>+</span> Create Shift
             </Button>
           </Box>
 
@@ -1329,7 +1465,7 @@ const ShiftDetails = () => {
             }}
           >
             <Table sx={{ minWidth: 900 }} size="medium">
-              <TableHead sx={{ bgcolor: '#f8fafc' }}>
+              <TableHead sx={{ bgcolor: '#F1F5F9' }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, color: '#18181B', fontSize: '14px', lineHeight: '20px', py: '12px' }}>
                     Shift Name
@@ -1455,7 +1591,7 @@ const ShiftDetails = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               {/* Rows per page */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}>
+                <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
                   Rows per page
                 </Typography>
                 <Select
@@ -1479,7 +1615,11 @@ const ShiftDetails = () => {
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: '#D0D5DD',
                       borderRadius: '6px',
-                      borderWidth: '1px'
+                      borderWidth: '1px',
+                      top: 0,
+                      '& legend': {
+                        display: 'none'
+                      }
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: '#94A3B8'
@@ -1492,7 +1632,12 @@ const ShiftDetails = () => {
                       pl: '14px',
                       pr: '34px !important',
                       display: 'flex',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      fontFamily: 'Inter, sans-serif',
+                      fontSize: '14px',
+                      fontWeight: 400,
+                      lineHeight: '20px',
+                      color: '#1E293B'
                     },
                     '& .MuiSelect-icon': {
                       color: '#1E293B',
@@ -1501,20 +1646,20 @@ const ShiftDetails = () => {
                     }
                   }}
                 >
-                  <MenuItem value={10} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                  <MenuItem value={10} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                     10
                   </MenuItem>
-                  <MenuItem value={20} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                  <MenuItem value={20} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                     20
                   </MenuItem>
-                  <MenuItem value={50} sx={{ fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                  <MenuItem value={50} sx={{ fontFamily: 'Inter, sans-serif', fontSize: '14px', fontWeight: 400, color: '#1E293B' }}>
                     50
                   </MenuItem>
                 </Select>
               </Box>
 
               {/* Page counter text */}
-              <Typography variant="body2" sx={{ color: '#1E293B', fontSize: '14px', fontWeight: '500', lineHeight: '20px' }}>
+              <Typography variant="body2" sx={{ fontFamily: 'Inter, sans-serif', color: '#1E293B', fontSize: '14px', fontWeight: 500, lineHeight: '20px', letterSpacing: '0%' }}>
                 Page {page} of {totalPages}
               </Typography>
 
@@ -1695,6 +1840,7 @@ const ShiftDetails = () => {
         onClose={() => setChangeShiftModalOpen(false)}
         onConfirm={handleConfirmShiftChange}
         employee={selectedEmployeeForShiftChange}
+        initialShiftId={selectedDetailShift?.id || ''}
       />
     </>
   );
