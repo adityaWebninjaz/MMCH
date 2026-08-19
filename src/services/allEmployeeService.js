@@ -20,7 +20,7 @@ export const formatImageUrl = (imagePath) => {
   // If path starts with // (e.g. //var/www/pmch-hrms-api/uploads/...)
   if (trimmed.startsWith('//')) {
     return `${baseOrigin}${trimmed}`;
-  }
+  } 
 
   if (trimmed.startsWith('/')) {
     return `${baseOrigin}${trimmed}`;
