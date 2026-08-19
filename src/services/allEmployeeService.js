@@ -13,7 +13,7 @@ export const formatImageUrl = (imagePath) => {
     return trimmed;
   }
 
-  const baseOrigin = (BASE_URL || 'https://mmchhrmsapi.pmu.org.in')
+  const baseOrigin = (BASE_URL)
     .replace(/\/api\/v1\/?$/, '')
     .replace(/\/+$/, '');
 
