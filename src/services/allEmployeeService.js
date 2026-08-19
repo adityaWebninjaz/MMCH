@@ -16,7 +16,7 @@ export const formatImageUrl = (imagePath) => {
   const baseOrigin = (BASE_URL)
     .replace(/\/api\/v1\/?$/, '')
     .replace(/\/+$/, '');
-
+ 
   // If path starts with // (e.g. //var/www/pmch-hrms-api/uploads/...)
   if (trimmed.startsWith('//')) {
     return `${baseOrigin}${trimmed}`;
