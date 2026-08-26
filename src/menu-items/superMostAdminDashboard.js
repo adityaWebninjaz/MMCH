@@ -177,7 +177,16 @@ const superMostAdmin = {
         //   breadcrumbs: false
         // }
       ]
+    },
+    {
+      id: 'hrms-regularisations',
+      title: 'Regularisations',
+      type: 'item',
+      url: '/supermostadmin/hrms/regularisations',
+      icon: icons.IconCheckbox,
+      breadcrumbs: false
     }
+
   ]
 };
 

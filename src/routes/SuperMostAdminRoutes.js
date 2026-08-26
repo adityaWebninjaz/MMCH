@@ -10,15 +10,16 @@ const HrmsApprovals = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Appr
 const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/BiometricDevices')));
 const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftDetails')));
 const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AssignShift')));
-const HrmsAttendanceReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/AttendanceReport')));
-const HrmsLeaveReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/LeaveReport')));
-const HrmsOvertimeReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/OvertimeReport')));
-const HrmsCompensatoryOffReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/CompensatoryOffReport')));
-const HrmsDeductionSummaryReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/DeductionSummaryReport')));
-const HrmsElectricityReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/ElectricityReport')));
-const HrmsPreProcessingReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/PreProcessingReport')));
-const HrmsSaralReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/SaralReport')));
-const HrmsAttendanceExceptionReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/AttendanceExceptionReport')));
+const HrmsAttendanceReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AttendanceReport')));
+const HrmsLeaveReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/LeaveReport')));
+const HrmsOvertimeReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/OvertimeReport')));
+const HrmsCompensatoryOffReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/CompensatoryOffReport')));
+const HrmsDeductionSummaryReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/DeductionSummaryReport')));
+const HrmsElectricityReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/ElectricityReport')));
+const HrmsPreProcessingReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/PreProcessingReport')));
+const HrmsSaralReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/SaralReport')));
+const HrmsAttendanceExceptionReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/AttendanceExceptionReport')));
+const HrmsRegularisations = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Regularisations')));
 
 const SuperMostAdminRoutes = {
   path: '/',
@@ -98,6 +99,10 @@ const SuperMostAdminRoutes = {
         {
           path: 'hrms/attendance-exception-report',
           element: <HrmsAttendanceExceptionReport />
+        },
+        {
+          path: 'hrms/regularisations',
+          element: <HrmsRegularisations />
         }
       ]
     }
