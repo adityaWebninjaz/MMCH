@@ -111,7 +111,71 @@ const superMostAdmin = {
           url: '/supermostadmin/hrms/leave-report',
           icon: icons.IconReportAnalytics,
           breadcrumbs: false
-        }
+        },
+        {
+          id: 'hrms-overtime-report',
+          title: 'Overtime Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/overtime-report',
+          icon: icons.IconClock,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-compensatory-off-report',
+          title: 'Compensatory Off Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/compensatory-off-report',
+          icon: icons.IconNotebook,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-deduction-summary-report',
+          title: 'Deduction Summary Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/deduction-summary-report',
+          icon: icons.IconFileInvoice,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-electricity-report',
+          title: 'Electricity Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/electricity-report',
+          icon: icons.IconBuildingCommunity,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-pre-processing-report',
+          title: 'Pre Processing Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/pre-processing-report',
+          icon: icons.IconCheckbox,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-saral-report',
+          title: 'Saral Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/saral-report',
+          icon: icons.IconReportAnalytics,
+          breadcrumbs: false
+        },
+        {
+          id: 'hrms-attendance-exception-report',
+          title: 'Attendance Exception Report',
+          type: 'item',
+          url: '/supermostadmin/hrms/attendance-exception-report',
+          icon: icons.IconClipboardList,
+          breadcrumbs: false
+        },
+        // {
+        //   id: 'hrms-approval-tat-report',
+        //   title: 'Approval TAT Report',
+        //   type: 'item',
+        //   url: '/supermostadmin/hrms/approval-tat-report',
+        //   icon: icons.IconClock,
+        //   breadcrumbs: false
+        // }
       ]
     }
   ]
