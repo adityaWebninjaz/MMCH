@@ -10,8 +10,15 @@ const HrmsApprovals = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Appr
 const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/BiometricDevices')));
 const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftDetails')));
 const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AssignShift')));
-const HrmsAttendanceReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AttendanceReport')));
-const HrmsLeaveReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/LeaveReport')));
+const HrmsAttendanceReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/AttendanceReport')));
+const HrmsLeaveReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/LeaveReport')));
+const HrmsOvertimeReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/OvertimeReport')));
+const HrmsCompensatoryOffReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/CompensatoryOffReport')));
+const HrmsDeductionSummaryReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/DeductionSummaryReport')));
+const HrmsElectricityReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/ElectricityReport')));
+const HrmsPreProcessingReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/PreProcessingReport')));
+const HrmsSaralReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/SaralReport')));
+const HrmsAttendanceExceptionReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/AttendanceExceptionReport')));
 
 const SuperMostAdminRoutes = {
   path: '/',
@@ -63,6 +70,34 @@ const SuperMostAdminRoutes = {
         {
           path: 'hrms/leave-report',
           element: <HrmsLeaveReport />
+        },
+        {
+          path: 'hrms/overtime-report',
+          element: <HrmsOvertimeReport />
+        },
+        {
+          path: 'hrms/compensatory-off-report',
+          element: <HrmsCompensatoryOffReport />
+        },
+        {
+          path: 'hrms/deduction-summary-report',
+          element: <HrmsDeductionSummaryReport />
+        },
+        {
+          path: 'hrms/electricity-report',
+          element: <HrmsElectricityReport />
+        },
+        {
+          path: 'hrms/pre-processing-report',
+          element: <HrmsPreProcessingReport />
+        },
+        {
+          path: 'hrms/saral-report',
+          element: <HrmsSaralReport />
+        },
+        {
+          path: 'hrms/attendance-exception-report',
+          element: <HrmsAttendanceExceptionReport />
         }
       ]
     }
