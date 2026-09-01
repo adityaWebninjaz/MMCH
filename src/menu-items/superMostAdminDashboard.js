@@ -9,7 +9,10 @@ import {
   IconReportAnalytics,
   IconCheckbox,
   IconUser,
-  IconClock
+  IconClock,
+  IconSpeakerphone,
+  IconSmartHome,
+  IconList
 } from '@tabler/icons-react';
 
 // constant
@@ -23,7 +26,10 @@ const icons = {
   IconReportAnalytics,
   IconCheckbox,
   IconUser,
-  IconClock
+  IconClock,
+  IconSpeakerphone,
+  IconSmartHome,
+  IconList
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -176,6 +182,55 @@ const superMostAdmin = {
         //   icon: icons.IconClock,
         //   breadcrumbs: false
         // }
+      ]
+    },
+    {
+      id: 'hrms-regularisations',
+      title: 'Regularisations',
+      type: 'item',
+      url: '/supermostadmin/hrms/regularisations',
+      icon: icons.IconCheckbox,
+      breadcrumbs: false
+    },
+    {
+      id: 'hrms-announcements',
+      title: 'Announcement',
+      type: 'item',
+      url: '/supermostadmin/hrms/announcements',
+      icon: icons.IconSpeakerphone,
+      breadcrumbs: false
+    },
+    {
+      id: 'hostel-administration',
+      title: 'Hostel Administration',
+      type: 'collapse',
+      icon: icons.IconBuildingCommunity,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'hostel-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/hostel/dashboard',
+          icon: icons.IconSmartHome,
+          breadcrumbs: false
+        },
+        {
+          id: 'hostel-charge-entry',
+          title: 'Charge Entry',
+          type: 'item',
+          url: '/supermostadmin/hostel/charge-entry',
+          icon: icons.IconList,
+          breadcrumbs: false
+        },
+        {
+          id: 'hostel-meter-reading-entry',
+          title: 'Meter Reading Entry',
+          type: 'item',
+          url: '/supermostadmin/hostel/meter-reading-entry',
+          icon: icons.IconList,
+          breadcrumbs: false
+        }
       ]
     }
   ]
