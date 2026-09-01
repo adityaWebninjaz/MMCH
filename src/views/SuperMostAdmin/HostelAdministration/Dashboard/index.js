@@ -551,13 +551,14 @@ const HostelDashboard = () => {
                   label={fixedBuildings.status || 'Confirmed'}
                   size="small"
                   sx={{
-                    bgcolor: '#DCFCE7',
-                    color: '#16A34A',
+                    bgcolor: '#DFF2DF',
+                    color: '#228B22',
                     fontWeight: 600,
-                    fontSize: '12px',
+                    fontSize: '13px',
                     borderRadius: '16px',
                     height: '24px',
-                    fontFamily: 'Inter, sans-serif'
+                    fontFamily: 'Inter, sans-serif',
+                    lineHeight:"18px"
                   }}
                 />
               </Box>
@@ -581,11 +582,11 @@ const HostelDashboard = () => {
                 sx={{
                   height: 6,
                   borderRadius: 3,
-                  bgcolor: '#DCFCE7',
+                  bgcolor: '#E2E8F0',
                   mb: 2,
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 3,
-                    bgcolor: '#16A34A'
+                    bgcolor: '#228B22'
                   }
                 }}
               />
@@ -645,12 +646,13 @@ const HostelDashboard = () => {
                 size="small"
                 sx={{
                   bgcolor: '#DCFCE7',
-                  color: '#16A34A',
+                  color: '#15803D',
                   fontWeight: 600,
-                  fontSize: '12px',
+                  fontSize: '16px',
                   borderRadius: '16px',
                   height: '24px',
-                  fontFamily: 'Inter, sans-serif'
+                  fontFamily: 'Inter, sans-serif',
+                  lineHeight:"18px"
                 }}
               />
             </Box>
@@ -691,7 +693,7 @@ const HostelDashboard = () => {
       <Paper
         elevation={0}
         sx={{
-          p: { xs: 2.5, sm: 3 },
+          p: { xs: 3, sm: 3},
           borderRadius: '12px',
           border: '1px solid #E2E8F0',
           bgcolor: '#FFFFFF',
@@ -701,16 +703,17 @@ const HostelDashboard = () => {
         <Typography
           sx={{
             fontSize: '16px',
-            fontWeight: 700,
-            color: '#0F172A',
+            fontWeight: 600,
+            lineHeight:"24px",
+            color: '#1E293B',
             fontFamily: 'Inter, sans-serif',
-            mb: 2.5
+            mb: 2
           }}
         >
           Hostel Module Quick Actions
         </Typography>
 
-        <Grid container spacing={2.5}>
+        <Grid container spacing={2}>
           {/* Quick Action 1: Enter Readings */}
           <Grid item xs={12} sm={6}>
             <Box
@@ -718,7 +721,7 @@ const HostelDashboard = () => {
               sx={{
                 bgcolor: '#F3E8FF',
                 borderRadius: '8px',
-                p: '16px 20px',
+                p: '16px 16px',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
@@ -741,7 +744,7 @@ const HostelDashboard = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#644EE5',
+                  color: '#1E293B',
                   flexShrink: 0
                 }}
               >
@@ -751,19 +754,21 @@ const HostelDashboard = () => {
                 <Typography
                   sx={{
                     fontSize: '15px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: '#0F172A',
                     fontFamily: 'Inter, sans-serif',
-                    lineHeight: 1.3
+                    lineHeight: "20px"
                   }}
                 >
                   Enter Readings
                 </Typography>
                 <Typography
                   sx={{
-                    fontSize: '13px',
-                    color: '#64748B',
+                    fontSize: '14px',
+                    fontWeight:400,
+                    color: '#1E293B',
                     fontFamily: 'Inter, sans-serif',
+                    lineHeight: "100%",
                     mt: 0.25
                   }}
                 >
@@ -803,7 +808,7 @@ const HostelDashboard = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#644EE5',
+                  color: '#1E293B',
                   flexShrink: 0
                 }}
               >
@@ -813,19 +818,21 @@ const HostelDashboard = () => {
                 <Typography
                   sx={{
                     fontSize: '15px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: '#0F172A',
                     fontFamily: 'Inter, sans-serif',
-                    lineHeight: 1.3
+                    lineHeight: "20px"
                   }}
                 >
                   View History
                 </Typography>
                 <Typography
                   sx={{
-                    fontSize: '13px',
-                    color: '#64748B',
+                    fontSize: '14px',
+                    fontWeight:400,
+                    color: '#1E293B',
                     fontFamily: 'Inter, sans-serif',
+                    lineHeight: "100%",
                     mt: 0.25
                   }}
                 >

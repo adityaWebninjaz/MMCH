@@ -33,7 +33,7 @@ import AddAccommodationModal from './components/AddAccommodationModal';
 
 const TABS = [
   { id: 'room_rent', label: 'Room Rent', amountKey: 'rentAmount', headerTitle: 'Rent Amount (₹)' },
-  { id: 'maintenance', label: 'Maintenance', amountKey: 'maintenanceAmount', headerTitle: 'Amount (₹)', buttonLabel: 'Add Maintenance' },
+  { id: 'maintenance', label: 'Maintenance', amountKey: 'maintenanceAmount', headerTitle: 'Amount (₹)', buttonLabel: 'Add Maintenance Charges' },
   { id: 'accommodation', label: 'Accommodation', amountKey: 'accommodationCharges', headerTitle: 'Amount (₹)', buttonLabel: 'Add Accommodation Charges' }
 ];
 
