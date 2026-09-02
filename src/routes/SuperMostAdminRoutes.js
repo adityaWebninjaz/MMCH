@@ -30,6 +30,8 @@ const ElectricityMeterReadingEntry = Loadable(lazy(() => import('views/SuperMost
 const AccountsDashboard = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment')));
 const AccountsDeductionSummaries = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionSummaries')));
 const AccountsStatutoryCompliance = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/StatutoryCompliance')));
+const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
+const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 
 const SuperMostAdminRoutes = {
   path: '/',
@@ -153,6 +155,14 @@ const SuperMostAdminRoutes = {
         {
           path: 'accounts/statutory-compliance',
           element: <AccountsStatutoryCompliance />
+        },
+        {
+          path: 'hr-admin/dashboard',
+          element: <HRAdminDashboard />
+        },
+        {
+          path: 'hr-admin/employee',
+          element: <HREmployee />
         }
 
       ]

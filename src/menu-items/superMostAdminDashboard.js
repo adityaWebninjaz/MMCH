@@ -15,7 +15,8 @@ import {
   IconList,
   IconBolt,
   IconReportMoney,
-  IconFileText
+  IconFileText,
+  IconLayoutGrid
 } from '@tabler/icons-react';
 
 // constant
@@ -35,7 +36,8 @@ const icons = {
   IconList,
   IconBolt,
   IconReportMoney,
-  IconFileText
+  IconFileText,
+  IconLayoutGrid
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -293,6 +295,31 @@ const superMostAdmin = {
           type: 'item',
           url: '/supermostadmin/accounts/statutory-compliance',
           icon: icons.IconFileText,
+          breadcrumbs: false
+        }
+      ]
+    },
+    {
+      id: 'hr-admin',
+      title: 'HR Admin',
+      type: 'collapse',
+      icon: icons.IconUser,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'hr-admin-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/dashboard',
+          icon: icons.IconLayoutGrid,
+          breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-employee',
+          title: 'Employee',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/employee',
+          icon: icons.IconUsers,
           breadcrumbs: false
         }
       ]
