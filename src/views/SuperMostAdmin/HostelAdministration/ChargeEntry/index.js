@@ -33,7 +33,7 @@ import AddAccommodationModal from './components/AddAccommodationModal';
 
 const TABS = [
   { id: 'room_rent', label: 'Room Rent', amountKey: 'rentAmount', headerTitle: 'Rent Amount (₹)' },
-  { id: 'maintenance', label: 'Maintenance', amountKey: 'maintenanceAmount', headerTitle: 'Amount (₹)', buttonLabel: 'Add Maintenance' },
+  { id: 'maintenance', label: 'Maintenance', amountKey: 'maintenanceAmount', headerTitle: 'Amount (₹)', buttonLabel: 'Add Maintenance Charges' },
   { id: 'accommodation', label: 'Accommodation', amountKey: 'accommodationCharges', headerTitle: 'Amount (₹)', buttonLabel: 'Add Accommodation Charges' }
 ];
 
@@ -174,11 +174,11 @@ const ChargeEntry = () => {
                 disableRipple
                 sx={{
                   bgcolor: isActive ? '#644EE5' : 'transparent',
-                  color: isActive ? '#FFFFFF' : '#475569',
+                  color: isActive ? '#FFFFFF' : '#1E293B',
                   borderRadius: '6px',
                   px: { xs: '14px', sm: '20px' },
                   py: '6px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: 500,
                   fontFamily: 'Inter, sans-serif',
                   textTransform: 'none',

@@ -25,6 +25,13 @@ const HrmsCreateAnnouncement = Loadable(lazy(() => import('@/views/SuperMostAdmi
 const HostelDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/Dashboard')));
 const HostelChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/ChargeEntry')));
 const HostelMeterReadingEntry = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/MeterReadingEntry')));
+const ElectricityDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/ElectricityDepartment/Dashboard')));
+const ElectricityMeterReadingEntry = Loadable(lazy(() => import('views/SuperMostAdmin/ElectricityDepartment/MeterReadingEntry')));
+const AccountsDashboard = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment')));
+const AccountsDeductionSummaries = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionSummaries')));
+const AccountsStatutoryCompliance = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/StatutoryCompliance')));
+const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
+const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 
 const SuperMostAdminRoutes = {
   path: '/',
@@ -128,6 +135,34 @@ const SuperMostAdminRoutes = {
         {
           path: 'hostel/meter-reading-entry',
           element: <HostelMeterReadingEntry />
+        },
+        {
+          path: 'electricity/dashboard',
+          element: <ElectricityDashboard />
+        },
+        {
+          path: 'electricity/meter-reading-entry',
+          element: <ElectricityMeterReadingEntry />
+        },
+        {
+          path: 'accounts/dashboard',
+          element: <AccountsDashboard />
+        },
+        {
+          path: 'accounts/deduction-summaries',
+          element: <AccountsDeductionSummaries />
+        },
+        {
+          path: 'accounts/statutory-compliance',
+          element: <AccountsStatutoryCompliance />
+        },
+        {
+          path: 'hr-admin/dashboard',
+          element: <HRAdminDashboard />
+        },
+        {
+          path: 'hr-admin/employee',
+          element: <HREmployee />
         }
 
       ]

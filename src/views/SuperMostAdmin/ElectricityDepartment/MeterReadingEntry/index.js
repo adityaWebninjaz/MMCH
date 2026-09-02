@@ -201,7 +201,6 @@ const MeterReadingEntry = () => {
         {/* Segmented Pill Tabs: Metered Building / Fixed Building */}
         <Box
           sx={{
-            
             display: 'inline-flex',
             alignItems: 'center',
             bgcolor: '#F1F5F9',
@@ -276,7 +275,7 @@ const MeterReadingEntry = () => {
             height: '36px',
             borderRadius: '8px',
             px: '16px',
-            py:'8px',
+            py: '8px',
             bgcolor: '#644EE5',
             color: '#FFFFFF',
             fontFamily: 'Inter, sans-serif',
@@ -328,7 +327,7 @@ const MeterReadingEntry = () => {
                 color: '#1E293B',
                 fontFamily: 'Inter, sans-serif',
                 mb: '4px',
-                lineHeight: "100%"
+                lineHeight: '100%'
               }}
             >
               Employee Search
@@ -410,7 +409,7 @@ const MeterReadingEntry = () => {
                   color: '#1E293B',
                   fontFamily: 'Inter, sans-serif',
                   mb: '4px',
-                  lineHeight: "100%"
+                  lineHeight: '100%'
                 }}
               >
                 Room Number
@@ -499,7 +498,7 @@ const MeterReadingEntry = () => {
               fontFamily: 'Inter, sans-serif',
               fontWeight: 500,
               fontSize: '14px',
-              lineHeight:"24px",
+              lineHeight: '24px',
               textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
@@ -526,7 +525,7 @@ const MeterReadingEntry = () => {
               fontFamily: 'Inter, sans-serif',
               fontWeight: 500,
               fontSize: '14px',
-              lineHeight:"24px",
+              lineHeight: '24px',
               textTransform: 'none',
               boxShadow: 'none',
               '&:hover': {
@@ -565,46 +564,46 @@ const MeterReadingEntry = () => {
             <TableRow sx={{ bgcolor: '#F8FAFC' }}>
               {activeTab === 'metered' ? (
                 <>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Building Name
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Building No.
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Room No.
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Employee Name
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Meter No.
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Prev. Reading
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Current Reading
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Units Consumed
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Charge (₹)
                   </TableCell>
                 </>
               ) : (
                 <>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px" }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Room No.
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px"  }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Building Name
                   </TableCell>
-                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px"  }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Employee Name
                   </TableCell>
-                  <TableCell sx={{color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px',lineHeight:"20px"  }}>
+                  <TableCell sx={{ color: '#16151C', fontWeight: 600, fontSize: '14px', py: '12px', px: '16px', lineHeight: '20px' }}>
                     Charge (₹)
                   </TableCell>
                 </>
@@ -642,25 +641,25 @@ const MeterReadingEntry = () => {
                 >
                   {activeTab === 'metered' ? (
                     <>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.buildingName || '-'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.buildingNo || '-'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.roomNo || '-'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.employeeName || '-'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.meterNo || '-'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '14px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '14px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.prevReading || '0'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.currentReading || '0'}
                       </TableCell>
                       <TableCell
@@ -669,7 +668,8 @@ const MeterReadingEntry = () => {
                           fontWeight: 500,
                           color: '#644EE5',
                           py: '18px',
-                          px: '16px',lineHeight:"20px"
+                          px: '16px',
+                          lineHeight: '20px'
                         }}
                       >
                         {row.unitsConsumed ? `${row.unitsConsumed} units` : '0 units'}
@@ -688,16 +688,16 @@ const MeterReadingEntry = () => {
                     </>
                   ) : (
                     <>
-                      <TableCell sx={{  fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.roomNo || 'Main Block'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px" }}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.buildingName || 'Room 101'}
                       </TableCell>
-                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px"}}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.employeeName || 'Amit Sharma'}
                       </TableCell>
-                      <TableCell sx={{  fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px',lineHeight:"20px"}}>
+                      <TableCell sx={{ fontSize: '15px', fontWeight: 500, color: '#1F2937', py: '18px', px: '16px', lineHeight: '20px' }}>
                         {row.charge || '750'}
                       </TableCell>
                     </>

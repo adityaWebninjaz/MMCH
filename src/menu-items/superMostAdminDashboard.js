@@ -12,7 +12,11 @@ import {
   IconClock,
   IconSpeakerphone,
   IconSmartHome,
-  IconList
+  IconList,
+  IconBolt,
+  IconReportMoney,
+  IconFileText,
+  IconLayoutGrid
 } from '@tabler/icons-react';
 
 // constant
@@ -29,7 +33,11 @@ const icons = {
   IconClock,
   IconSpeakerphone,
   IconSmartHome,
-  IconList
+  IconList,
+  IconBolt,
+  IconReportMoney,
+  IconFileText,
+  IconLayoutGrid
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -229,6 +237,89 @@ const superMostAdmin = {
           type: 'item',
           url: '/supermostadmin/hostel/meter-reading-entry',
           icon: icons.IconList,
+          breadcrumbs: false
+        }
+      ]
+    },
+    {
+      id: 'electricity-department',
+      title: 'Electricity Department',
+      type: 'collapse',
+      icon: icons.IconBolt,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'electricity-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/electricity/dashboard',
+          icon: icons.IconSmartHome,
+          breadcrumbs: false
+        },
+        {
+          id: 'electricity-meter-reading-entry',
+          title: 'Meter Reading Entry',
+          type: 'item',
+          url: '/supermostadmin/electricity/meter-reading-entry',
+          icon: icons.IconList,
+          breadcrumbs: false
+        }
+      ]
+    },
+    {
+      id: 'accounts-department',
+      title: 'Accounts Department',
+      type: 'collapse',
+      icon: icons.IconReportMoney,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'accounts-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/accounts/dashboard',
+          icon: icons.IconSmartHome,
+          breadcrumbs: false
+        },
+        {
+          id: 'accounts-deduction-summaries',
+          title: 'Deduction Summaries',
+          type: 'item',
+          url: '/supermostadmin/accounts/deduction-summaries',
+          icon: icons.IconList,
+          breadcrumbs: false
+        },
+        {
+          id: 'accounts-statutory-compliance',
+          title: 'Statutory Compliance',
+          type: 'item',
+          url: '/supermostadmin/accounts/statutory-compliance',
+          icon: icons.IconFileText,
+          breadcrumbs: false
+        }
+      ]
+    },
+    {
+      id: 'hr-admin',
+      title: 'HR Admin',
+      type: 'collapse',
+      icon: icons.IconUser,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'hr-admin-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/dashboard',
+          icon: icons.IconLayoutGrid,
+          breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-employee',
+          title: 'Employee',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/employee',
+          icon: icons.IconUsers,
           breadcrumbs: false
         }
       ]
