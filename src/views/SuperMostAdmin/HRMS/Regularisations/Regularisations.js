@@ -43,13 +43,13 @@ import {
   exportRegularisationsExcel
 } from './Services/regularisationService';
 
-const STATUSES = ['All Status', 'Approved', 'Pending', 'Rejected'];
+const STATUSES = ['Pending', 'Approved', 'Rejected'];
 
 const Regularisations = () => {
   // Filter States
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedStatus, setSelectedStatus] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   const dateInputRef = useRef(null);
 
@@ -145,8 +145,8 @@ const Regularisations = () => {
 
       // 3. Status filter
       const matchStatus =
-        selectedStatus === 'All Status' ||
-        row.status.toUpperCase() === selectedStatus.toUpperCase();
+        !selectedStatus ||
+        (row.status && row.status.toUpperCase() === selectedStatus.toUpperCase());
 
       // 4. Search query filter
       const q = searchQuery.trim().toLowerCase();
@@ -747,9 +747,10 @@ const Regularisations = () => {
               </TableRow>
             ) : (
               paginatedData.map((row) => {
-                const isApproved = row.status === 'Approved';
-                const isPending = row.status === 'Pending';
-                const isRejected = row.status === 'Rejected';
+                const statusUpper = (row.status || '').toUpperCase();
+                const isApproved = statusUpper === 'APPROVED';
+                const isPending = statusUpper === 'PENDING';
+                const isRejected = statusUpper === 'REJECTED';
 
                 return (
                   <TableRow

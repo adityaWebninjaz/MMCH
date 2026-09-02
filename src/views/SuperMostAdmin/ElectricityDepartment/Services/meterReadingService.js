@@ -339,8 +339,8 @@ export const INITIAL_FIXED_DATA = Array.from({ length: 20 }, (_, idx) => ({
   type: 'fixed'
 }));
 
-const METERED_STORAGE_KEY = 'MMCH_METER_READINGS_METERED_DATA_V2';
-const FIXED_STORAGE_KEY = 'MMCH_METER_READINGS_FIXED_DATA_V2';
+const METERED_STORAGE_KEY = 'MMCH_ELECTRICITY_METERED_DATA_V1';
+const FIXED_STORAGE_KEY = 'MMCH_ELECTRICITY_FIXED_DATA_V1';
 
 const loadDataFromStorage = (tab) => {
   const isMetered = tab === 'metered';
@@ -356,7 +356,7 @@ const loadDataFromStorage = (tab) => {
       }
     }
   } catch (err) {
-    console.error('Error loading meter data from localStorage:', err);
+    console.error('Error loading electricity meter data from localStorage:', err);
   }
 
   localStorage.setItem(key, JSON.stringify(initial));
@@ -369,7 +369,7 @@ const saveDataToStorage = (tab, data) => {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (err) {
-    console.error('Error saving meter data to localStorage:', err);
+    console.error('Error saving electricity meter data to localStorage:', err);
   }
 };
 
@@ -384,7 +384,7 @@ export const getMeterReadings = async ({ tab = 'metered', search = '', roomNo = 
 
   if (BASE_URL) {
     try {
-      const response = await axios.get(`${BASE_URL}/hostel-admin/meter-readings`, {
+      const response = await axios.get(`${BASE_URL}/electricity-admin/meter-readings`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { tab, search, roomNo },
         timeout: 4000
@@ -398,7 +398,7 @@ export const getMeterReadings = async ({ tab = 'metered', search = '', roomNo = 
         };
       }
     } catch (err) {
-      console.info('Hostel Meter Reading API connecting, using local persistent dataset:', err?.message);
+      console.info('Electricity Meter Reading API connecting, using local persistent dataset:', err?.message);
     }
   }
 
@@ -439,7 +439,7 @@ export const saveMeterReading = async (readingData) => {
 
   if (BASE_URL) {
     try {
-      const response = await axios.post(`${BASE_URL}/hostel-admin/meter-readings`, readingData, {
+      const response = await axios.post(`${BASE_URL}/electricity-admin/meter-readings`, readingData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -455,7 +455,7 @@ export const saveMeterReading = async (readingData) => {
         };
       }
     } catch (err) {
-      console.info('Meter reading save API connecting, falling back to storage:', err?.message);
+      console.info('Electricity meter reading save API connecting, falling back to storage:', err?.message);
     }
   }
 
@@ -593,7 +593,7 @@ export const exportMeterReadingsExcel = ({ data = [], tab = 'metered' }) => {
   link.setAttribute('href', url);
   link.setAttribute(
     'download',
-    `PMCH_${tab === 'metered' ? 'Metered_Building' : 'Fixed_Building'}_Readings_${new Date().toISOString().slice(0, 10)}.csv`
+    `PMCH_Electricity_${tab === 'metered' ? 'Metered_Building' : 'Fixed_Building'}_Readings_${new Date().toISOString().slice(0, 10)}.csv`
   );
   document.body.appendChild(link);
   link.click();

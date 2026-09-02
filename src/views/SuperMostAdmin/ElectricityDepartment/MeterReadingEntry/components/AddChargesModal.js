@@ -217,6 +217,7 @@ const AddChargesModal = ({ open, onClose, onConfirm, loading = false, defaultTab
     const units = Math.max(0, c - p);
     const rate = 11.6;
     const calculatedTotal = Math.round(units * rate);
+    const rawFixed = String(fixedAmount).replace(/[^0-9]/g, '') || '750';
 
     if (onConfirm) {
       onConfirm({
@@ -231,7 +232,7 @@ const AddChargesModal = ({ open, onClose, onConfirm, loading = false, defaultTab
         currentReading: c.toLocaleString('en-IN'),
         unitsConsumed: String(units),
         ratePerUnit: rate,
-        charge: defaultTab === 'fixed' ? String(fixedAmount).replace(/[^0-9.]/g, '') || '750' : calculatedTotal.toLocaleString('en-IN')
+        charge: defaultTab === 'fixed' ? rawFixed : calculatedTotal.toLocaleString('en-IN')
       });
     }
   };

@@ -174,11 +174,11 @@ const ChargeEntry = () => {
                 disableRipple
                 sx={{
                   bgcolor: isActive ? '#644EE5' : 'transparent',
-                  color: isActive ? '#FFFFFF' : '#475569',
+                  color: isActive ? '#FFFFFF' : '#1E293B',
                   borderRadius: '6px',
                   px: { xs: '14px', sm: '20px' },
                   py: '6px',
-                  fontSize: '14px',
+                  fontSize: '16px',
                   fontWeight: 500,
                   fontFamily: 'Inter, sans-serif',
                   textTransform: 'none',
