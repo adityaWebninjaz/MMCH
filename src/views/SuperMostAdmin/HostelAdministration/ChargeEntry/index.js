@@ -16,7 +16,8 @@ import {
   TableRow,
   TableCell,
   Paper,
-  CircularProgress
+  CircularProgress,
+  Tooltip
 } from '@mui/material';
 import {
   Close as CloseIcon,
@@ -24,12 +25,20 @@ import {
   NavigateBefore as NavigateBeforeIcon,
   NavigateNext as NavigateNextIcon,
   LastPage as LastPageIcon,
-  UnfoldMore as UnfoldMoreIcon
+  UnfoldMore as UnfoldMoreIcon,
+  EditOutlined as EditOutlinedIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getChargeEntries, saveChargeEntry } from '../Services/chargeEntryService';
+import {
+  getChargeEntries,
+  saveChargeEntry,
+  updateMaintenanceCharge,
+  updateAccommodationCharge
+} from '../Services/chargeEntryService';
 import AddMaintenanceModal from './components/AddMaintenanceModal';
 import AddAccommodationModal from './components/AddAccommodationModal';
+import UpdateMaintenanceModal from './components/UpdateMaintenanceModal';
+import UpdateAccommodationModal from './components/UpdateAccommodationModal';
 
 const TABS = [
   { id: 'room_rent', label: 'Room Rent', amountKey: 'rentAmount', headerTitle: 'Rent Amount (₹)' },
@@ -44,27 +53,53 @@ const ChargeEntry = () => {
   const [loading, setLoading] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
 
-  // Modal States
+  // Add Modal States
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addAccommodationModalOpen, setAddAccommodationModalOpen] = useState(false);
+
+  // Update Maintenance Modal States
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedEditRow, setSelectedEditRow] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+
+  // Update Accommodation Modal States
+  const [editAccommodationModalOpen, setEditAccommodationModalOpen] = useState(false);
+  const [selectedAccommodationRow, setSelectedAccommodationRow] = useState(null);
+  const [editAccommodationLoading, setEditAccommodationLoading] = useState(false);
 
   // Pagination states
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, page, rowsPerPage, searchQuery]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       const res = await getChargeEntries({
         tab: activeTab,
+        page,
+        limit: rowsPerPage,
         search: searchQuery
       });
       if (res && res.success) {
-        setData(res.data || []);
+        const items = res.data || [];
+        setData(items);
+
+        if (typeof res.total === 'number' && res.total > items.length) {
+          setTotalRecords(res.total);
+          setHasNextPage(page * rowsPerPage < res.total);
+        } else if (items.length >= rowsPerPage) {
+          setTotalRecords(page * rowsPerPage + 1);
+          setHasNextPage(true);
+        } else {
+          setTotalRecords((page - 1) * rowsPerPage + items.length);
+          setHasNextPage(false);
+        }
       }
     } catch (err) {
       console.error('Error fetching charge entries:', err);
@@ -74,7 +109,7 @@ const ChargeEntry = () => {
     }
   };
 
-  // Handler for adding maintenance / accommodation charge
+  // Save new Maintenance / Accommodation
   const handleSaveCharge = async (formData) => {
     setModalLoading(true);
     try {
@@ -95,51 +130,99 @@ const ChargeEntry = () => {
     }
   };
 
-  // Filter by search query
-  const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
-    const q = searchQuery.trim().toLowerCase();
-    return data.filter(
-      (item) =>
-        (item.employeeName && item.employeeName.toLowerCase().includes(q)) ||
-        (item.employeeId && item.employeeId.toLowerCase().includes(q)) ||
-        (item.roomNo && item.roomNo.toLowerCase().includes(q)) ||
-        (item.accommodationType && item.accommodationType.toLowerCase().includes(q)) ||
-        (item.notes && item.notes.toLowerCase().includes(q))
-    );
-  }, [data, searchQuery]);
+  // Update existing Maintenance charge
+  const handleUpdateMaintenance = async (updatePayload) => {
+    setEditLoading(true);
+    try {
+      const res = await updateMaintenanceCharge(updatePayload.id, {
+        amount: updatePayload.amount,
+        notes: updatePayload.notes
+      });
+      if (res && res.success) {
+        toast.success(res.message || 'Maintenance charge updated successfully');
+        setEditModalOpen(false);
+        setSelectedEditRow(null);
+        await fetchData();
+      } else {
+        toast.error(res?.message || 'Failed to update maintenance charge');
+      }
+    } catch (err) {
+      console.error('Error updating maintenance charge:', err);
+      toast.error('An error occurred while updating maintenance charge');
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
-  // Pagination calculations
-  const totalCount = filteredData.length;
+  // Update existing Accommodation charge
+  const handleUpdateAccommodation = async (updatePayload) => {
+    setEditAccommodationLoading(true);
+    try {
+      const res = await updateAccommodationCharge(updatePayload.id, {
+        amount: updatePayload.amount,
+        duration: updatePayload.duration,
+        notes: updatePayload.notes
+      });
+      if (res && res.success) {
+        toast.success(res.message || 'Accommodation charge updated successfully');
+        setEditAccommodationModalOpen(false);
+        setSelectedAccommodationRow(null);
+        await fetchData();
+      } else {
+        toast.error(res?.message || 'Failed to update accommodation charge');
+      }
+    } catch (err) {
+      console.error('Error updating accommodation charge:', err);
+      toast.error('An error occurred while updating accommodation charge');
+    } finally {
+      setEditAccommodationLoading(false);
+    }
+  };
+
+  const safeData = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return safeData;
+    const q = searchQuery.trim().toLowerCase();
+    return safeData.filter(
+      (item) =>
+        (item && item.employeeName && item.employeeName.toLowerCase().includes(q)) ||
+        (item && item.studentName && item.studentName.toLowerCase().includes(q)) ||
+        (item && item.employeeId && item.employeeId.toLowerCase().includes(q)) ||
+        (item && item.studentId && item.studentId.toLowerCase().includes(q)) ||
+        (item && item.roomNo && item.roomNo.toLowerCase().includes(q)) ||
+        (item && item.roomNumber && String(item.roomNumber).toLowerCase().includes(q)) ||
+        (item && item.accommodationType && item.accommodationType.toLowerCase().includes(q)) ||
+        (item && item.buildingCategory && item.buildingCategory.toLowerCase().includes(q)) ||
+        (item && item.notes && item.notes.toLowerCase().includes(q))
+    );
+  }, [safeData, searchQuery]);
+
+  const totalCount = Math.max(totalRecords, filteredData.length);
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
   const startIndex = (page - 1) * rowsPerPage;
+
   const paginatedData = useMemo(() => {
+    if (filteredData.length <= rowsPerPage) return filteredData;
     return filteredData.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredData, startIndex, rowsPerPage]);
 
-  const displayStart = totalCount > 0 ? startIndex + 1 : 0;
-  const displayEnd = Math.min(startIndex + rowsPerPage, totalCount);
-
-  // Current tab metadata
-  const currentTabMeta = useMemo(() => {
-    return TABS.find((t) => t.id === activeTab) || TABS[0];
-  }, [activeTab]);
-
-  const hasActionButton = activeTab === 'maintenance' || activeTab === 'accommodation';
+  const currentTabMeta = useMemo(() => TABS.find((t) => t.id === activeTab) || TABS[0], [activeTab]);
+  const hasActionButton = Boolean(currentTabMeta.buttonLabel);
   const hasNotesColumn = activeTab === 'maintenance' || activeTab === 'accommodation';
+  const isActionTab = activeTab === 'maintenance' || activeTab === 'accommodation';
+  const totalCols = (hasNotesColumn ? 6 : 5) + (isActionTab ? 1 : 0);
 
   return (
     <Box
       sx={{
         width: '100%',
-        minHeight: '100vh',
-        bgcolor: '#ffffff',
-        p: { xs: 2, sm: 3, md: 4 },
-        boxSizing: 'border-box',
-        fontFamily: 'Inter, sans-serif'
+        bgcolor: '#FFFFFF',
+        p: { xs: 2, sm: 3, md: 3.5 },
+        boxSizing: 'border-box'
       }}
     >
-      {/* 1. Top Controls Bar: Tabs (Left) & Action / Search (Right) */}
+      {/* 1. Header Controls Row */}
       <Box
         sx={{
           display: 'flex',
@@ -147,18 +230,18 @@ const ChargeEntry = () => {
           alignItems: { xs: 'stretch', sm: 'center' },
           justifyContent: 'space-between',
           gap: 2,
-          mb: '24px'
+          mb: 3
         }}
       >
-        {/* Segmented Pill Tabs */}
+        {/* Left side: Segmented Tab Buttons */}
         <Box
           sx={{
             display: 'inline-flex',
             alignItems: 'center',
             bgcolor: '#F1F5F9',
-            borderRadius: '8px',
             p: '4px',
-            gap: '4px',
+            borderRadius: '8px',
+            gap: 0.5,
             width: 'fit-content'
           }}
         >
@@ -211,23 +294,19 @@ const ChargeEntry = () => {
             sx={{
               height: '36px',
               borderRadius: '8px',
-              pt: '8px',
-              pr: '16px',
-              pb: '8px',
-              pl: '16px',
+              px: '16px',
+              py: '8px',
               bgcolor: '#644EE5',
               color: '#FFFFFF',
               fontFamily: 'Inter, sans-serif',
               fontWeight: 500,
               fontSize: '14px',
               lineHeight: '20px',
-              letterSpacing: '0%',
               textTransform: 'none',
               boxShadow: 'none',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxSizing: 'border-box',
               whiteSpace: 'nowrap',
               '&:hover': {
                 bgcolor: '#523BCB',
@@ -319,7 +398,7 @@ const ChargeEntry = () => {
                   py: '12px',
                   px: '16px',
                   lineHeight: '20px',
-                  width: hasNotesColumn ? '14%' : '18%'
+                  width: isActionTab ? '13%' : hasNotesColumn ? '14%' : '18%'
                 }}
               >
                 Room No.
@@ -332,7 +411,7 @@ const ChargeEntry = () => {
                   py: '12px',
                   px: '16px',
                   lineHeight: '20px',
-                  width: hasNotesColumn ? '18%' : '20%'
+                  width: isActionTab ? '16%' : hasNotesColumn ? '18%' : '20%'
                 }}
               >
                 Employee ID
@@ -345,7 +424,7 @@ const ChargeEntry = () => {
                   py: '12px',
                   px: '16px',
                   lineHeight: '20px',
-                  width: hasNotesColumn ? '20%' : '24%'
+                  width: isActionTab ? '18%' : hasNotesColumn ? '20%' : '24%'
                 }}
               >
                 Employee Name
@@ -358,7 +437,7 @@ const ChargeEntry = () => {
                   py: '12px',
                   px: '16px',
                   lineHeight: '20px',
-                  width: hasNotesColumn ? '18%' : '20%'
+                  width: isActionTab ? '16%' : hasNotesColumn ? '18%' : '20%'
                 }}
               >
                 Accommodation Type
@@ -371,7 +450,7 @@ const ChargeEntry = () => {
                   py: '12px',
                   px: '16px',
                   lineHeight: '20px',
-                  width: hasNotesColumn ? '14%' : '18%'
+                  width: isActionTab ? '14%' : hasNotesColumn ? '14%' : '18%'
                 }}
               >
                 {currentTabMeta.headerTitle}
@@ -385,10 +464,26 @@ const ChargeEntry = () => {
                     py: '12px',
                     px: '16px',
                     lineHeight: '20px',
-                    width: '16%'
+                    width: isActionTab ? '15%' : '16%'
                   }}
                 >
                   Notes
+                </TableCell>
+              )}
+              {isActionTab && (
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: '#0F172A',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    py: '12px',
+                    px: '16px',
+                    lineHeight: '20px',
+                    width: '8%'
+                  }}
+                >
+                  Action
                 </TableCell>
               )}
             </TableRow>
@@ -396,20 +491,20 @@ const ChargeEntry = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={hasNotesColumn ? 6 : 5} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                <TableCell colSpan={totalCols} align="center" sx={{ py: 6, borderBottom: 'none' }}>
                   <CircularProgress size={32} sx={{ color: '#644EE5' }} />
                 </TableCell>
               </TableRow>
             ) : paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={hasNotesColumn ? 6 : 5} align="center" sx={{ py: 6, color: '#64748B', borderBottom: 'none' }}>
+                <TableCell colSpan={totalCols} align="center" sx={{ py: 6, color: '#64748B', borderBottom: 'none' }}>
                   No records found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((row) => (
+              paginatedData.map((row, index) => (
                 <TableRow
-                  key={row.id}
+                  key={row.id || row._id || `row-${index}`}
                   hover
                   sx={{
                     '&:hover': {
@@ -427,7 +522,7 @@ const ChargeEntry = () => {
                       py: '18px'
                     }}
                   >
-                    {row.roomNo}
+                    {row.roomNo || (row.roomNumber ? `Room ${row.roomNumber}` : '') || row.room_no || row.room || '-'}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -439,7 +534,7 @@ const ChargeEntry = () => {
                       py: '18px'
                     }}
                   >
-                    {row.employeeId}
+                    {activeTab === 'room_rent' ? 'null' : (row.employeeId || row.UID || (row.studentId ? `PMCH-${row.studentId.slice(0, 5).toUpperCase()}` : '') || row.employee_id || row.empId || '-')}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -451,7 +546,7 @@ const ChargeEntry = () => {
                       py: '18px'
                     }}
                   >
-                    {row.employeeName}
+                    {row.employeeName || row.studentName || row.employee_name || row.name || row.empName || '-'}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -463,7 +558,7 @@ const ChargeEntry = () => {
                       py: '18px'
                     }}
                   >
-                    {row.accommodationType}
+                    {row.accommodationType || row.buildingCategory || row.roomType || row.accommodation_type || '-'}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -475,20 +570,53 @@ const ChargeEntry = () => {
                       py: '18px'
                     }}
                   >
-                    {row[currentTabMeta.amountKey] || '3,000'}
+                    {row[currentTabMeta.amountKey] || (row.amount !== undefined ? (typeof row.amount === 'number' ? `₹ ${row.amount.toLocaleString('en-IN')}` : String(row.amount).startsWith('₹') ? row.amount : `₹ ${row.amount}`) : '') || (row.roomRent !== undefined ? `₹ ${row.roomRent}` : '') || row.rentAmount || '₹ 0.00'}
                   </TableCell>
                   {hasNotesColumn && (
                     <TableCell
                       sx={{
                         fontSize: '14px',
-                        fontWeight: row.notes && row.notes !== '-' ? 600 : 400,
-                        color: row.notes && row.notes !== '-' ? '#0F172A' : '#1F2937',
+                        fontWeight: (row.notes || row.note || row.description) && (row.notes || row.note || row.description) !== '-' ? 600 : 400,
+                        color: (row.notes || row.note || row.description) && (row.notes || row.note || row.description) !== '-' ? '#0F172A' : '#1F2937',
                         lineHeight: '20px',
                         px: '16px',
                         py: '18px'
                       }}
                     >
-                      {row.notes || '-'}
+                      {row.notes || row.note || row.description || '-'}
+                    </TableCell>
+                  )}
+                  {isActionTab && (
+                    <TableCell align="center" sx={{ px: '16px', py: '14px' }}>
+                      <Tooltip title={activeTab === 'maintenance' ? 'Update Maintenance Charge' : 'Update Accommodation Charge'}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (activeTab === 'maintenance') {
+                              setSelectedEditRow(row);
+                              setEditModalOpen(true);
+                            } else {
+                              setSelectedAccommodationRow(row);
+                              setEditAccommodationModalOpen(true);
+                            }
+                          }}
+                          sx={{
+                            color: '#644EE5',
+                            bgcolor: '#F5F3FF',
+                            borderRadius: '8px',
+                            p: '7px',
+                            border: '1px solid #DDD6FE',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              bgcolor: '#EDE9FE',
+                              borderColor: '#C4B5FD',
+                              transform: 'scale(1.05)'
+                            }
+                          }}
+                        >
+                          <EditOutlinedIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   )}
                 </TableRow>
@@ -519,23 +647,32 @@ const ChargeEntry = () => {
             lineHeight: '20px'
           }}
         >
-          {totalCount > 0 ? `Showing ${displayStart}-${displayEnd} of ${totalCount}` : 'Showing 0-0 of 0'}
+          Showing {totalCount === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + rowsPerPage, totalCount)} of {totalCount} entries
         </Typography>
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: { xs: 1.5, sm: 3 } }}>
-          {/* Rows per page selector */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {/* Controls Container */}
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2.5,
+            width: { xs: '100%', md: 'auto' },
+            justifyContent: { xs: 'space-between', md: 'flex-end' }
+          }}
+        >
+          {/* Rows per page dropdown */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography
               variant="body2"
               sx={{
                 fontFamily: 'Inter, sans-serif',
-                color: '#1E293B',
+                color: '#64748B',
                 fontSize: '14px',
-                fontWeight: 500,
+                fontWeight: 400,
                 lineHeight: '20px'
               }}
             >
-              Rows per page
+              Rows per page:
             </Typography>
             <Select
               value={rowsPerPage}
@@ -543,50 +680,33 @@ const ChargeEntry = () => {
                 setRowsPerPage(Number(e.target.value));
                 setPage(1);
               }}
-              size="small"
               IconComponent={UnfoldMoreIcon}
               sx={{
-                height: '36px',
-                borderRadius: '6px',
-                bgcolor: '#FFFFFF',
-                color: '#1E293B',
-                fontFamily: 'Inter, sans-serif',
+                height: '32px',
+                borderRadius: '6px !important',
+                bgcolor: '#ffffff',
                 fontSize: '14px',
-                fontWeight: 400,
-                lineHeight: '20px',
-                minWidth: '78px',
-                overflow: 'hidden',
+                fontFamily: 'Inter, sans-serif',
+                color: '#1E293B',
+                fontWeight: 500,
+                '& .MuiSelect-select': {
+                  py: '4px',
+                  pl: '10px',
+                  pr: '28px !important'
+                },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#E2E8F0',
-                  borderRadius: '6px',
-                  borderWidth: '1px',
-                  top: 0,
-                  '& legend': {
-                    display: 'none'
-                  }
+                  borderRadius: '6px !important'
                 },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#94A3B8'
-                },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#644EE5'
+                  borderColor: '#644EE5',
+                  borderWidth: '1.5px'
                 },
-                '& .MuiSelect-select': {
-                  py: '8px',
-                  pl: '14px',
-                  pr: '34px !important',
-                  display: 'flex',
-                  alignItems: 'center',
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '14px',
-                  fontWeight: 400,
-                  lineHeight: '20px',
-                  color: '#1E293B'
-                },
-                '& .MuiSelect-icon': {
-                  color: '#1E293B',
-                  fontSize: '18px',
-                  right: '8px'
+                '& .MuiSvgIcon-root': {
+                  fontSize: '16px',
+                  color: '#64748B',
+                  right: '6px'
                 }
               }}
             >
@@ -595,9 +715,8 @@ const ChargeEntry = () => {
                   key={pageSize}
                   value={pageSize}
                   sx={{
-                    fontFamily: 'Inter, sans-serif',
                     fontSize: '14px',
-                    fontWeight: 400,
+                    fontFamily: 'Inter, sans-serif',
                     lineHeight: '20px',
                     color: '#1E293B'
                   }}
@@ -640,7 +759,7 @@ const ChargeEntry = () => {
             </IconButton>
             <IconButton
               size="small"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
               disabled={page === 1}
               sx={{
                 border: '1px solid #E2E8F0',
@@ -654,8 +773,8 @@ const ChargeEntry = () => {
             </IconButton>
             <IconButton
               size="small"
-              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={page === totalPages}
+              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={!hasNextPage && page >= totalPages}
               sx={{
                 border: '1px solid #E2E8F0',
                 borderRadius: '6px',
@@ -669,7 +788,7 @@ const ChargeEntry = () => {
             <IconButton
               size="small"
               onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
+              disabled={!hasNextPage && page >= totalPages}
               sx={{
                 border: '1px solid #E2E8F0',
                 borderRadius: '6px',
@@ -698,6 +817,30 @@ const ChargeEntry = () => {
         onClose={() => setAddAccommodationModalOpen(false)}
         onConfirm={handleSaveCharge}
         loading={modalLoading}
+      />
+
+      {/* 6. Update Maintenance Modal */}
+      <UpdateMaintenanceModal
+        open={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setSelectedEditRow(null);
+        }}
+        onConfirm={handleUpdateMaintenance}
+        initialData={selectedEditRow}
+        loading={editLoading}
+      />
+
+      {/* 7. Update Accommodation Modal */}
+      <UpdateAccommodationModal
+        open={editAccommodationModalOpen}
+        onClose={() => {
+          setEditAccommodationModalOpen(false);
+          setSelectedAccommodationRow(null);
+        }}
+        onConfirm={handleUpdateAccommodation}
+        initialData={selectedAccommodationRow}
+        loading={editAccommodationLoading}
       />
     </Box>
   );

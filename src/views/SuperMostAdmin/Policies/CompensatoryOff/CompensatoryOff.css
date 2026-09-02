@@ -1,0 +1,675 @@
+/* Compensatory Off CSS - Matching Figma Specs */
+
+.compoff-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px;
+  gap: 20px;
+  width: 100%;
+  min-height: 100%;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Inner Main Wrapper with 40px gap containing all content */
+.compoff-main-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Row: Title and Tabs */
+.compoff-header-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+  width: 100%;
+}
+
+.compoff-page-title {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 29px;
+  color: #0F172A;
+  margin: 0;
+}
+
+/* Tabs Navigation */
+.compoff-tabs-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 4px;
+  width: 477px;
+  max-width: 100%;
+  height: 48px;
+  background: #F1F5F9;
+  border-radius: 8px;
+}
+
+.compoff-tab-btn {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 6px;
+  width: 234.5px;
+  height: 40px;
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+  color: #1E293B;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.compoff-tab-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.compoff-tab-btn.active {
+  background: #644EE5;
+  color: #FFFFFF;
+}
+
+.compoff-tab-btn.active:hover {
+  background: #523BCB;
+  color: #FFFFFF;
+}
+
+/* Content Container Frame */
+.compoff-content-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 16px;
+  width: 100%;
+  max-width: 1556px;
+  height: 628px;
+  max-height: 628px;
+  background: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+/* Content Grid / Row */
+.compoff-content-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Left Card: Manual Adjustment Form Card (Frame) */
+.compoff-form-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  width: 1053px;
+  height: 413px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Frame 38: Search + Employee Card Container */
+.compoff-search-employee-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 16px;
+  gap: 10px;
+  width: 100%;
+  max-width: 1053px;
+  align-self: stretch;
+}
+
+/* Search Bar (filter-search / search-wrap) */
+.compoff-search-wrap {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  width: 100%;
+  height: 36px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  align-self: stretch;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compoff-search-wrap:focus-within {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.compoff-search-icon {
+  width: 16px;
+  height: 16px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.compoff-search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 16px;
+  color: #0F172A;
+}
+
+.compoff-search-input::placeholder {
+  color: #64748B;
+}
+
+/* Employee Summary Card */
+.compoff-employee-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  width: 100%;
+  height: 73px;
+  background: #F9F9F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  align-self: stretch;
+}
+
+.compoff-employee-details {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.compoff-emp-name {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: #0F172A;
+  margin: 0;
+}
+
+.compoff-emp-sub {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 15px;
+  color: #475569;
+  margin: 0;
+}
+
+.compoff-emp-balance-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.compoff-balance-label {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 15px;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin: 0;
+}
+
+.compoff-balance-val {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22px;
+  color: #0F172A;
+  margin: 0;
+}
+
+/* Frame 39: Form Row 1 Container */
+.compoff-form-row-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 16px;
+  gap: 10px;
+  width: 100%;
+  max-width: 1053px;
+  align-self: stretch;
+}
+
+/* Form Two Column Row */
+.compoff-form-row {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 24px;
+  width: 100%;
+  align-self: stretch;
+}
+
+.compoff-field-col {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 6px;
+  flex: 1;
+}
+
+.compoff-field-label {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 13px;
+  text-transform: capitalize;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compoff-required-star {
+  color: #EF4444;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 13px;
+}
+
+.compoff-input-wrap {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 11px 14px;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  align-self: stretch;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compoff-input-wrap:focus-within {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.compoff-input-field {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 16px;
+  color: #0F172A;
+}
+
+.compoff-input-field::placeholder {
+  color: #94A3B8;
+}
+
+.compoff-calendar-icon {
+  width: 14px;
+  height: 14px;
+  color: #94A3B8;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Frame 40: Reason Container */
+.compoff-reason-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 16px;
+  gap: 10px;
+  width: 100%;
+  max-width: 1053px;
+  align-self: stretch;
+}
+
+/* Reason Full Width Textarea */
+.compoff-textarea-col {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 8px;
+  width: 100%;
+  align-self: stretch;
+}
+
+.compoff-textarea-label {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 13px;
+  letter-spacing: 0.0005em;
+  text-transform: capitalize;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compoff-textarea-field {
+  box-sizing: border-box;
+  width: 100%;
+  height: 96px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 20px;
+  color: #0F172A;
+  resize: vertical;
+  outline: none;
+  align-self: stretch;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compoff-textarea-field:hover {
+  border-color: #94A3B8;
+}
+
+.compoff-textarea-field:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.compoff-textarea-field::placeholder {
+  color: #94A3B8;
+}
+
+/* Action Footer for Form */
+.compoff-action-footer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 16px 0px;
+  gap: 12px;
+  width: 100%;
+  max-width: 1053px;
+  height: 68px;
+  align-self: stretch;
+}
+
+.compoff-btn-cancel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  width: 71px;
+  min-width: 64px;
+  height: 36px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.compoff-btn-cancel:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #1E293B;
+}
+
+.compoff-btn-apply {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  width: 144px;
+  min-width: 64px;
+  height: 36px;
+  background: #644EE5;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.compoff-btn-apply:hover {
+  background: #523BCB;
+}
+
+.compoff-btn-apply:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Right Card: Expiry Window Card */
+.compoff-expiry-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 14px;
+  gap: 16px;
+  width: 100%px;
+  max-width: 487px;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.compoff-expiry-title {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  color: #09090B;
+  margin: 0;
+}
+
+/* Expiry Input Row */
+.compoff-expiry-input-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.compoff-expiry-input-box {
+  box-sizing: border-box;
+  width: 72px;
+  height: 40px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0px 12px;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.compoff-expiry-input-box:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.15);
+}
+
+.compoff-expiry-suffix {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 17px;
+  color: #475569;
+}
+
+/* Expiry Alert Box */
+.compoff-alert-box {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  gap: 6px;
+  background: #F8F2FF;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.compoff-alert-headline {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 16px;
+  color: #644EE5;
+  margin: 0;
+}
+
+.compoff-alert-desc {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 17px;
+  color: #644EE5;
+  margin: 0;
+}
+
+/* Expiry Action Footer */
+.compoff-expiry-action-footer {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-top: 16px;
+}
+
+.compoff-btn-save {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  width: 64px;
+  min-width: 64px;
+  height: 36px;
+  background: #644EE5;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.compoff-btn-save:hover {
+  background: #523BCB;
+}
+
+.compoff-btn-save:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */

@@ -1,0 +1,388 @@
+/* Overtime Policies CSS - Matching Figma Specs */
+
+.overtime-page-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px;
+  gap: 20px;
+  width: 100%;
+  min-height: 100%;
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Inner Main Wrapper with 40px gap containing all content */
+.overtime-main-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Header Row: Title and Tabs */
+.overtime-header-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+  width: 100%;
+}
+
+.overtime-page-title {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 29px;
+  color: #0F172A;
+  margin: 0;
+}
+
+/* Tabs Navigation */
+.overtime-tabs-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 4px;
+  width: 477px;
+  max-width: 100%;
+  height: 48px;
+  background: #F1F5F9;
+  border-radius: 8px;
+}
+
+.overtime-tab-btn {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 12px;
+  gap: 6px;
+  width: 234.5px;
+  height: 40px;
+  flex: 1 1 0;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  text-align: center;
+  color: #1E293B;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.overtime-tab-btn:hover {
+  background: #E2E8F0;
+  color: #0F172A;
+}
+
+.overtime-tab-btn.active {
+  background: #644EE5;
+  color: #FFFFFF;
+}
+
+.overtime-tab-btn.active:hover {
+  background: #523BCB;
+  color: #FFFFFF;
+}
+
+/* Content Container Frame */
+.overtime-content-container {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 16px;
+  width: 100%;
+  max-width: 1556px;
+  height: 628px;
+  max-height: 628px;
+  background: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+/* Content Grid / Row */
+.overtime-content-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Left Card: Settings Form Card */
+.overtime-form-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 16px;
+  gap: 28px;
+  width: 1140px;
+  min-height: 377px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Form Group */
+.overtime-config-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 16px;
+  width: 100%;
+}
+
+.overtime-group-title {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 17px;
+  color: #000000;
+  margin: 0;
+}
+
+.overtime-input-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px 0px 0px;
+  gap: 8px;
+  width: 100%;
+}
+
+.overtime-input-box {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px;
+  width: 100px;
+  height: 38px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  color: #0F172A;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.overtime-input-box:hover {
+  border-color: #94A3B8;
+}
+
+.overtime-input-box:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.15);
+}
+
+.overtime-input-suffix {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 16px;
+  color: #64748B;
+  user-select: none;
+}
+
+/* Action Footer */
+.overtime-action-footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 0px;
+  gap: 12px;
+  width: 100%;
+}
+
+.overtime-btn-cancel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  width: 71px;
+  min-width: 64px;
+  height: 36px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overtime-btn-cancel:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #1E293B;
+}
+
+.overtime-btn-update {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 8px;
+  width: 74px;
+  min-width: 64px;
+  height: 36px;
+  background: #644EE5;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 24px;
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.overtime-btn-update:hover {
+  background: #523BCB;
+}
+
+.overtime-btn-update:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Right Card: Shared Config Card */
+.overtime-shared-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  gap: 20px;
+  width: 400px;
+  height: 268px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.overtime-shared-title {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 18px;
+  color: #0F172A;
+  margin: 0;
+}
+
+.overtime-usage-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  margin: 0;
+  gap: 14px;
+  width: 100%;
+  list-style: none;
+}
+
+.overtime-usage-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+
+.overtime-bullet-dot {
+  color: #475569;
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.overtime-usage-text {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 18px;
+  color: #334155;
+  margin: 0;
+}
+
+.overtime-usage-text strong {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+/* Alert Callout */
+.overtime-alert-callout {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 16px;
+  background: #F8F2FF;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.overtime-alert-text {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 18px;
+  color: #644EE5;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .overtime-content-grid {
+    flex-direction: column;
+  }
+
+  .overtime-shared-card {
+    width: 100%;
+    max-width: 100%;
+  }
+}

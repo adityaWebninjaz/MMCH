@@ -201,6 +201,14 @@ const superMostAdmin = {
       breadcrumbs: false
     },
     {
+      id: 'hrms-policies',
+      title: 'Policies',
+      type: 'item',
+      url: '/supermostadmin/policies/overtime',
+      icon: icons.IconClock,
+      breadcrumbs: false
+    },
+    {
       id: 'hrms-announcements',
       title: 'Announcement',
       type: 'item',
@@ -252,15 +260,38 @@ const superMostAdmin = {
           id: 'electricity-dashboard',
           title: 'Dashboard',
           type: 'item',
-          url: '/supermostadmin/electricity/dashboard',
           icon: icons.IconSmartHome,
-          breadcrumbs: false
+          url: '/supermostadmin/electricity/dashboard',
         },
         {
           id: 'electricity-meter-reading-entry',
           title: 'Meter Reading Entry',
           type: 'item',
+          icon: icons.IconList,
           url: '/supermostadmin/electricity/meter-reading-entry',
+        },
+      ]
+    },
+    {
+      id: 'front-office',
+      title: 'Front Office',
+      type: 'collapse',
+      icon: icons.IconBuildingCommunity,
+      breadcrumbs: false,
+      children: [
+        {
+          id: 'front-office-dashboard',
+          title: 'Dashboard',
+          type: 'item',
+          url: '/supermostadmin/front-office/dashboard',
+          icon: icons.IconSmartHome,
+          breadcrumbs: false
+        },
+        {
+          id: 'front-office-charge-entry',
+          title: 'Charge Entry',
+          type: 'item',
+          url: '/supermostadmin/front-office/charge-entry',
           icon: icons.IconList,
           breadcrumbs: false
         }
@@ -325,6 +356,6 @@ const superMostAdmin = {
       ]
     }
   ]
-};
+}
 
 export default superMostAdmin;
