@@ -33,6 +33,11 @@ const AccountsStatutoryCompliance = Loadable(lazy(() => import('@/views/SuperMos
 const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
 const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 
+const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
+const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
+const PoliciesOvertime = Loadable(lazy(() => import('views/SuperMostAdmin/Policies/OverTime')));
+const PoliciesCompensatoryOff = Loadable(lazy(() => import('views/SuperMostAdmin/Policies/CompensatoryOff')));
+
 const SuperMostAdminRoutes = {
   path: '/',
   element: <MainLayout />,
@@ -163,8 +168,43 @@ const SuperMostAdminRoutes = {
         {
           path: 'hr-admin/employee',
           element: <HREmployee />
+        },
+        {
+          path: 'front-office/dashboard',
+          element: <FrontOfficeDashboard />
+        },
+        {
+          path: 'frontoffice/dashboard',
+          element: <FrontOfficeDashboard />
+        },
+        {
+          path: 'front-office/charge-entry',
+          element: <FrontOfficeChargeEntry />
+        },
+        {
+          path: 'frontoffice/charge-entry',
+          element: <FrontOfficeChargeEntry />
+        },
+        {
+          path: 'policies/overtime',
+          element: <PoliciesOvertime />
+        },
+        {
+          path: 'policies/over-time',
+          element: <PoliciesOvertime />
+        },
+        {
+          path: 'policies/compensatory-off',
+          element: <PoliciesCompensatoryOff />
+        },
+        {
+          path: 'policies/compensatoryoff',
+          element: <PoliciesCompensatoryOff />
+        },
+        {
+          path: 'policies',
+          element: <Navigate to="/supermostadmin/policies/overtime" replace />
         }
-
       ]
     }
   ]
