@@ -439,7 +439,7 @@ export const getEmployeeLeaves = async (userId, { year, month, status } = {}) =>
     const params = {};
     if (year) params.year = Number(year);
     if (month && month !== 'all' && month !== 'All') params.month = Number(month);
-    if (status && status !== 'all' && status !== 'ALL') params.status = status.toUpperCase();
+    if (status && status !== 'all' && status !== 'ALL' && status !== '--') params.status = status.toUpperCase();
 
     const response = await axios.get(`${BASE_URL}/leaves/employee/${userId}`, {
       headers: getAuthHeaders(),

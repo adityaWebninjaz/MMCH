@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Alert
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import { IconCalendar, IconChevronDown, IconUpload, IconCheck, IconX } from '@tabler/icons-react';
 import {
   getDepartments,
@@ -540,9 +541,10 @@ const AddEditEmployee = ({
 
       // ================= 1. EDIT MODE: PATCH /users/{id} =================
       if (mode === 'edit') {
-        const targetUserId = initialData?.id || initialData?.userId || initialData?.user_id;
+        const targetUserId = initialData?.id || initialData?.userId || initialData?.user_id || initialData?._id;
         if (!targetUserId) {
           setErrorMessage('User ID not found for updating');
+          setToast({ open: true, message: 'User ID not found for updating', severity: 'error' });
           setSaving(false);
           return;
         }
@@ -578,10 +580,15 @@ const AddEditEmployee = ({
 
         const res = await updateEmployeeUser(targetUserId, patchPayload);
         if (!res.success) {
-          setErrorMessage(res.error || 'Failed to update employee details');
+          const errMsg = res.error || 'Failed to update employee details';
+          setErrorMessage(errMsg);
+          toast.error(errMsg);
           setSaving(false);
           return;
         }
+
+        toast.success('Employee details updated successfully!');
+        setSuccessMessage('Employee details updated successfully!');
 
         if (onSave) {
           onSave({
@@ -714,11 +721,17 @@ const AddEditEmployee = ({
       }
 
       if (uploadedCount > 0 && failedCount === 0) {
-        setSuccessMessage(`${uploadedCount} document(s) uploaded successfully!`);
+        const msg = `${uploadedCount} document(s) uploaded successfully!`;
+        setSuccessMessage(msg);
+        toast.success(msg);
       } else if (uploadedCount > 0 && failedCount > 0) {
-        setSuccessMessage(`${uploadedCount} document(s) uploaded successfully (${failedCount} failed).`);
+        const msg = `${uploadedCount} document(s) uploaded successfully (${failedCount} failed).`;
+        setSuccessMessage(msg);
+        toast.info(msg);
       } else {
-        setErrorMessage('Failed to upload documents. Please check file format and try again.');
+        const msg = 'Failed to upload documents. Please check file format and try again.';
+        setErrorMessage(msg);
+        toast.error(msg);
       }
     } catch (err) {
       console.error('Error in handleUploadDocuments:', err);

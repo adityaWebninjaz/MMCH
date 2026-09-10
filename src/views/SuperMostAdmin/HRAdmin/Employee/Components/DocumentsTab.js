@@ -16,39 +16,7 @@ const DocumentsTab = ({ documents = DEFAULT_DOCUMENTS }) => {
   return (
     <Box>
       <Typography sx={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', mb: 2 }}>Uploaded Documents</Typography>
-      <Grid container spacing={2}>
-        {docList.map((doc, idx) => (
-          <Grid item xs={12} sm={6} key={idx}>
-            <Paper
-              elevation={0}
-              sx={{
-                p: 2,
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                bgcolor: '#FFFFFF'
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
-                <IconFileText size={24} color="#644EE5" style={{ flexShrink: 0 }} />
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography noWrap sx={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
-                    {doc.name}
-                  </Typography>
-                  <Typography noWrap sx={{ fontSize: '11px', color: '#64748B' }}>
-                    {doc.size} {doc.date ? `· Uploaded ${doc.date}` : ''}
-                  </Typography>
-                </Box>
-              </Box>
-              <IconButton size="small" sx={{ color: '#64748B', flexShrink: 0, ml: 1 }}>
-                <IconDownload size={18} />
-              </IconButton>
-            </Paper>
-          </Grid>
-        ))}
-      </Grid>
+      
     </Box>
   );
 };

@@ -7,7 +7,7 @@ import OverviewTab from './OverviewTab';
 import AttendanceTab from './AttendanceTab';
 import LeaveTab from './LeaveTab';
 import DocumentsTab from './DocumentsTab';
-import { getEmployeeAttendance, getEmployeeById } from '../../Services/hrEmployeeService';
+import { getEmployeeAttendance, getEmployeeById, getEmployeeLeaves } from '../../Services/hrEmployeeService';
 
 const EmployeeDetails = ({ employee, onBack, onUpdateEmployee }) => {
   const [activeTab, setActiveTab] = useState(0);
@@ -15,6 +15,9 @@ const EmployeeDetails = ({ employee, onBack, onUpdateEmployee }) => {
   const [detailedEmployee, setDetailedEmployee] = useState(null);
   const [leaveDate, setLeaveDate] = useState('15 March 2025');
   const [leaveMonth, setLeaveMonth] = useState('June');
+  const [leaveStatus, setLeaveStatus] = useState('ALL');
+  const [leaveRows, setLeaveRows] = useState(null);
+  const [loadingLeaves, setLoadingLeaves] = useState(false);
   const [attendanceYear] = useState(2026);
   const [attendanceData, setAttendanceData] = useState(null);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
@@ -56,6 +59,44 @@ const EmployeeDetails = ({ employee, onBack, onUpdateEmployee }) => {
       };
     }
   }, [activeTab, targetUserId, attendanceYear]);
+
+  // Fetch Leaves API on tab switch or employee change or leave filter change
+  useEffect(() => {
+    if (activeTab === 2 && targetUserId) {
+      let isMounted = true;
+      setLoadingLeaves(true);
+      getEmployeeLeaves(targetUserId, {
+        status: leaveStatus
+      })
+        .then((res) => {
+          if (isMounted) {
+            if (res?.success && res?.data) {
+              const rawItems = Array.isArray(res.data?.items) ? res.data.items : Array.isArray(res.data) ? res.data : [];
+              if (rawItems.length > 0) {
+                const mappedLeaves = rawItems.map((item) => ({
+                  type: item.leave_type || item.type || item.leaveType || 'CL',
+                  from: item.from_date || item.from || item.start_date || '-',
+                  to: item.to_date || item.to || item.end_date || '-',
+                  days: item.days || item.total_days || item.duration || 1,
+                  status: item.status || 'Approved'
+                }));
+                setLeaveRows(mappedLeaves);
+              } else {
+                setLeaveRows([]);
+              }
+            }
+            setLoadingLeaves(false);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setLoadingLeaves(false);
+        });
+
+      return () => {
+        isMounted = false;
+      };
+    }
+  }, [activeTab, targetUserId, leaveStatus]);
 
   // Filter Select style matching Employee list page
   const filterSelectSx = {
@@ -465,6 +506,10 @@ const EmployeeDetails = ({ employee, onBack, onUpdateEmployee }) => {
               setLeaveDate={setLeaveDate}
               leaveMonth={leaveMonth}
               setLeaveMonth={setLeaveMonth}
+              leaveStatus={leaveStatus}
+              setLeaveStatus={setLeaveStatus}
+              leaveRows={leaveRows !== null ? leaveRows : undefined}
+              loading={loadingLeaves}
               filterSelectSx={filterSelectSx}
             />
           )}
