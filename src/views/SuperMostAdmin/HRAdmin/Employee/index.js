@@ -16,10 +16,9 @@ import {
   Button,
   IconButton,
   Tooltip,
-  Snackbar,
-  Alert,
   CircularProgress
 } from '@mui/material';
+import { toast } from 'react-toastify';
 import { IconSearch, IconDownload, IconPlus, IconEye, IconChevronDown } from '@tabler/icons-react';
 import {
   FirstPage as FirstPageIcon,
@@ -63,9 +62,6 @@ const HREmployee = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-
-  // Toast state
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
 
   // 1. Fetch departments from backend on mount
   useEffect(() => {
@@ -194,21 +190,12 @@ const HREmployee = () => {
     const created = { ...newEmpData, id: Date.now() };
     setEmployees((prev) => [created, ...prev]);
     setViewMode('list');
-    setToast({
-      open: true,
-      message: `Employee "${created.name}" created successfully!`,
-      severity: 'success'
-    });
+    toast.success(`Employee "${created.name}" created successfully!`);
   };
 
   const handleUpdateEmployee = (updatedEmp) => {
     setEmployees((prev) => prev.map((e) => (e.id === updatedEmp.id ? { ...e, ...updatedEmp } : e)));
     setSelectedEmployee(updatedEmp);
-    setToast({
-      open: true,
-      message: 'Employee details updated successfully!',
-      severity: 'success'
-    });
   };
 
   const handleExportExcel = () => {
@@ -234,11 +221,7 @@ const HREmployee = () => {
     link.click();
     document.body.removeChild(link);
 
-    setToast({
-      open: true,
-      message: 'Employee data exported successfully!',
-      severity: 'success'
-    });
+    toast.success('Employee data exported successfully!');
   };
 
   // If in 'create' mode, show the full AddEditEmployee component
@@ -1156,18 +1139,6 @@ const HREmployee = () => {
           </Box>
         </Box>
       </Box>
-
-      {/* Snackbar feedback */}
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={() => setToast({ ...toast, open: false })} severity={toast.severity} sx={{ width: '100%', borderRadius: '10px' }}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
