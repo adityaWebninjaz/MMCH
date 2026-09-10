@@ -1,0 +1,273 @@
+.container {
+  width: 100%;
+  min-height: calc(100vh - 130px);
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0 0 20px 0;
+  letter-spacing: -0.2px;
+}
+
+/* Filters & Actions Row */
+.filtersRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.filtersLeft {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 400;
+  color: #1E293B;
+  line-height: 100%;
+}
+
+.selectInput {
+  height: 36px;
+  min-width: 180px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0 32px 0 12px;
+  font-size: 13px;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231E293B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 12px) center;
+}
+
+.selectInput:focus {
+  border-color: #644EE5;
+}
+
+.btnGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btnExportPdf {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #1E293B;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btnExportPdf:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.btnExportExcel {
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btnExportExcel:hover {
+  background-color: #553fd6;
+}
+
+.downloadIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Table */
+.tableContainer {
+  width: 100%;
+  max-width: 100%;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+  background-color: #FFFFFF;
+}
+
+.table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.th {
+  background-color: #F8FAFC;
+  color: #16151C;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  padding: 12px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  text-align: left;
+}
+
+.tr {
+  background-color: #FFFFFF;
+  transition: background-color 0.15s ease;
+}
+
+.tr:hover {
+  background-color: #F8FAFC;
+}
+
+.trTotal {
+  background-color: #F8FAFC;
+  font-weight: 700;
+}
+
+.trTotal:hover {
+  background-color: #F1F5F9;
+}
+
+.td {
+  padding: 18px 20px;
+  font-size: 13px;
+  color: #334155;
+  font-weight: 400;
+  line-height: 100%;
+  border-bottom: 1px solid #E2E8F0;
+  text-align: left;
+}
+
+.tdBold {
+  padding: 18px 20px;
+  font-size: 13px;
+  color: #0F172A;
+  letter-spacing: 0%;
+  font-weight: 600;
+  line-height: 100%;
+  border-bottom: 1px solid #E2E8F0;
+  text-align: left;
+}
+
+.tdTotal {
+  padding: 18px 20px;
+  font-size: 13px;
+  color: #0F172A;
+  font-weight: 700;
+  line-height: 100%;
+  border-bottom: 1px solid #E2E8F0;
+  text-align: left;
+}
+
+/* Pagination Row */
+.paginationRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: #64748B;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.showingText {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rowsPerPage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowsPerPageSelect {
+  padding: 4px 8px;
+  border: 1px solid #E2E8F0;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1E293B;
+  background-color: #fff;
+  outline: none;
+}
+
+.pageNavigation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pageBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  border-radius: 4px;
+  color: #64748B;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pageBtn:hover:not(:disabled) {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.pageBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

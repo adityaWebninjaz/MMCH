@@ -327,6 +327,56 @@ const superMostAdmin = {
           url: '/supermostadmin/accounts/statutory-compliance',
           icon: icons.IconFileText,
           breadcrumbs: false
+        },
+        {
+          id: 'accounts-payroll-review',
+          title: 'Payroll Review',
+          type: 'collapse',
+          icon: icons.IconFileInvoice,
+          breadcrumbs: false,
+          children: [
+            {
+              id: 'accounts-pre-processing-review',
+              title: 'Pre-Processing Review',
+              type: 'item',
+              url: '/supermostadmin/accounts/payroll-review/pre-processing-review',
+              icon: icons.IconFileText,
+              breadcrumbs: false
+            },
+            {
+              id: 'accounts-saral-export-review',
+              title: 'SARAL Export Review',
+              type: 'item',
+              url: '/supermostadmin/accounts/payroll-review/saral-export-review',
+              icon: icons.IconFileText,
+              breadcrumbs: false
+            }
+          ]
+        },
+        {
+          id: 'accounts-reports',
+          title: 'Reports',
+          type: 'collapse',
+          icon: icons.IconReportAnalytics,
+          breadcrumbs: false,
+          children: [
+            {
+              id: 'accounts-salary-report',
+              title: 'Salary Report',
+              type: 'item',
+              url: '/supermostadmin/accounts/reports/salary-report',
+              icon: icons.IconFileText,
+              breadcrumbs: false
+            },
+            {
+              id: 'accounts-deduction-report',
+              title: 'Deduction Report',
+              type: 'item',
+              url: '/supermostadmin/accounts/reports/deduction-report',
+              icon: icons.IconFileText,
+              breadcrumbs: false
+            }
+          ]
         }
       ]
     },

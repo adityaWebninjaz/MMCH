@@ -39,19 +39,19 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
         }
   ),
   [theme.breakpoints.up('md')]: {
-    marginLeft: open ? 0 : -(drawerWidth - 20),
-    width: `calc(100% - ${drawerWidth}px)`
+    marginLeft: 0,
+    width: open ? `calc(100% - ${drawerWidth}px)` : '100%'
   },
   [theme.breakpoints.down('md')]: {
-    marginLeft: '20px',
-    marginRight: '20px',
-    width: 'calc(100% - 40px)', // account for horizontal margins
+    marginLeft: 0,
+    marginRight: 0,
+    width: '100%',
     padding: '16px'
   },
   [theme.breakpoints.down('sm')]: {
     marginLeft: 0,
     marginRight: 0,
-    width: '100%', // full width on very small screens
+    width: '100%',
     padding: '16px'
   }
 }));

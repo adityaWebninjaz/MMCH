@@ -30,6 +30,10 @@ const ElectricityMeterReadingEntry = Loadable(lazy(() => import('views/SuperMost
 const AccountsDashboard = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment')));
 const AccountsDeductionSummaries = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionSummaries')));
 const AccountsStatutoryCompliance = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/StatutoryCompliance')));
+const AccountsPreProcessingReview = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/PreProcessingReview')));
+const AccountsSaralExportReview = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SaralExportReview')));
+const AccountsSalaryReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SalaryReport')));
+const AccountsDeductionReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionReport')));
 const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
 const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 
@@ -160,6 +164,38 @@ const SuperMostAdminRoutes = {
         {
           path: 'accounts/statutory-compliance',
           element: <AccountsStatutoryCompliance />
+        },
+        {
+          path: 'accounts/payroll-review/pre-processing-review',
+          element: <AccountsPreProcessingReview />
+        },
+        {
+          path: 'accounts/pre-processing-review',
+          element: <AccountsPreProcessingReview />
+        },
+        {
+          path: 'accounts/payroll-review/saral-export-review',
+          element: <AccountsSaralExportReview />
+        },
+        {
+          path: 'accounts/saral-export-review',
+          element: <AccountsSaralExportReview />
+        },
+        {
+          path: 'accounts/reports/salary-report',
+          element: <AccountsSalaryReport />
+        },
+        {
+          path: 'accounts/reports/deduction-report',
+          element: <AccountsDeductionReport />
+        },
+        {
+          path: 'accounts/salary-report',
+          element: <AccountsSalaryReport />
+        },
+        {
+          path: 'accounts/deduction-report',
+          element: <AccountsDeductionReport />
         },
         {
           path: 'hr-admin/dashboard',
