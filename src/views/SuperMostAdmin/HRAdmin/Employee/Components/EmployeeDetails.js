@@ -514,7 +514,7 @@ const EmployeeDetails = ({ employee, onBack, onUpdateEmployee }) => {
             />
           )}
 
-          {activeTab === 3 && <DocumentsTab documents={empData?.documents} />}
+          {activeTab === 3 && <DocumentsTab employeeId={targetUserId} employee={empData} documents={empData?.documents} />}
         </Box>
       </Paper>
     </Box>
