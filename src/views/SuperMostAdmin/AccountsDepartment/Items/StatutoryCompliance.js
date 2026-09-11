@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch } from '@tabler/icons-react';
+import CustomSelect from 'ui-component/CustomSelect';
 import styles from './StatutoryCompliance.module.css';
 
 const TABS = ['TDS', 'PT', 'PF', 'ESIC', 'ADVANCE'];
@@ -84,11 +85,11 @@ const StatutoryCompliance = () => {
       </div>
       <div className={styles.filterGroup}>
         <span className={styles.filterLabel}>Department</span>
-        <select className={styles.selectInput} defaultValue="All Departments">
-          <option value="All Departments">All Departments</option>
-          <option value="Cardiology">Cardiology</option>
-          <option value="Emergency">Emergency</option>
-        </select>
+        <CustomSelect
+          options={['All Departments', 'Cardiology', 'Emergency', 'Hostel Admin', 'Radiology', 'ICU', 'Admin']}
+          defaultValue="All Departments"
+          width={155}
+        />
       </div>
     </div>
   );

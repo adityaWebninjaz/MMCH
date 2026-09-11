@@ -1,11 +1,11 @@
+import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles';
 import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material';
-import { useEffect } from 'react';
 
 // project imports
 import Breadcrumbs from 'ui-component/extended/Breadcrumbs';
@@ -61,50 +61,43 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({
 const MainLayout = () => {
   const theme = useTheme();
   const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
-  // Handle left drawer
-  const leftDrawerOpened = useSelector((state) => state.customization?.opened ?? true);
+  const location = useLocation();
   const dispatch = useDispatch();
+
+  // Desktop drawer state in Redux
+  const leftDrawerOpened = useSelector((state) => state.customization?.opened ?? true);
+
+  // Separate mobile drawer modal state (so desktop open=true doesn't open modal drawer on mobile)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   // Get user role and navigation
   const userRole = Cookies.get('Role') || Cookies.get('role') || 'student';
-
-  // Determine which navigation to show based on role
   const navigation = menuItems.superMostAdmin;
-  // Debug: log the sidebar state
-  // console.log('Sidebar state:', leftDrawerOpened);
-  // console.log('User role:', userRole);
-  // console.log('Navigation:', navigation);
 
   const handleLeftDrawerToggle = () => {
-    dispatch({ type: SET_MENU, opened: !leftDrawerOpened });
+    if (matchDownMd) {
+      setMobileDrawerOpen((prev) => !prev);
+    } else {
+      dispatch({ type: SET_MENU, opened: !leftDrawerOpened });
+    }
   };
 
-  // Ensure student sees sidebar hidden by default on small screens (< md)
+  // Close mobile drawer on route navigation
   useEffect(() => {
-    const isStudent = String(userRole).toLowerCase() === 'student';
-    if (matchDownMd && isStudent && leftDrawerOpened) {
-      dispatch({ type: SET_MENU, opened: false });
-    }
-  }, [matchDownMd, userRole]);
+    setMobileDrawerOpen(false);
+  }, [location.pathname]);
 
-  // Ensure student sees sidebar visible on medium and larger screens (>= md)
+  // Close mobile drawer when resizing up to desktop
   useEffect(() => {
-    const isStudent = String(userRole).toLowerCase() === 'student';
-    if (!matchDownMd && isStudent && !leftDrawerOpened) {
-      dispatch({ type: SET_MENU, opened: true });
+    if (!matchDownMd) {
+      setMobileDrawerOpen(false);
     }
-  }, [matchDownMd, userRole, leftDrawerOpened]);
+  }, [matchDownMd]);
 
-  // Open sidebar automatically for screens wider than md
+  // Ensure desktop sidebar is opened on desktop by default
   useEffect(() => {
     if (!matchDownMd && !leftDrawerOpened) {
       dispatch({ type: SET_MENU, opened: true });
-    }
-  }, [matchDownMd]);
-  // Close sidebar on small screens
-  useEffect(() => {
-    if (matchDownMd && leftDrawerOpened) {
-      dispatch({ type: SET_MENU, opened: false });
     }
   }, [matchDownMd]);
 
@@ -120,7 +113,7 @@ const MainLayout = () => {
         sx={{
           bgcolor: theme.palette.background.default,
           borderBottom: '1px solid #CBD5E1',
-          transition: leftDrawerOpened ? theme.transitions.create('width') : 'none',
+          transition: !matchDownMd && leftDrawerOpened ? theme.transitions.create('width') : 'none',
           zIndex: (theme) => theme.zIndex.drawer + 2
         }}
       >
@@ -130,10 +123,14 @@ const MainLayout = () => {
       </AppBar>
 
       {/* drawer */}
-      <Sidebar drawerOpen={leftDrawerOpened} drawerToggle={handleLeftDrawerToggle} roleLower={String(userRole).toLowerCase()} />
+      <Sidebar
+        drawerOpen={matchDownMd ? mobileDrawerOpen : leftDrawerOpened}
+        drawerToggle={handleLeftDrawerToggle}
+        roleLower={String(userRole).toLowerCase()}
+      />
 
       {/* main content */}
-      <Main theme={theme} open={leftDrawerOpened}>
+      <Main theme={theme} open={matchDownMd ? false : leftDrawerOpened}>
         {/* breadcrumb */}
         <Breadcrumbs separator={IconChevronRight} navigation={navigation} icon title rightAlign />
         <Outlet />

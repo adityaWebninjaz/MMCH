@@ -37,6 +37,10 @@ const AccountsDeductionReport = Loadable(lazy(() => import('@/views/SuperMostAdm
 const AccountsProfile = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/Profile')));
 const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
 const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
+const HRAdminBalanceOverride = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/BalanceOverride')));
+const HRAdminCompOffReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/CompOffReports')));
+const HRAdminLeaveReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/LeaveReports')));
+const HRAdminOvertimeReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/OvertimeReports')));
 
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
@@ -209,6 +213,38 @@ const SuperMostAdminRoutes = {
         {
           path: 'hr-admin/employee',
           element: <HREmployee />
+        },
+        {
+          path: 'hr-admin/leave/balance-override',
+          element: <HRAdminBalanceOverride />
+        },
+        {
+          path: 'hr-admin/leave/balanceoverride',
+          element: <HRAdminBalanceOverride />
+        },
+        {
+          path: 'hr-admin/leave/comp-off-reports',
+          element: <HRAdminCompOffReports />
+        },
+        {
+          path: 'hr-admin/leave/compoffreports',
+          element: <HRAdminCompOffReports />
+        },
+        {
+          path: 'hr-admin/leave/leave-reports',
+          element: <HRAdminLeaveReports />
+        },
+        {
+          path: 'hr-admin/leave/leavereports',
+          element: <HRAdminLeaveReports />
+        },
+        {
+          path: 'hr-admin/leave/overtime-reports',
+          element: <HRAdminOvertimeReports />
+        },
+        {
+          path: 'hr-admin/leave/overtimereports',
+          element: <HRAdminOvertimeReports />
         },
         {
           path: 'front-office/dashboard',
