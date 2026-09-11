@@ -459,6 +459,14 @@ const superMostAdmin = {
           url: '/supermostadmin/hr-admin/policies',
           icon: icons.IconClock,
           breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-attendance',
+          title: 'Attendance',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/attendance',
+          icon: icons.IconClock,
+          breadcrumbs: false
         }
       ]
     }

@@ -27,14 +27,14 @@ const HostelChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/Hoste
 const HostelMeterReadingEntry = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/MeterReadingEntry')));
 const ElectricityDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/ElectricityDepartment/Dashboard')));
 const ElectricityMeterReadingEntry = Loadable(lazy(() => import('views/SuperMostAdmin/ElectricityDepartment/MeterReadingEntry')));
-const AccountsDashboard = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment')));
-const AccountsDeductionSummaries = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionSummaries')));
-const AccountsStatutoryCompliance = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/StatutoryCompliance')));
-const AccountsPreProcessingReview = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/PreProcessingReview')));
-const AccountsSaralExportReview = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SaralExportReview')));
-const AccountsSalaryReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SalaryReport')));
-const AccountsDeductionReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionReport')));
-const AccountsProfile = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/Profile')));
+const AccountsDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment')));
+const AccountsDeductionSummaries = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/DeductionSummaries')));
+const AccountsStatutoryCompliance = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/StatutoryCompliance')));
+const AccountsPreProcessingReview = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/PreProcessingReview')));
+const AccountsSaralExportReview = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/SaralExportReview')));
+const AccountsSalaryReport = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/SalaryReport')));
+const AccountsDeductionReport = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/DeductionReport')));
+const AccountsProfile = Loadable(lazy(() => import('views/SuperMostAdmin/AccountsDepartment/Items/Profile')));
 const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
 const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 const HRAdminBalanceOverride = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/BalanceOverride')));
@@ -42,7 +42,7 @@ const HRAdminCompOffReports = Loadable(lazy(() => import('views/SuperMostAdmin/H
 const HRAdminLeaveReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/LeaveReports')));
 const HRAdminOvertimeReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/OvertimeReports')));
 const HRAdminPolicies = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Policies')));
-
+const HRAdminAttendance = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Attendance/Index')));
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
 const PoliciesOvertime = Loadable(lazy(() => import('views/SuperMostAdmin/Policies/OverTime')));
@@ -294,6 +294,10 @@ const SuperMostAdminRoutes = {
         {
           path: 'policies',
           element: <Navigate to="/supermostadmin/policies/overtime" replace />
+        },
+        {
+          path: 'hr-admin/attendance',
+          element: <HRAdminAttendance />
         }
       ]
     }
