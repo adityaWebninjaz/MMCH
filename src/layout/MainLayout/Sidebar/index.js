@@ -189,7 +189,8 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, roleLower }) => {
             }
           }
         }}
-        ModalProps={{ keepMounted: true }}
+        disableScrollLock={true}
+        ModalProps={{ keepMounted: true, disableScrollLock: true }}
         color="inherit"
       >
         {drawer}

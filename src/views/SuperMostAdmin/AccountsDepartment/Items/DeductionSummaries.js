@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch, IconDownload, IconFileSpreadsheet, IconChevronDown, IconChevronRight, IconArrowDown } from '@tabler/icons-react';
+import CustomSelect from 'ui-component/CustomSelect';
 import styles from './DeductionSummaries.module.css';
 
 const tableData = [
@@ -66,17 +67,19 @@ const DeductionSummaries = () => {
         <div className={styles.filtersLeft}>
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Month</span>
-            <select className={styles.selectInput} defaultValue="July 2025">
-              <option value="July 2025">July 2025</option>
-              <option value="June 2025">June 2025</option>
-            </select>
+            <CustomSelect
+              options={['January 2025', 'February 2025', 'March 2025', 'April 2025', 'May 2025', 'June 2025', 'July 2025', 'August 2025', 'September 2025', 'October 2025', 'November 2025', 'December 2025']}
+              defaultValue="July 2025"
+              width={140}
+            />
           </div>
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Department</span>
-            <select className={styles.selectInput} defaultValue="All Departments">
-              <option value="All Departments">All Departments</option>
-              <option value="Hostel Admin">Hostel Admin</option>
-            </select>
+            <CustomSelect
+              options={['All Departments', 'Hostel Admin', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Admin']}
+              defaultValue="All Departments"
+              width={148}
+            />
           </div>
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Employee Search</span>

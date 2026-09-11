@@ -10,6 +10,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight
 } from '@tabler/icons-react';
+import CustomSelect from 'ui-component/CustomSelect';
 import styles from './PreProcessingReview.module.css';
 
 const initialMockRows = Array(20).fill().map((_, i) => ({
@@ -147,18 +148,16 @@ const PreProcessingReview = () => {
         <div className={styles.paginationControls}>
           <div className={styles.rowsPerPage}>
             <span>Rows per page</span>
-            <select
-              className={styles.rowsPerPageSelect}
+            <CustomSelect
+              options={[10, 20, 50]}
               value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
+              onChange={(val) => {
+                setRowsPerPage(Number(val));
                 setCurrentPage(1);
               }}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+              size="small"
+              width={65}
+            />
           </div>
           <div>Page {currentPage} of {totalPages}</div>
           <div className={styles.pageNavigation}>

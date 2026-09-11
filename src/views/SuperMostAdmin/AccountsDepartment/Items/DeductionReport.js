@@ -7,6 +7,7 @@ import {
   IconChevronsLeft,
   IconChevronsRight
 } from '@tabler/icons-react';
+import CustomSelect from 'ui-component/CustomSelect';
 import styles from './DeductionReport.module.css';
 
 const initialMockRows = [
@@ -57,30 +58,22 @@ const DeductionReport = () => {
         <div className={styles.filtersLeft}>
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Department</span>
-            <select
-              className={styles.selectInput}
+            <CustomSelect
+              options={['All Departments', 'Hostel Administration', 'Electricity Department', 'Front Office']}
               value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-            >
-              <option value="All Departments">All Departments</option>
-              <option value="Hostel Administration">Hostel Administration</option>
-              <option value="Electricity Department">Electricity Department</option>
-              <option value="Front Office">Front Office</option>
-            </select>
+              onChange={(val) => setDepartment(val)}
+              width={160}
+            />
           </div>
 
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Month</span>
-            <select
-              className={styles.selectInput}
+            <CustomSelect
+              options={['All', 'July 2025', 'August 2025', 'September 2025']}
               value={month}
-              onChange={(e) => setMonth(e.target.value)}
-            >
-              <option value="All">All</option>
-              <option value="July 2025">July 2025</option>
-              <option value="August 2025">August 2025</option>
-              <option value="September 2025">September 2025</option>
-            </select>
+              onChange={(val) => setMonth(val)}
+              width={140}
+            />
           </div>
         </div>
 
@@ -142,15 +135,13 @@ const DeductionReport = () => {
         <div className={styles.paginationControls}>
           <div className={styles.rowsPerPage}>
             <span>Rows per page</span>
-            <select
-              className={styles.rowsPerPageSelect}
+            <CustomSelect
+              options={[10, 20, 50]}
               value={rowsPerPage}
-              onChange={(e) => setRowsPerPage(Number(e.target.value))}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
+              onChange={(val) => setRowsPerPage(Number(val))}
+              size="small"
+              width={65}
+            />
           </div>
           <div>Page {currentPage} of {totalPages}</div>
           <div className={styles.pageNavigation}>

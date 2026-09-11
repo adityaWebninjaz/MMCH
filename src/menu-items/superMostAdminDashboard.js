@@ -410,6 +410,47 @@ const superMostAdmin = {
           url: '/supermostadmin/hr-admin/employee',
           icon: icons.IconUsers,
           breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-leave',
+          title: 'Leave',
+          type: 'collapse',
+          icon: icons.IconCalendarEvent,
+          breadcrumbs: false,
+          children: [
+            {
+              id: 'hr-admin-balance-override',
+              title: 'Balance Override',
+              type: 'item',
+              url: '/supermostadmin/hr-admin/leave/balance-override',
+              icon: icons.IconClipboardList,
+              breadcrumbs: false
+            },
+            {
+              id: 'hr-admin-leave-reports',
+              title: 'Leave Reports',
+              type: 'item',
+              url: '/supermostadmin/hr-admin/leave/leave-reports',
+              icon: icons.IconFileText,
+              breadcrumbs: false
+            },
+            {
+              id: 'hr-admin-overtime-reports',
+              title: 'Overtime Reports',
+              type: 'item',
+              url: '/supermostadmin/hr-admin/leave/overtime-reports',
+              icon: icons.IconClock,
+              breadcrumbs: false
+            },
+            {
+              id: 'hr-admin-comp-off-reports',
+              title: 'Comp Off Reports',
+              type: 'item',
+              url: '/supermostadmin/hr-admin/leave/comp-off-reports',
+              icon: icons.IconFileInvoice,
+              breadcrumbs: false
+            }
+          ]
         }
       ]
     }
