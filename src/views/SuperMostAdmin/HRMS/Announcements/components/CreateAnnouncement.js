@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -8,98 +8,131 @@ import {
   FormLabel,
   OutlinedInput,
   TextField,
-  FormControlLabel,
-  Checkbox,
   Paper,
   CircularProgress,
-  IconButton
+  IconButton,
+  Chip,
+  Autocomplete,
+  Checkbox,
+  FormHelperText
 } from '@mui/material';
 import { IconCalendar, IconArrowLeft } from '@tabler/icons-react';
 import { toast } from 'react-toastify';
-import { createAnnouncement } from '../services/announcementService';
+import { createAnnouncement, getDepartments } from '../services/announcementService';
+
+const ALL_EMPLOYEES_OPTION = { id: 'ALL', name: 'All Employees' };
 
 const CreateAnnouncement = () => {
   const navigate = useNavigate();
   const expiryDateInputRef = useRef(null);
+  const todayString = new Date().toISOString().split('T')[0];
 
-  const [formData, setFormData] = useState({
-    title: '',
-    targetAudience: 'All Employees', // 'All Employees' or 'Department-wise'
-    allEmployees: true,
-    departmentWise: false,
-    content: '',
-    expiryDate: ''
-  });
+  // Departments State
+  const [departments, setDepartments] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
 
+  // Form State
+  const [title, setTitle] = useState('');
+  const [selectedAudience, setSelectedAudience] = useState([ALL_EMPLOYEES_OPTION]);
+  const [content, setContent] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleTitleChange = (e) => {
-    setFormData((prev) => ({ ...prev, title: e.target.value }));
-  };
+  useEffect(() => {
+    fetchDepartmentsList();
+  }, []);
 
-  const handleAudienceChange = (type) => {
-    if (type === 'all') {
-      setFormData((prev) => ({
-        ...prev,
-        allEmployees: true,
-        departmentWise: false,
-        targetAudience: 'All Employees'
-      }));
-    } else if (type === 'department') {
-      setFormData((prev) => ({
-        ...prev,
-        allEmployees: false,
-        departmentWise: true,
-        targetAudience: 'Department-Wise'
-      }));
+  const fetchDepartmentsList = async () => {
+    setLoadingDepartments(true);
+    try {
+      const list = await getDepartments();
+      setDepartments(list || []);
+    } catch (err) {
+      console.error('Failed to load departments:', err);
+      toast.error('Failed to load departments');
+    } finally {
+      setLoadingDepartments(false);
     }
   };
 
-  const handleContentChange = (e) => {
-    setFormData((prev) => ({ ...prev, content: e.target.value }));
+  // Combine "All Employees" option with fetched department options from API
+  const audienceOptions = useMemo(() => {
+    return [ALL_EMPLOYEES_OPTION, ...departments];
+  }, [departments]);
+
+  const handleAudienceChange = (event, newValue) => {
+    // If empty, default back to ALL_EMPLOYEES
+    if (!newValue || newValue.length === 0) {
+      setSelectedAudience([ALL_EMPLOYEES_OPTION]);
+      return;
+    }
+
+    const lastSelected = newValue[newValue.length - 1];
+
+    // If "All Employees" was just selected, reset selection to only ALL_EMPLOYEES
+    if (lastSelected.id === 'ALL') {
+      setSelectedAudience([ALL_EMPLOYEES_OPTION]);
+      return;
+    }
+
+    // Otherwise filter out ALL_EMPLOYEES so only specific department options remain
+    const specificDepartments = newValue.filter((item) => item.id !== 'ALL');
+    if (specificDepartments.length === 0) {
+      setSelectedAudience([ALL_EMPLOYEES_OPTION]);
+    } else {
+      setSelectedAudience(specificDepartments);
+    }
   };
 
-  const handleExpiryDateChange = (e) => {
-    setFormData((prev) => ({ ...prev, expiryDate: e.target.value }));
-  };
-
-  const formattedDisplayExpiryDate = formData.expiryDate
-    ? new Date(formData.expiryDate).toLocaleDateString('en-GB', {
+  const formattedDisplayExpiryDate = expiryDate
+    ? new Date(expiryDate).toLocaleDateString('en-GB', {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
       })
-    : 'Select date (Optional)';
+    : 'Select Expiry Date';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title.trim()) {
+    if (!title.trim()) {
       toast.error('Announcement Title is required');
       return;
     }
 
-    if (!formData.content.trim()) {
+    if (!selectedAudience || selectedAudience.length === 0) {
+      toast.error('Target Audience is required');
+      return;
+    }
+
+    if (!content.trim()) {
       toast.error('Announcement Content is required');
       return;
     }
 
+    if (!expiryDate) {
+      toast.error('Expiry Date is required');
+      return;
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (expiryDate < todayStr) {
+      toast.error('Expiry Date must be today or a future date');
+      return;
+    }
+
+    const isAllEmployees = selectedAudience.some((item) => item.id === 'ALL') || selectedAudience.length === 0;
+    const departmentIds = isAllEmployees ? [] : selectedAudience.map((item) => item.id);
+
     setLoading(true);
     try {
       const payload = {
-        title: formData.title.trim(),
-        targetAudience: formData.targetAudience,
-        target_audience: formData.allEmployees ? 'all_employees' : 'department_wise',
-        description: formData.content.trim(),
-        content: formData.content.trim(),
-        expiryDate: formData.expiryDate || null,
-        expiry_date: formData.expiryDate || null,
-        publishedDate: new Date().toLocaleDateString('en-US', {
-          month: 'short',
-          day: '2-digit',
-          year: 'numeric'
-        }),
-        date: new Date().toISOString().split('T')[0]
+        title: title.trim(),
+        message: content.trim(),
+        content: content.trim(),
+        audience: isAllEmployees ? 'ALL' : 'DEPARTMENTS',
+        department_ids: departmentIds,
+        expiry_date: expiryDate
       };
 
       const response = await createAnnouncement(payload);
@@ -110,8 +143,8 @@ const CreateAnnouncement = () => {
         toast.error(response?.message || 'Failed to publish announcement');
       }
     } catch (err) {
-      console.error('Error creating announcement:', err);
-      toast.error(err?.response?.data?.message || 'An error occurred while publishing announcement');
+      console.error('Error publishing announcement:', err);
+      toast.error(err?.message || 'An error occurred while publishing announcement');
     } finally {
       setLoading(false);
     }
@@ -156,7 +189,7 @@ const CreateAnnouncement = () => {
         </Typography>
       </Box>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         {/* Main Card Container */}
         <Paper
           elevation={0}
@@ -186,10 +219,9 @@ const CreateAnnouncement = () => {
             </FormLabel>
             <OutlinedInput
               fullWidth
-              value={formData.title}
-              onChange={handleTitleChange}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter a clear, descriptive title"
-              required
               disabled={loading}
               sx={{
                 borderRadius: '6px',
@@ -211,7 +243,7 @@ const CreateAnnouncement = () => {
             />
           </Box>
 
-          {/* 2. Target Audience */}
+          {/* 2. Target Audience Multi-Select Dropdown */}
           <Box sx={{ mb: 3.5 }}>
             <FormLabel
               sx={{
@@ -223,71 +255,122 @@ const CreateAnnouncement = () => {
                 mb: 1
               }}
             >
-              Target Audience
+              Target Audience <span style={{ color: '#644EE5' }}>*</span>
             </FormLabel>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.allEmployees}
-                    onChange={() => handleAudienceChange('all')}
-                    disabled={loading}
-                    sx={{
-                      p: '4px',
-                      mr: '4px',
-                      color: '#CBD5E1',
-                      '&.Mui-checked': {
-                        color: '#644EE5'
-                      }
-                    }}
-                  />
-                }
-                label={
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: 400,
-                      color: '#0F172A'
-                    }}
-                  >
-                    All Employees
-                  </Typography>
-                }
-                sx={{ m: 0 }}
-              />
 
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.departmentWise}
-                    onChange={() => handleAudienceChange('department')}
-                    disabled={loading}
+            <FormControl fullWidth size="small" sx={{ maxWidth: { xs: '100%', md: '750px' } }}>
+              <Autocomplete
+                multiple
+                disableCloseOnSelect
+                id="target-audience-multiselect"
+                componentsProps={{
+                  paper: {
+                    sx: {
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      boxShadow: '0px 6px 20px rgba(15, 23, 42, 0.08)',
+                      mt: '4px',
+                      overflow: 'hidden'
+                    }
+                  }
+                }}
+                ListboxProps={{
+                  sx: {
+                    maxHeight: '320px',
+                    overflowY: 'auto',
+                    p: '6px',
+                    '& .MuiAutocomplete-option': {
+                      borderRadius: '6px',
+                      py: '6px',
+                      px: '10px',
+                      mb: '2px',
+                      '&[aria-selected="true"]': {
+                        bgcolor: '#F1F5F9'
+                      },
+                      '&:hover': {
+                        bgcolor: '#F8FAFC'
+                      }
+                    }
+                  }
+                }}
+                options={audienceOptions}
+                loading={loadingDepartments}
+                value={selectedAudience}
+                onChange={handleAudienceChange}
+                getOptionLabel={(option) => option.name || ''}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderOption={(props, option, { selected }) => (
+                  <li {...props} key={option.id}>
+                    <Checkbox
+                      size="small"
+                      checked={selected}
+                      sx={{
+                        mr: 1,
+                        p: '2px',
+                        color: '#CBD5E1',
+                        '&.Mui-checked': { color: '#644EE5' }
+                      }}
+                    />
+                    <Typography
+                      sx={{
+                        fontSize: '14px',
+                        fontFamily: 'Inter, sans-serif',
+                        color: option.id === 'ALL' ? '#644EE5' : '#0F172A',
+                        fontWeight: option.id === 'ALL' ? 600 : 400
+                      }}
+                    >
+                      {option.name}
+                    </Typography>
+                  </li>
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      {...getTagProps({ index })}
+                      key={option.id}
+                      label={option.name}
+                      size="small"
+                      sx={{
+                        height: '26px',
+                        fontSize: '12px',
+                        bgcolor: option.id === 'ALL' ? '#F1F5F9' : '#EEF2FF',
+                        color: option.id === 'ALL' ? '#475569' : '#4F46E5',
+                        fontWeight: 500,
+                        borderRadius: '4px',
+                        border: option.id === 'ALL' ? '1px solid #E2E8F0' : '1px solid #C7D2FE'
+                      }}
+                    />
+                  ))
+                }
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder={
+                      loadingDepartments
+                        ? 'Loading departments...'
+                        : selectedAudience.length === 0
+                        ? 'Select audience or search departments...'
+                        : ''
+                    }
                     sx={{
-                      p: '4px',
-                      mr: '4px',
-                      color: '#CBD5E1',
-                      '&.Mui-checked': {
-                        color: '#644EE5'
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '6px',
+                        bgcolor: '#ffffff',
+                        fontSize: '14px',
+                        minHeight: '42px',
+                        p: '4px 8px !important',
+                        '& fieldset': { borderColor: '#E2E8F0', borderRadius: '6px' },
+                        '&:hover fieldset': { borderColor: '#94A3B8' },
+                        '&.Mui-focused fieldset': { borderColor: '#644EE5', borderWidth: '1.5px' }
                       }
                     }}
                   />
-                }
-                label={
-                  <Typography
-                    sx={{
-                      fontFamily: 'Inter, sans-serif',
-                      fontSize: '14px',
-                      fontWeight: 400,
-                      color: '#0F172A'
-                    }}
-                  >
-                    Department-wise
-                  </Typography>
-                }
-                sx={{ m: 0 }}
+                )}
               />
-            </Box>
+              <FormHelperText sx={{ mx: 0, mt: 0.5, color: '#64748B', fontSize: '12px' }}>
+                Select &apos;All Employees&apos; or search and choose specific departments ({departments.length} departments loaded from API)
+              </FormHelperText>
+            </FormControl>
           </Box>
 
           {/* 3. Announcement Content */}
@@ -308,10 +391,9 @@ const CreateAnnouncement = () => {
               fullWidth
               multiline
               rows={6}
-              value={formData.content}
-              onChange={handleContentChange}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               placeholder="Type or paste your announcement content here. You can format the message to convey important notices."
-              required
               disabled={loading}
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -341,7 +423,7 @@ const CreateAnnouncement = () => {
                 mb: 1
               }}
             >
-              Expiry Date
+              Expiry Date <span style={{ color: '#644EE5' }}>*</span>
             </FormLabel>
             <Box sx={{ position: 'relative', width: { xs: '100%', sm: '240px' } }}>
               <Button
@@ -362,7 +444,7 @@ const CreateAnnouncement = () => {
                   borderRadius: '6px !important',
                   border: '1px solid #E2E8F0',
                   bgcolor: '#ffffff',
-                  color: formData.expiryDate ? '#0F172A' : '#94A3B8',
+                  color: expiryDate ? '#0F172A' : '#94A3B8',
                   fontSize: '13px',
                   fontWeight: 400,
                   fontFamily: 'Inter, sans-serif',
@@ -382,8 +464,9 @@ const CreateAnnouncement = () => {
               <input
                 type="date"
                 ref={expiryDateInputRef}
-                value={formData.expiryDate}
-                onChange={handleExpiryDateChange}
+                value={expiryDate}
+                min={todayString}
+                onChange={(e) => setExpiryDate(e.target.value)}
                 style={{
                   position: 'absolute',
                   bottom: 0,
@@ -457,3 +540,6 @@ const CreateAnnouncement = () => {
 };
 
 export default CreateAnnouncement;
+
+
+

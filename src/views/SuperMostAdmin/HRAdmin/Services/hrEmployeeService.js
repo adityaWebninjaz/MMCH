@@ -398,6 +398,67 @@ export const uploadEmployeeDocument = async (employeeId, docType, file) => {
   }
 };
 
+/**
+ * GET /employees/{id}/documents - Get employee's uploaded documents
+ */
+export const getEmployeeDocuments = async (employeeId) => {
+  if (!employeeId) return { success: false, data: [] };
+  try {
+    const response = await axios.get(`${BASE_URL}/employees/${employeeId}/documents`, {
+      headers: getAuthHeaders()
+    });
+
+    const resData = response?.data?.data || response?.data || [];
+    const list = Array.isArray(resData?.items) ? resData.items : Array.isArray(resData) ? resData : [];
+
+    return {
+      success: true,
+      data: list
+    };
+  } catch (error) {
+    console.error(`Failed to fetch documents for employee ${employeeId}:`, error?.response?.data || error?.message);
+    return {
+      success: false,
+      error: error?.response?.data?.message || error?.message,
+      data: []
+    };
+  }
+};
+
+/**
+ * Fetch document file using Bearer token authentication and return blob URL
+ */
+export const fetchDocumentBlob = async (fileUrl) => {
+  if (!fileUrl) return null;
+  try {
+    let fullUrl = fileUrl;
+    if (!fileUrl.startsWith('http://') && !fileUrl.startsWith('https://') && !fileUrl.startsWith('blob:') && !fileUrl.startsWith('data:')) {
+      const baseUrl = process.env.REACT_APP_BACKEND_URL || '';
+      const cleanBase = baseUrl.replace(/\/+$/, '');
+      if (fileUrl.startsWith('/api/v1')) {
+        try {
+          const origin = new URL(baseUrl.startsWith('http') ? baseUrl : `https://${baseUrl}`).origin;
+          fullUrl = `${origin}${fileUrl}`;
+        } catch (e) {
+          fullUrl = `${cleanBase}${fileUrl}`;
+        }
+      } else {
+        fullUrl = fileUrl.startsWith('/') ? `${cleanBase}${fileUrl}` : `${cleanBase}/${fileUrl}`;
+      }
+    }
+
+    const response = await axios.get(fullUrl, {
+      responseType: 'blob',
+      headers: getAuthHeaders()
+    });
+
+    return URL.createObjectURL(response.data);
+  } catch (error) {
+    console.error('Failed to fetch document blob:', error?.response?.data || error?.message);
+    return null;
+  }
+};
+
 // ============================================================================
 // ATTENDANCE & LEAVES
 // ============================================================================

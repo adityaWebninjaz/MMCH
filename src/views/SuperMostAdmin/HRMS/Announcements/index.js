@@ -30,23 +30,21 @@ import {
 } from '@mui/icons-material';
 import { IconCalendar } from '@tabler/icons-react';
 import { toast } from 'react-toastify';
-import {
-  getAnnouncements
-} from './services/announcementService';
-
+import { getAnnouncements } from './services/announcementService';
 
 const Announcements = () => {
   const navigate = useNavigate();
+
   // Filter States
-  const [selectedDate, setSelectedDate] = useState('2025-07-12');
+  const [selectedDate, setSelectedDate] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const dateInputRef = useRef(null);
 
   // Format date for button display
   const formattedDisplayDate = useMemo(() => {
-    if (!selectedDate) return '12 July 2025';
+    if (!selectedDate) return 'Select Date';
     const d = new Date(selectedDate);
-    if (isNaN(d.getTime())) return '12 July 2025';
+    if (isNaN(d.getTime())) return selectedDate;
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
   }, [selectedDate]);
 
@@ -63,40 +61,56 @@ const Announcements = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await getAnnouncements({
-        date: selectedDate,
-        search: searchQuery
-      });
+      const res = await getAnnouncements();
       if (res && res.success) {
         setData(res.data || []);
+      } else {
+        toast.error(res?.message || 'Failed to load announcements from server');
+        if (res?.data) {
+          setData(res.data);
+        }
       }
     } catch (err) {
-      console.error(err);
-      toast.error('Failed to load announcements');
+      console.error('Error fetching announcements:', err);
+      const errMsg = err?.response?.data?.message || err?.message || 'An error occurred while loading announcements';
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter logic
+  // Frontend Filter logic (Search & Date filter)
   const filteredData = useMemo(() => {
     return data.filter((row) => {
+      // Search filter
       const q = searchQuery.trim().toLowerCase();
       const matchSearch =
         !q ||
         (row.title && row.title.toLowerCase().includes(q)) ||
-        (row.targetAudience && row.targetAudience.toLowerCase().includes(q)) ||
         (row.description && row.description.toLowerCase().includes(q)) ||
-        (row.publishedDate && row.publishedDate.toLowerCase().includes(q));
+        (row.message && row.message.toLowerCase().includes(q)) ||
+        (row.targetAudience && row.targetAudience.toLowerCase().includes(q)) ||
+        (row.publishedDate && row.publishedDate.toLowerCase().includes(q)) ||
+        (row.created_by?.full_name && row.created_by.full_name.toLowerCase().includes(q)) ||
+        (Array.isArray(row.departments) &&
+          row.departments.some((d) => (typeof d === 'string' ? d : d.name || '').toLowerCase().includes(q)));
 
-      return matchSearch;
+      // Date filter
+      let matchDate = true;
+      if (selectedDate) {
+        const rowDateStr = row.rawDate || (row.created_at ? row.created_at.slice(0, 10) : '');
+        matchDate = rowDateStr === selectedDate;
+      }
+
+      return matchSearch && matchDate;
     });
-  }, [data, searchQuery]);
+  }, [data, searchQuery, selectedDate]);
 
-  // Pagination calculation
+  // Pagination calculations
   const totalCount = filteredData.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / rowsPerPage));
   const startIndex = (page - 1) * rowsPerPage;
+
   const paginatedData = useMemo(() => {
     return filteredData.slice(startIndex, startIndex + rowsPerPage);
   }, [filteredData, startIndex, rowsPerPage]);
@@ -173,11 +187,11 @@ const Announcements = () => {
           mb: '24px'
         }}
       >
-        {/* Date Filter Button */}
+        {/* Date Filter Control */}
         <FormControl
           size="small"
           sx={{
-            minWidth: { xs: '100%', sm: 180 },
+            minWidth: { xs: '100%', sm: 200 },
             flex: { xs: '1 1 100%', sm: 'none' },
             position: 'relative'
           }}
@@ -194,50 +208,71 @@ const Announcements = () => {
           >
             Date
           </Typography>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              if (dateInputRef.current) {
-                if (typeof dateInputRef.current.showPicker === 'function') {
-                  dateInputRef.current.showPicker();
-                } else {
-                  dateInputRef.current.click();
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Button
+              variant="outlined"
+              onClick={() => {
+                if (dateInputRef.current) {
+                  if (typeof dateInputRef.current.showPicker === 'function') {
+                    dateInputRef.current.showPicker();
+                  } else {
+                    dateInputRef.current.click();
+                  }
                 }
-              }
-            }}
-            endIcon={<IconCalendar size={18} stroke={1.75} color="#1E293B" />}
-            sx={{
-              width: { xs: '100%', sm: '180px' },
-              height: '32px',
-              gap: '4px',
-              borderRadius: '6px !important',
-              border: '1px solid #E2E8F0',
-              bgcolor: '#ffffff',
-              color: '#1E293B',
-              fontSize: '13px',
-              fontWeight: 400,
-              textTransform: 'none',
-              px: '12px',
-              py: '8px',
-              justifyContent: 'space-between',
-              boxSizing: 'border-box',
-              '&:hover': {
-                borderColor: '#94A3B8',
-                bgcolor: '#ffffff'
-              }
-            }}
-          >
-            {formattedDisplayDate}
-          </Button>
+              }}
+              endIcon={<IconCalendar size={18} stroke={1.75} color="#1E293B" />}
+              sx={{
+                width: '100%',
+                height: '32px',
+                gap: '4px',
+                borderRadius: '6px !important',
+                border: '1px solid #E2E8F0',
+                bgcolor: '#ffffff',
+                color: selectedDate ? '#1E293B' : '#64748B',
+                fontSize: '13px',
+                fontWeight: 400,
+                textTransform: 'none',
+                px: '12px',
+                py: '8px',
+                justifyContent: 'space-between',
+                boxSizing: 'border-box',
+                '&:hover': {
+                  borderColor: '#94A3B8',
+                  bgcolor: '#ffffff'
+                }
+              }}
+            >
+              {formattedDisplayDate}
+            </Button>
+            {selectedDate && (
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSelectedDate('');
+                  setPage(1);
+                }}
+                sx={{
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '6px',
+                  p: '4px',
+                  height: '32px',
+                  width: '32px',
+                  color: '#64748B',
+                  '&:hover': { bgcolor: '#F8FAFC' }
+                }}
+                title="Clear date filter"
+              >
+                <CloseIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            )}
+          </Box>
           <input
             type="date"
             ref={dateInputRef}
             value={selectedDate}
             onChange={(e) => {
-              if (e.target.value) {
-                setSelectedDate(e.target.value);
-                setPage(1);
-              }
+              setSelectedDate(e.target.value);
+              setPage(1);
             }}
             style={{
               position: 'absolute',
@@ -287,7 +322,13 @@ const Announcements = () => {
             endAdornment={
               searchQuery ? (
                 <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => setSearchQuery('')}>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setPage(1);
+                    }}
+                  >
                     <CloseIcon sx={{ fontSize: 16 }} />
                   </IconButton>
                 </InputAdornment>
@@ -298,7 +339,7 @@ const Announcements = () => {
               bgcolor: '#ffffff',
               height: '32px',
               fontSize: '13px',
-              color: '#64748B',
+              color: '#0F172A',
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: '#E2E8F0',
                 borderRadius: '6px !important'
@@ -332,16 +373,16 @@ const Announcements = () => {
         >
           <TableHead>
             <TableRow sx={{ bgcolor: '#F1F5F9' }}>
-              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: "14px", px: '24px', lineHeight: '100%', width: '22%' }}>
+              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: '14px', px: '24px', lineHeight: '100%', width: '22%' }}>
                 Announcement Title
               </TableCell>
-              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: "14px", px: '24px', lineHeight: '100%', width: '18%' }}>
+              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: '14px', px: '24px', lineHeight: '100%', width: '18%' }}>
                 Target Audience
               </TableCell>
-              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px',py: "14px", px: '24px', lineHeight: '100%', width: '45%' }}>
+              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: '14px', px: '24px', lineHeight: '100%', width: '45%' }}>
                 Description
               </TableCell>
-              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: "14px", px: '24px', lineHeight: '100%', width: '15%' }}>
+              <TableCell sx={{ color: '#0F172A', fontWeight: 600, fontSize: '13px', py: '14px', px: '24px', lineHeight: '100%', width: '15%' }}>
                 Published Date
               </TableCell>
             </TableRow>
@@ -350,7 +391,12 @@ const Announcements = () => {
             {loading ? (
               <TableRow>
                 <TableCell colSpan={4} align="center" sx={{ py: 6, borderBottom: 'none' }}>
-                  <CircularProgress size={32} sx={{ color: '#644EE5' }} />
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+                    <CircularProgress size={32} sx={{ color: '#644EE5' }} />
+                    <Typography sx={{ color: '#64748B', fontSize: '14px', fontWeight: 500 }}>
+                      Loading announcements...
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : paginatedData.length === 0 ? (
@@ -373,9 +419,9 @@ const Announcements = () => {
                   <TableCell
                     sx={{
                       fontSize: '13px',
-                      fontWeight: 400,
+                      fontWeight: 500,
                       color: '#0F172A',
-                      lineHeight: '100%',
+                      lineHeight: '130%',
                       px: '24px',
                       py: '14px'
                     }}
@@ -384,10 +430,10 @@ const Announcements = () => {
                   </TableCell>
                   <TableCell
                     sx={{
-                       fontSize: '13px',
+                      fontSize: '13px',
                       fontWeight: 400,
                       color: '#0F172A',
-                      lineHeight: '100%',
+                      lineHeight: '130%',
                       px: '24px',
                       py: '14px'
                     }}
@@ -398,20 +444,20 @@ const Announcements = () => {
                     sx={{
                       fontSize: '13px',
                       fontWeight: 400,
-                      color: '#0F172A',
-                      lineHeight: '100%',
+                      color: '#334155',
+                      lineHeight: '140%',
                       px: '24px',
                       py: '14px'
                     }}
                   >
-                    {row.description}
+                    {row.description || row.message}
                   </TableCell>
                   <TableCell
                     sx={{
                       fontSize: '13px',
                       fontWeight: 400,
                       color: '#0F172A',
-                      lineHeight: '100%',
+                      lineHeight: '130%',
                       px: '24px',
                       py: '14px',
                       whiteSpace: 'nowrap'
@@ -588,7 +634,7 @@ const Announcements = () => {
             <IconButton
               size="small"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={page === totalPages}
+              disabled={page === totalPages || totalCount === 0}
               sx={{
                 border: '1px solid #E2E8F0',
                 borderRadius: '6px',
@@ -602,7 +648,7 @@ const Announcements = () => {
             <IconButton
               size="small"
               onClick={() => setPage(totalPages)}
-              disabled={page === totalPages}
+              disabled={page === totalPages || totalCount === 0}
               sx={{
                 border: '1px solid #E2E8F0',
                 borderRadius: '6px',
@@ -621,3 +667,4 @@ const Announcements = () => {
 };
 
 export default Announcements;
+
