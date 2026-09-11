@@ -1,0 +1,580 @@
+.container {
+  width: 100%;
+  min-height: calc(100vh - 130px);
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 100%;
+  letter-spacing: 0%;
+}
+
+/* Tabs Switcher */
+.tabsWrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 4px;
+  width: 440px;
+  max-width: 100%;
+  height: 44px;
+  background-color: #F1F5F9;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.tabBtn {
+  flex: 1;
+  height: 40px;
+  border: none;
+  background-color: transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+.tabBtn:hover {
+  color: #0F172A;
+}
+
+.tabBtnActive {
+  background-color: #644EE5 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.2);
+}
+
+/* Layout Grid */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 24px;
+  width: 100%;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+/* Overtime Left Card */
+.formCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.configGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.configLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  line-height: 100%;
+}
+
+.inputWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.inputNumber {
+  width: 72px;
+  height: 38px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 12px 26px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inputNumber:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.inputSuffix {
+  font-size: 13px;
+  font-weight: 400;
+  color: #475569;
+}
+
+/* Right Helper Card (Shared Config / Expiry Window) */
+.helperCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.helperCardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 100%;
+}
+
+.bulletList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bulletItem {
+  font-size: 13px;
+  line-height: 100%;
+  color: #334155;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-weight: 400;
+}
+
+.bulletDot {
+  color: #64748B;
+  font-weight: bold;
+}
+
+.bulletItem strong {
+  color: #000;
+  font-weight: 500;
+}
+
+.noteBox {
+  background-color: #FAF5FF;
+  border: 1px solid #EDE9FE;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.noteText {
+  font-size: 12px;
+  line-height: 150%;
+  color: #644EE5;
+  font-weight: 400;
+  margin: 0;
+}
+
+.noteBulletHeader {
+  font-size: 13px;
+  font-weight: 700;
+  color: #644EE5;
+  margin: 0 0 2px 0;
+}
+
+/* Compensatory Off Left Section */
+.compoffLeftSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  color: #94A3B8;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 8px 14px 8px 38px;
+  font-size: 13px;
+  color: #1E293B;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.searchInput:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.searchInput::placeholder {
+  color: #64748B;
+  font-weight: 400;
+}
+
+.dropdownList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+}
+
+.dropdownItemBtn {
+  width: 100%;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dropdownItemBtn:hover {
+  background-color: #F8FAFC;
+}
+
+.dropdownItemName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.dropdownItemMeta {
+  font-size: 12px;
+  color: #64748B;
+}
+
+/* Selected Employee Card */
+.empCard {
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.empName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0;
+}
+
+.empMeta {
+  font-size: 12px;
+  font-weight: 400;
+  color: #475569;
+  margin: 0;
+}
+
+.empBalance {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.balanceLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balanceValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.balanceUnit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0F172A;
+}
+
+/* Adjustment Form */
+.compoffFormCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+.formFieldsRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #1E293B;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.reasonLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #1E293B;
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
+.requiredStar {
+  color: #EF4444;
+  margin-left: 2px;
+}
+
+.fieldInput {
+  width: 100%;
+  height: 42px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #1E293B;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fieldInput:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.fieldInput::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.dateButton {
+  width: 100%;
+  height: 42px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: #94A3B8;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.dateButton:hover {
+  border-color: #94A3B8;
+}
+
+.hiddenDateInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fieldTextarea {
+  width: 100%;
+  min-height: 80px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #1E293B;
+  font-family: "Inter";
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fieldTextarea:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.fieldTextarea::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+/* Card Action Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.cancelBtn {
+  height: 36px;
+  padding: 0 16px;
+  background: none;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  font-family: "Inter";
+  transition: all 0.2s;
+}
+
+.cancelBtn:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.submitBtn {
+  height: 36px;
+  padding: 0 16px;
+  background-color: #644EE5;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+  cursor: pointer;
+  /* font-family: inherit; */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.submitBtn:hover {
+  background-color: #523BCB;
+}
+
+.submitBtn:disabled {
+  background-color: #A5B4FC;
+  cursor: not-allowed;
+}
+
+/* Responsive Media Queries */
+@media (max-width: 1024px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .helperCard {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .tabsWrapper {
+    width: 100%;
+  }
+
+  .formFieldsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .empCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .empBalance {
+    align-items: flex-start;
+  }
+}

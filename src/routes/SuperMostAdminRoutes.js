@@ -20,7 +20,7 @@ const HrmsPreProcessingReport = Loadable(lazy(() => import('views/SuperMostAdmin
 const HrmsSaralReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/SaralReport')));
 const HrmsAttendanceExceptionReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/AttendanceExceptionReport')));
 const HrmsRegularisations = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Regularisations/Regularisations')));
-const HrmsAnnouncements = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Announcements')));
+const HrmsAnnouncements = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Announcements')));
 const HrmsCreateAnnouncement = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Announcements/components/CreateAnnouncement')));
 const HostelDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/Dashboard')));
 const HostelChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/HostelAdministration/ChargeEntry')));
@@ -41,6 +41,7 @@ const HRAdminBalanceOverride = Loadable(lazy(() => import('views/SuperMostAdmin/
 const HRAdminCompOffReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/CompOffReports')));
 const HRAdminLeaveReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/LeaveReports')));
 const HRAdminOvertimeReports = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Leave/OvertimeReports')));
+const HRAdminPolicies = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Policies')));
 
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
@@ -245,6 +246,18 @@ const SuperMostAdminRoutes = {
         {
           path: 'hr-admin/leave/overtimereports',
           element: <HRAdminOvertimeReports />
+        },
+        {
+          path: 'hr-admin/policies',
+          element: <HRAdminPolicies />
+        },
+        {
+          path: 'hr-admin/policies/overtime',
+          element: <HRAdminPolicies />
+        },
+        {
+          path: 'hr-admin/policies/compensatory-off',
+          element: <HRAdminPolicies />
         },
         {
           path: 'front-office/dashboard',
