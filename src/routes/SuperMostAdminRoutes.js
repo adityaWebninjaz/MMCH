@@ -34,6 +34,7 @@ const AccountsPreProcessingReview = Loadable(lazy(() => import('@/views/SuperMos
 const AccountsSaralExportReview = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SaralExportReview')));
 const AccountsSalaryReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/SalaryReport')));
 const AccountsDeductionReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/DeductionReport')));
+const AccountsProfile = Loadable(lazy(() => import('@/views/SuperMostAdmin/AccountsDepartment/Items/Profile')));
 const HRAdminDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Dashboard')));
 const HREmployee = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Employee')));
 
@@ -196,6 +197,10 @@ const SuperMostAdminRoutes = {
         {
           path: 'accounts/deduction-report',
           element: <AccountsDeductionReport />
+        },
+        {
+          path: 'accounts/profile',
+          element: <AccountsProfile />
         },
         {
           path: 'hr-admin/dashboard',

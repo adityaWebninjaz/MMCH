@@ -377,6 +377,14 @@ const superMostAdmin = {
               breadcrumbs: false
             }
           ]
+        },
+        {
+          id: 'accounts-profile',
+          title: 'Profile',
+          type: 'item',
+          url: '/supermostadmin/accounts/profile',
+          icon: icons.IconUser,
+          breadcrumbs: false
         }
       ]
     },
