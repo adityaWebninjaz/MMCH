@@ -451,6 +451,14 @@ const superMostAdmin = {
               breadcrumbs: false
             }
           ]
+        },
+        {
+          id: 'hr-admin-policies',
+          title: 'Policies',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/policies',
+          icon: icons.IconClock,
+          breadcrumbs: false
         }
       ]
     }
