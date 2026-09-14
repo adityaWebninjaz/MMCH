@@ -46,6 +46,7 @@ const HRAdminAttendance = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdm
 const HRAdminHolidays = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Holidays')));
 const HRAdminGatePassManagement = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/GatePassManagement')));
 const HRAdminPayrollCycle = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/PayrollCycle')));
+const HRAdminDeductionControlCenter = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/DeductionControlCenter')));
 
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
@@ -322,6 +323,10 @@ const SuperMostAdminRoutes = {
         {
           path: 'hr-admin/payrollcycle',
           element: <HRAdminPayrollCycle />
+        },
+        {
+          path: 'hr-admin/deductioncontrolcenter',
+          element: <HRAdminDeductionControlCenter />
         }
         // {
         //   path: 'hr-admin/gate-pass-management',
