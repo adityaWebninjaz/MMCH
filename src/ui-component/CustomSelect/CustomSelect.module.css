@@ -42,6 +42,11 @@
   flex: 1;
 }
 
+.placeholderText {
+  color: #64748B !important;
+  font-weight: 400;
+}
+
 .chevronIcon {
   color: #475569;
   flex-shrink: 0;
