@@ -42,6 +42,27 @@ const IconGatePass = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
   </svg>
 );
 
+const IconCalendarCheck = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={stroke}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: 'inline-block', verticalAlign: 'middle' }}
+    {...props}
+  >
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <rect width="18" height="18" x="3" y="4" rx="2" />
+    <path d="M3 10h18" />
+    <path d="m9 16 2 2 4-4" />
+  </svg>
+);
+
 // constant
 const icons = {
   IconCalendarEvent,
@@ -62,7 +83,8 @@ const icons = {
   IconFileText,
   IconLayoutGrid,
   IconTicket,
-  IconGatePass
+  IconGatePass,
+  IconCalendarCheck
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -436,6 +458,14 @@ const superMostAdmin = {
           icon: icons.IconUsers,
           breadcrumbs: false
         },
+         {
+          id: 'hr-admin-attendance',
+          title: 'Attendance',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/attendance',
+          icon: icons.IconClock,
+          breadcrumbs: false
+        },
         {
           id: 'hr-admin-leave',
           title: 'Leave',
@@ -486,14 +516,6 @@ const superMostAdmin = {
           breadcrumbs: false
         },
         {
-          id: 'hr-admin-attendance',
-          title: 'Attendance',
-          type: 'item',
-          url: '/supermostadmin/hr-admin/attendance',
-          icon: icons.IconClock,
-          breadcrumbs: false
-        },
-        {
           id: 'hr-admin-holidays',
           title: 'Holidays',
           type: 'item',
@@ -509,6 +531,14 @@ const superMostAdmin = {
         //   icon: icons.IconGatePass,
         //   breadcrumbs: false
         // }
+        {
+          id: 'hr-admin-deduction-control-center',
+          title: 'Deduction Control Center',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/deduction-control-center',
+          icon: icons.IconCalendarCheck,
+          breadcrumbs: false
+        }
       ]
     }
   ]

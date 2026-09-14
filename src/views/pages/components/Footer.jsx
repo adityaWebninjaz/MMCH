@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Footer.module.css';
-import LogoSection from '@/layout/MainLayout/LogoSection';
+import LogoSection from '../../../layout/MainLayout/LogoSection';
 
 const Footer = () => {
   return (
