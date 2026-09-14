@@ -1,4 +1,4 @@
-// assets
+import React from 'react';
 import {
   IconCalendarEvent,
   IconUsers,
@@ -16,8 +16,31 @@ import {
   IconBolt,
   IconReportMoney,
   IconFileText,
-  IconLayoutGrid
+  IconLayoutGrid,
+  IconTicket
 } from '@tabler/icons-react';
+
+const IconGatePass = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={stroke}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: 'inline-block', verticalAlign: 'middle' }}
+    {...props}
+  >
+    {/* Tilted top ticket / flap */}
+    <path d="M4.5 8.5L8.5 3.8a1.5 1.5 0 0 1 1.15-.5H17a2 2 0 0 1 2 2V8" />
+    {/* Front ticket card */}
+    <rect x="2.5" y="8" width="19" height="12.5" rx="2.5" />
+    {/* Perforation dots on left */}
+    <path d="M6.5 12v.01M6.5 16.5v.01" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
 
 // constant
 const icons = {
@@ -37,7 +60,9 @@ const icons = {
   IconBolt,
   IconReportMoney,
   IconFileText,
-  IconLayoutGrid
+  IconLayoutGrid,
+  IconTicket,
+  IconGatePass
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -475,10 +500,18 @@ const superMostAdmin = {
           url: '/supermostadmin/hr-admin/holidays',
           icon: icons.IconCalendarEvent,
           breadcrumbs: false
-        }
+        },
+        // {
+        //   id: 'hr-admin-gatepass-management',
+        //   title: 'Gate Pass Management',
+        //   type: 'item',
+        //   url: '/supermostadmin/hr-admin/gate-pass-management',
+        //   icon: icons.IconGatePass,
+        //   breadcrumbs: false
+        // }
       ]
     }
   ]
-}
+};
 
 export default superMostAdmin;
