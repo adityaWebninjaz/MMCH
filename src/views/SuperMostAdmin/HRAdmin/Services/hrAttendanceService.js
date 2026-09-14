@@ -580,9 +580,13 @@ export const ATTENDANCE_STATUS_OPTIONS = [
 ];
 
 export const getStatusMeta = (statusCode) => {
-  const found = ATTENDANCE_STATUS_OPTIONS.find((s) => s.code === statusCode);
+  if (!statusCode) return ATTENDANCE_STATUS_OPTIONS[0];
+  const normalized = String(statusCode).trim().toUpperCase();
+  const found = ATTENDANCE_STATUS_OPTIONS.find(
+    (s) => s.code.toUpperCase() === normalized || s.label.toUpperCase() === normalized
+  );
   if (found) return found;
-  return { code: statusCode || 'P', label: statusCode || 'Present', bgcolor: '#F1F5F9', color: '#334155', border: '#E2E8F0' };
+  return { code: statusCode, label: statusCode, bgcolor: '#F1F5F9', color: '#475569', border: '#E2E8F0' };
 };
 
 /**
