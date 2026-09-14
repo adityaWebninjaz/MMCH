@@ -705,7 +705,8 @@
 }
 
 .deleteModalText {
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 400;
   color: #64748B;
   line-height: 1.5;
   margin: 0 0 24px 0;
@@ -713,7 +714,7 @@
 
 .deleteModalText strong {
   color: #1E293B;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .deleteModalActions {
@@ -728,10 +729,10 @@
   background-color: #EF4444;
   color: #FFFFFF;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 9px 24px;
-  font-size: 13.5px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   font-family: inherit;
   transition: background-color 0.15s;
@@ -744,10 +745,10 @@
 
 .deleteCancelBtn {
   background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #CBD5E1;
   border-radius: 6px;
   padding: 9px 24px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: #475569;
   cursor: pointer;
