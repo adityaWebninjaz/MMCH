@@ -1,0 +1,743 @@
+.container {
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  background-color: #FFFFFF;
+  padding: 32px;
+  box-sizing: border-box;
+  font-family: "Inter";
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Header Section */
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pageSubtitle {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
+  font-weight: 400;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customYearSelectBtn {
+  height: 40px !important;
+  border-radius: 8px !important;
+  border: 1px solid #E2E8F0 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #1E293B !important;
+  padding: 0 14px !important;
+  background-color: #FFFFFF !important;
+}
+
+.customTypeSelectBtn {
+  height: 40px !important;
+  border-radius: 8px !important;
+  border: 1px solid #E2E8F0 !important;
+  font-size: 13.5px !important;
+  color: #1E293B !important;
+  padding: 0 14px !important;
+  background-color: #FFFFFF !important;
+}
+
+.addHolidayBtn {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.3);
+}
+
+.addHolidayBtn:hover {
+  background-color: #533DCB;
+}
+
+.addHolidayBtn:active {
+  transform: translateY(1px);
+}
+
+/* 12 Months Grid */
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid #E5E7EB;
+  padding: 16px;
+}
+
+@media (max-width: 1200px) {
+  .calendarGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendarGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.monthCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+  transition: box-shadow 0.2s;
+}
+
+.monthCard:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.monthTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.holidayBadge {
+  font-size: 14px;
+  color: #64748B;
+  font-weight: 400;
+}
+
+/* Calendar Days Grid */
+.weekDaysRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.weekDayHeader {
+  font-size: 12px;
+  font-weight: 400;
+  color: #475569;
+  padding: 4px 0;
+}
+
+.weekendHeader {
+  font-size: 12px;
+  color: #644EE5;
+  font-weight: 400;
+}
+
+.daysMatrix {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+}
+
+.dayCell {
+  height: 45px;
+  background-color: #F8FAFC;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 400;
+  color: #475569;
+  border-radius: 8px;
+  user-select: none;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  width: 100%;
+  padding: 0;
+  outline: none;
+  transition: all 0.15s ease-in-out;
+}
+
+.dayCell:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.emptyCell {
+  height: 38px;
+}
+
+.holidayCell {
+  background-color: #F3E8FF;
+  color: #644EE5;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+}
+
+.holidayCell:hover {
+  background-color: #DDD6FE !important;
+  color: #523BCB !important;
+}
+
+/* Month Footer (List of holidays) */
+.monthFooter {
+  border-top: 1px dashed #F1F5F9;
+  padding-top: 10px;
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.holidayNotice {
+  font-size: 14px;
+  font-weight: 400;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bulletDot {
+  color: #64748B;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.holidayNameHighlight {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.noHolidayNotice {
+  font-size: 11.5px;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* Table Section */
+.tableContainer {
+  width: 100%;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #FFFFFF;
+  margin-top: 8px;
+}
+
+.holidaysTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.holidaysTable th {
+  background-color: #F8FAFC;
+  color: #16151C;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.holidaysTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #F1F5F9;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.holidaysTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.holidaysTable tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.dateCell {
+  font-weight: 500;
+  color: #0F172A;
+  white-space: nowrap;
+}
+
+.nameCell {
+  font-weight: 500;
+  color: #1E293B;
+}
+
+.typeCell {
+  color: #475569;
+}
+
+.workingDaysBadge {
+  /* background-color: #FEF3C7; */
+  /* color: #92400E; */
+  /* padding: 2px 8px; */
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+/* Modal Popup Styles */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
+  overflow-y: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 512px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  margin: auto;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.modalTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #09090B;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.closeButton:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+}
+
+.requiredStar {
+  color: #EF4444;
+  margin-left: 3px;
+}
+
+.textInput {
+  width: 100%;
+  height: 40px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  color: #1E293B;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.textInput:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.textInput::placeholder {
+  color: #94A3B8;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.datePickerBtn {
+  width: 100%;
+  height: 40px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 13.5px;
+  color: #1E293B;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.datePickerBtn:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.datePlaceholder {
+  color: #94A3B8;
+}
+
+.hiddenDateInput {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+}
+
+.selectWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.selectInput {
+  width: 100%;
+  height: 40px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 36px 8px 14px;
+  font-size: 13.5px;
+  color: #1E293B;
+  font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.selectInput:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 2px rgba(100, 78, 229, 0.12);
+}
+
+.hiddenRadio {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  margin: 0;
+}
+
+.radioRow {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 4px 0;
+}
+
+.radioLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.radioActive {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.radioInactive {
+  color: #94A3B8;
+  font-weight: 400;
+}
+
+.customRadio {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background-color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.customRadioChecked {
+  border-color: #0F172A;
+}
+
+.radioDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #0F172A;
+}
+
+/* Override Container Box (Amber / Yellow Card) */
+.overrideCard {
+  background-color: #FEF3DE;
+  border: none;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.overrideHeaderCheck {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.customCheckbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 4px;
+  border: 1.5px solid #CBD5E1;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  margin-top: 1px;
+}
+
+.customCheckboxChecked {
+  background-color: #5A45E5;
+  border-color: #5A45E5;
+}
+
+.overrideTitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #1E293B;
+  line-height: 1.4;
+}
+
+.deptGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 28px;
+  padding-left: 30px;
+  margin: 2px 0;
+}
+
+.deptLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #3A2E1A;
+  cursor: pointer;
+  user-select: none;
+}
+
+.childCheckbox {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 5px;
+  border: 1.5px solid #CBD5E1;
+  background-color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.childCheckboxChecked {
+  background-color: #5A45E5;
+  border-color: #5A45E5;
+}
+
+.overrideNote {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #6D5528;
+  font-weight: 400;
+  margin: 0;
+  padding-top: 2px;
+}
+
+/* Modal Actions */
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.cancelBtn {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.cancelBtn:hover {
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+.submitBtn {
+  background-color: #644EE5;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #FFFFFF;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.3);
+}
+
+.submitBtn:hover {
+  background-color: #533DCB;
+}
+
+.submitBtn:active {
+  transform: translateY(1px);
+}

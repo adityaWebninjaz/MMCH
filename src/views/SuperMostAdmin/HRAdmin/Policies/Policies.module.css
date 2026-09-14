@@ -104,19 +104,26 @@
 }
 
 .inputNumber {
-  width: 72px;
+  width: 90px;
   height: 38px;
   background-color: #FFFFFF;
   border: 1px solid #E2E8F0;
   border-radius: 6px;
-  padding: 12px 26px;
+  padding: 8px 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: #1E293B;
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+}
+
+.inputNumber::-webkit-outer-spin-button,
+.inputNumber::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .inputNumber:focus {
