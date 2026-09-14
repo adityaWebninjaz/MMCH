@@ -467,6 +467,14 @@ const superMostAdmin = {
           url: '/supermostadmin/hr-admin/attendance',
           icon: icons.IconClock,
           breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-holidays',
+          title: 'Holidays',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/holidays',
+          icon: icons.IconCalendarEvent,
+          breadcrumbs: false
         }
       ]
     }
