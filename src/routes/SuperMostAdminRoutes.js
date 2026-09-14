@@ -45,6 +45,7 @@ const HRAdminPolicies = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin
 const HRAdminAttendance = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Attendance/Index')));
 const HRAdminHolidays = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Holidays')));
 const HRAdminGatePassManagement = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/GatePassManagement')));
+
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
 const PoliciesOvertime = Loadable(lazy(() => import('views/SuperMostAdmin/Policies/OverTime')));
@@ -260,6 +261,10 @@ const SuperMostAdminRoutes = {
         {
           path: 'hr-admin/policies/compensatory-off',
           element: <HRAdminPolicies />
+        },
+        {
+          path: 'hr-admin/attandance',
+          element: <HRAdminAttendance />
         },
         {
           path: 'front-office/dashboard',
