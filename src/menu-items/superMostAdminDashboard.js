@@ -274,7 +274,7 @@ const superMostAdmin = {
       id: 'supermostadmin-user-roles-permissions',
       title: 'User Roles & Permissions',
       type: 'item',
-      url: '/supermostadmin/user-roles-and-permissions',
+      url: '/supermostadmin/user-roles-permissions',
       icon: icons.IconUserRolesPermissions,
       breadcrumbs: false
     },
@@ -497,7 +497,7 @@ const superMostAdmin = {
           icon: icons.IconUsers,
           breadcrumbs: false
         },
-         {
+        {
           id: 'hr-admin-attendance',
           title: 'Attendance',
           type: 'item',
