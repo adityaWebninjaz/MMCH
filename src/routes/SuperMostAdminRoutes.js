@@ -45,13 +45,10 @@ const HRAdminOvertimeReports = Loadable(lazy(() => import('views/SuperMostAdmin/
 const HRAdminPolicies = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Policies')));
 const HRAdminAttendance = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Attendance/Index')));
 const HRAdminHolidays = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Holidays')));
-const HRAdminGatePassManagement = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/GatePassManagement')));
+// const HRAdminGatePassManagement = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/GatePassManagement')));
 const HRAdminPayrollCycle = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/PayrollCycle')));
-<<<<<<< Updated upstream
 const HRAdminDeductionControlCenter = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/DeductionControlCenter')));
-=======
 const UserRolesAndPermissions = Loadable(lazy(() => import('views/SuperMostAdmin/UserRolesAndPermissions')));
->>>>>>> Stashed changes
 
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
@@ -346,7 +343,7 @@ const SuperMostAdminRoutes = {
           element: <UserRolesAndPermissions />
         },
         {
-          path: 'hrms/user-roles-and-permissions',
+          path: 'hrms/user-roles-permissions',
           element: <UserRolesAndPermissions />
         }
         // {
