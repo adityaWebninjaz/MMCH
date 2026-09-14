@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Navbar.module.css';
-import LogoSection from '@/layout/MainLayout/LogoSection';
+// import LogoSection from '@/layout/MainLayout/LogoSection';
+import LogoSection from '../../../layout/MainLayout/LogoSection';
 import { useNavigate } from 'react-router';
 
 const Navbar = () => {
