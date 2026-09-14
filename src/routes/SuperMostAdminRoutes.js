@@ -8,6 +8,7 @@ import Loadable from 'ui-component/Loadable';
 const HrmsAllEmployees = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AllEmployees')));
 const HrmsApprovals = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Approvals')));
 const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/BiometricDevices')));
+const AuditLogs = Loadable(lazy(() => import('views/SuperMostAdmin/AuditLogs')));
 const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftDetails')));
 const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AssignShift')));
 const HrmsAttendanceReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AttendanceReport')));
@@ -87,6 +88,14 @@ const SuperMostAdminRoutes = {
         {
           path: 'hrms/devices',
           element: <HrmsBiometricDevices />
+        },
+        {
+          path: 'hrms/audit-logs',
+          element: <AuditLogs />
+        },
+        {
+          path: 'audit-logs',
+          element: <AuditLogs />
         },
         {
           path: 'hrms/shift-details',
@@ -325,7 +334,7 @@ const SuperMostAdminRoutes = {
           element: <HRAdminPayrollCycle />
         },
         {
-          path: 'hr-admin/deductioncontrolcenter',
+          path: 'hr-admin/deduction-control-center',
           element: <HRAdminDeductionControlCenter />
         }
         // {

@@ -128,6 +128,14 @@ const superMostAdmin = {
       breadcrumbs: false
     },
     {
+      id: 'hrms-audit-logs',
+      title: 'Audit Logs',
+      type: 'item',
+      url: '/supermostadmin/audit-logs',
+      icon: icons.IconFileInvoice,
+      breadcrumbs: false
+    },
+    {
       id: 'hrms-shift-management',
       title: 'Shift Management',
       type: 'collapse',
