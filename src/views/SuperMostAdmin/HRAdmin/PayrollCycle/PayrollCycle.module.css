@@ -1,0 +1,1007 @@
+.container {
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  background-color: #FFFFFF;
+  padding: 32px 40px;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Stepper Component */
+.stepperContainer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  max-width: 780px;
+  margin-top: 4px;
+  margin-bottom: 32px;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  min-width: 90px;
+}
+
+.stepCircle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background-color: #F1F5F9;
+  color: #64748B;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.stepCircleActive {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(91, 71, 224, 0.3);
+}
+
+.stepCircleCompleted {
+  background-color: #644EE5;
+  color: #FFFFFF;
+}
+
+.stepLabel {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748B;
+  margin-top: 10px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.stepLabelActive {
+  color: #000000;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.stepConnector {
+  flex: 1;
+  height: 1px;
+  background-color: #E2E8F0;
+  margin: 17px 8px 0 8px;
+  min-width: 40px;
+}
+
+.stepConnectorActive {
+  background-color: #644EE5;
+}
+
+/* Main Content Area */
+.contentCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.subHeaderLabel {
+  font-size: 13px;
+  font-weight: 400;
+  color: #000000;
+  margin: 0 0 6px 0;
+}
+
+.monthHeadingWrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.monthHeading {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.disclaimerText {
+  font-size: 13px;
+  font-weight: 400;
+  color: #000000;
+  margin: 0 0 24px 0;
+  line-height: 20px;
+}
+
+.startBtn {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(91, 71, 224, 0.2);
+}
+
+.startBtn:hover {
+  background-color: #4B3AC7;
+}
+
+.startBtn:active {
+  transform: scale(0.98);
+}
+
+/* Step 2 Specific Styles */
+.statusRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 620px;
+  margin-top: 25px;
+  margin-bottom: 20px;
+}
+
+.processingBadge {
+  background-color: #FEF3C7;
+  color: #D97706;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  display: inline-block;
+}
+
+.startedTimestamp {
+  font-size: 14px;
+  color: #4B5563;
+  font-weight: 500;
+}
+
+.sectionSubtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  margin: 0 0 16px 0;
+}
+
+.checklistGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 28px;
+  width: 100%;
+  max-width: 620px;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #1F2937;
+  font-weight: 500;
+}
+
+.checkIconSuccess {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #DCFCE7;
+  color: #15803D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkIconPending {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-color: #FEE2E2;
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pendingBadge {
+  background-color: #FEF3C7;
+  color: #D97706;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 10px;
+  line-height: 16px;
+  display: inline-block;
+}
+
+/* Step 3: Pre - Processing Styles */
+.step3Container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filtersRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.leftFilterControls {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.filterField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  font-size: 13px;
+  font-weight: 400;
+  color: #1E293B;
+}
+
+.dateInputWrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: #FFFFFF;
+  width: 160px;
+  gap: 8px;
+}
+
+.dateInput {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  font-weight: 400;
+  color: #1E293B;
+  width: 100%;
+  background: transparent;
+  font-family: inherit;
+}
+
+.calendarIcon {
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.searchInputWrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  background-color: #FFFFFF;
+  width: 260px;
+  gap: 8px;
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  color: #1E293B;
+  width: 100%;
+  background: transparent;
+  font-family: inherit;
+}
+
+.searchInput::placeholder {
+  color: #94A3B8;
+}
+
+.searchIcon {
+  color: #94A3B8;
+  flex-shrink: 0;
+}
+
+.exportBtnGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.exportPdfBtn {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.exportPdfBtn:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.exportExcelBtn {
+  background-color: #644EE5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: background-color 0.15s;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.25);
+}
+
+.exportExcelBtn:hover {
+  background-color: #533DCB;
+}
+
+/* Step 3 Table */
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background-color: #FFFFFF;
+}
+
+.customTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+}
+
+.customTable th {
+  background-color: #F1F5F9;
+  color: #16151C;
+  font-weight: 600;
+  line-height: 20px;
+  font-size: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #E2E8F0;
+  white-space: nowrap;
+}
+
+.sortHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.customTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 500;
+  color: #475569;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.customTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.customTable tbody tr:hover {
+  background-color: #F8FAFC;
+}
+
+.empName {
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Edit Mode Inputs */
+.editInput {
+  width: 48px;
+  height: 32px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1E293B;
+  outline: none;
+  padding: 0 4px;
+  box-sizing: border-box;
+  background-color: #FFFFFF;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.editInput:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 1px rgba(100, 78, 229, 0.2);
+}
+
+.editInputWide {
+  width: 105px;
+  height: 32px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 13px;
+  font-family: inherit;
+  color: #1E293B;
+  outline: none;
+  padding: 0 6px;
+  box-sizing: border-box;
+  background-color: #FFFFFF;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.editInputWide:focus {
+  border-color: #644EE5;
+  box-shadow: 0 0 0 1px rgba(100, 78, 229, 0.2);
+}
+
+/* Row Action Buttons */
+.editRowBtn {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.editRowBtn:hover {
+  color: #0F172A;
+  background-color: #F1F5F9;
+}
+
+.editActionGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cancelRowBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background-color: #FEE2E2;
+  color: #EF4444;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+
+.cancelRowBtn:hover {
+  opacity: 0.85;
+}
+
+.saveRowBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background-color: #DCFCE7;
+  color: #16A34A;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+
+.saveRowBtn:hover {
+  opacity: 0.85;
+}
+
+/* Pagination Footer */
+.paginationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.showingText {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rowsPerPage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #64748B;
+}
+
+.pageIndicator {
+  font-size: 13px;
+  color: #334155;
+  font-weight: 500;
+}
+
+.pageNavBtns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.navBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  padding: 0;
+}
+
+.navBtn:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+.navBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Bottom Action Row */
+.bottomActionRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.sendToAccountsBtn {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.25);
+}
+
+.sendToAccountsBtn:hover {
+  background-color: #533DCB;
+}
+
+.sendToAccountsBtn:active {
+  transform: scale(0.98);
+}
+
+/* Modal Popup */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modalCard {
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 520px;
+  padding: 32px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0;
+}
+
+.auditTextarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 12px 14px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #0F172A;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-weight: 400;
+}
+
+.auditTextarea:focus {
+  box-shadow: 0 0 0 1px rgba(100, 78, 229, 0.15);
+}
+
+.auditTextarea::placeholder {
+  color: #94A3B8;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cancelModalBtn {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  /* line-height: 24px; */
+  color: #475569;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.cancelModalBtn:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.confirmModalBtn {
+  background-color: #644EE5;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  /* line-height: 24px; */
+  color: #FFFFFF;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+  box-shadow: 0 1px 3px rgba(100, 78, 229, 0.25);
+}
+
+.confirmModalBtn:hover {
+  background-color: #533DCB;
+}
+
+/* Step 4: Saral Export Styles */
+.saralExportCard {
+  width: 100%;
+  max-width: 780px;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.saralHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.saralDraftBadge {
+  background-color: #FEF3C7;
+  color: #D97706;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+  line-height: 18px;
+}
+
+.saralAwaitingBadge {
+  background-color: #FEF3C7;
+  color: #D97706;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 14px;
+  line-height: 18px;
+}
+
+.saralFileName {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.validationBanner {
+  background-color: #EAF6F0;
+  /* border: 1px solid #BBF7D0; */
+  border-radius: 6px;
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #0D6343;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 20px;
+}
+
+.saralActionBtns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.previewExportBtn {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.previewExportBtn:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.reasonFormLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.requiredStar {
+  color: #EF4444;
+}
+
+/* Step 5: Payslip Distribution Styles */
+.dropzoneCard {
+  background-color: rgba(243, 232, 255, 1);
+  border: 1px dashed rgba(100, 78, 229, 1);
+  /* border: 1.5px dashed #DDD6FE; */
+  border-radius: 8px;
+  padding: 36px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  margin-top: 16px;
+  width: 400px;
+}
+
+.dropzoneCard:hover,
+.dropzoneDragging {
+  background-color: #F3E8FF;
+  border-color: #A855F7;
+}
+
+.dropzoneCloudIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.dropzoneTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B21A8;
+  margin: 0 0 6px 0;
+  text-align: center;
+}
+
+.dropzoneSubtitle {
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748B;
+  margin: 0;
+  text-align: center;
+}
+
+.step5ImportedContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.salaryDataCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.salaryDataCardTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 12px 0;
+}
+
+.salaryFilePreviewBox {
+  background-color: #F3E8FF;
+  border: 1.5px dashed #644EE5;
+  border-radius: 8px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.salaryDocIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+}
+
+.salaryFileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.salaryFileName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.salaryFileSubtext {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748B;
+}
+
+.importedSuccessRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #15803D;
+  font-size: 13px;
+  font-weight: 500;
+  padding-left: 2px;
+}
+
+.bulkDispatchBtn {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.bulkDispatchBtn:hover {
+  background-color: #434EB8;
+}
+
+.generatePayslipsCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.generatePdfBtn {
+  background-color: #644EE5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s;
+  width: fit-content;
+}
+
+.generatePdfBtn:hover {
+  background-color: #434EB8;
+}
