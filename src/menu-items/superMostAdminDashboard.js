@@ -64,6 +64,26 @@ const IconCalendarCheck = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
   </svg>
 );
 
+const IconUserRolesPermissions = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={stroke}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    style={{ display: 'inline-block', verticalAlign: 'middle' }}
+    {...props}
+  >
+    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" />
+    <circle cx="12" cy="13" r="1.75" />
+    <path d="M9.5 17.5a2.5 2.5 0 0 1 5 0" />
+  </svg>
+);
+
 // constant
 const icons = {
   IconCalendarEvent,
@@ -86,7 +106,8 @@ const icons = {
   IconTicket,
   IconGatePass,
   IconCalendarCheck,
-  IconCalendarRepeat
+  IconCalendarRepeat,
+  IconUserRolesPermissions
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -248,6 +269,14 @@ const superMostAdmin = {
         //   breadcrumbs: false
         // }
       ]
+    },
+    {
+      id: 'supermostadmin-user-roles-permissions',
+      title: 'User Roles & Permissions',
+      type: 'item',
+      url: '/supermostadmin/user-roles-and-permissions',
+      icon: icons.IconUserRolesPermissions,
+      breadcrumbs: false
     },
     {
       id: 'hrms-regularisations',

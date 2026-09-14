@@ -61,6 +61,7 @@ const CustomSelect = ({
 
   const selectedOption = normalizedOptions.find((opt) => String(opt.value) === String(currentValue));
   const displayText = selectedOption ? selectedOption.label : (currentValue || placeholder);
+  const isPlaceholder = !currentValue || (selectedOption && (selectedOption.value === '' || selectedOption.value === null || selectedOption.value === undefined));
 
   return (
     <div
@@ -79,13 +80,15 @@ const CustomSelect = ({
           if (e.key === 'Escape') setIsOpen(false);
         }}
         style={{
-          height: size === 'small' ? '30px' : '36px',
+          height: size === 'small' ? '30px' : '38px',
           fontSize: size === 'small' ? '12px' : '13px'
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
-        <span className={styles.selectedText}>{displayText}</span>
+        <span className={`${styles.selectedText} ${isPlaceholder ? styles.placeholderText : ''}`}>
+          {displayText}
+        </span>
         <span className={`${styles.chevronIcon} ${isOpen ? styles.chevronRotated : ''}`}>
           <IconChevronDown size={size === 'small' ? 14 : 16} stroke={2} />
         </span>
