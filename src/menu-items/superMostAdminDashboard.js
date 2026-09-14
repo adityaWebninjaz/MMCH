@@ -17,7 +17,8 @@ import {
   IconReportMoney,
   IconFileText,
   IconLayoutGrid,
-  IconTicket
+  IconTicket,
+  IconCalendarRepeat
 } from '@tabler/icons-react';
 
 const IconGatePass = ({ size = '1.3rem', stroke = 1.75, ...props }) => (
@@ -84,7 +85,8 @@ const icons = {
   IconLayoutGrid,
   IconTicket,
   IconGatePass,
-  IconCalendarCheck
+  IconCalendarCheck,
+  IconCalendarRepeat
 };
 
 // ==============================|| SUPER MOST ADMIN MENU ITEMS ||============================== //
@@ -537,6 +539,14 @@ const superMostAdmin = {
           type: 'item',
           url: '/supermostadmin/hr-admin/deduction-control-center',
           icon: icons.IconCalendarCheck,
+          breadcrumbs: false
+        },
+        {
+          id: 'hr-admin-payroll-cycle',
+          title: 'Payroll Cycle',
+          type: 'item',
+          url: '/supermostadmin/hr-admin/payroll-cycle',
+          icon: icons.IconCalendarRepeat,
           breadcrumbs: false
         }
       ]

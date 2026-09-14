@@ -45,6 +45,7 @@ const HRAdminPolicies = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin
 const HRAdminAttendance = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Attendance/Index')));
 const HRAdminHolidays = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/Holidays')));
 const HRAdminGatePassManagement = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/GatePassManagement')));
+const HRAdminPayrollCycle = Loadable(lazy(() => import('views/SuperMostAdmin/HRAdmin/PayrollCycle')));
 
 const FrontOfficeDashboard = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/Dashboard')));
 const FrontOfficeChargeEntry = Loadable(lazy(() => import('views/SuperMostAdmin/FrontOffice-New/ChargeEntry')));
@@ -313,6 +314,14 @@ const SuperMostAdminRoutes = {
         {
           path: 'holidays',
           element: <HRAdminHolidays />
+        },
+        {
+          path: 'hr-admin/payroll-cycle',
+          element: <HRAdminPayrollCycle />
+        },
+        {
+          path: 'hr-admin/payrollcycle',
+          element: <HRAdminPayrollCycle />
         }
         // {
         //   path: 'hr-admin/gate-pass-management',
