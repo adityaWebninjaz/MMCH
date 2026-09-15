@@ -1,16 +1,16 @@
 .container {
   padding: 32px;
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
   min-height: calc(100vh - 80px);
-  font-family: "Inter";
-  color: #1E293B;
+  font-family: 'Inter';
+  color: #1e293b;
 }
 
 /* Page Header */
 .pageTitle {
   font-size: 24px;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0 0 20px 0;
 }
 
@@ -31,8 +31,8 @@
   padding: 4px 0;
   font-size: 20px;
   line-height: 30px;
-  font-weight: 500;
-  color: #94A3B8;
+  font-weight: 600;
+  color: #94a3b8;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s ease-in-out;
@@ -40,12 +40,12 @@
 
 .tabItemActive {
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .tabBadge {
-  background-color: #EF4444;
-  color: #FFFFFF;
+  background-color: #ef4444;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 700;
   width: 18px;
@@ -83,7 +83,7 @@
   font-size: 13px;
   line-height: 100%;
   font-weight: 400;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .searchInputWrapper {
@@ -100,34 +100,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .searchInput {
   width: 100%;
   height: 38px;
   padding: 8px 12px 8px 36px;
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 13px;
-  color: #1E293B;
+  color: #1e293b;
   outline: none;
   font-family: inherit;
   transition: border-color 0.15s;
 }
 
 .searchInput:focus {
-  border-color: #644EE5;
+  border-color: #644ee5;
 }
 
 .searchInput::placeholder {
-  color: #94A3B8;
+  color: #94a3b8;
 }
 
 .addRoleBtn {
-  background-color: #644EE5;
-  color: #FFFFFF;
+  background-color: #644ee5;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   padding: 10px 16px;
@@ -149,9 +149,9 @@
 
 /* Table */
 .tableContainer {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 8px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
@@ -163,38 +163,38 @@
 }
 
 .rolesTable thead tr {
-  background-color: #F1F5F9;
-  border-bottom: 1px solid #E2E8F0;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .rolesTable th {
   padding: 12px 18px;
   font-size: 14px;
   font-weight: 600;
-  color: #18181B;
+  color: #18181b;
   letter-spacing: 0.1px;
 }
 
 .rolesTable tbody tr {
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   transition: background-color 0.1s;
 }
 
 .rolesTable tbody tr:hover {
-  background-color: #F8FAFC;
+  background-color: #f8fafc;
 }
 
 .rolesTable td {
   padding: 14px 18px;
   font-size: 14px;
   line-height: 20px;
-  color: #1F2937;
+  color: #1f2937;
   vertical-align: middle;
 }
 
 .roleNameCell {
   font-weight: 700 !important;
-  color: #1F2937 !important;
+  color: #1f2937 !important;
 }
 
 .actionsCell {
@@ -204,8 +204,8 @@
 }
 
 .actionBtn {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -213,28 +213,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: #1E293B;
+  color: #1e293b;
   transition: all 0.15s ease-in-out;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   padding: 0;
 }
 
 .actionBtn:hover {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .actionBtnDelete:hover {
-  background-color: #FEF2F2;
-  border-color: #FECACA;
-  color: #DC2626;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
 .actionBtnEdit:hover {
-  background-color: #F5F3FF;
-  border-color: #DDD6FE;
-  color: #644EE5;
+  background-color: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #644ee5;
 }
 
 /* Pagination Footer */
@@ -244,14 +244,14 @@
   justify-content: space-between;
   padding: 16px 4px 0 4px;
   font-size: 13px;
-  color: #64748B;
+  color: #64748b;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .showingText {
   font-size: 13px;
-  color: #64748B;
+  color: #64748b;
 }
 
 .paginationControls {
@@ -267,19 +267,19 @@
 }
 
 .rowsSelect {
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 13px;
-  color: #1E293B;
-  background-color: #FFFFFF;
+  color: #1e293b;
+  background-color: #ffffff;
   outline: none;
   cursor: pointer;
 }
 
 .pageIndicator {
   font-size: 13px;
-  color: #64748B;
+  color: #64748b;
 }
 
 .pageNavBtns {
@@ -289,22 +289,22 @@
 }
 
 .navBtn {
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 5px;
   padding: 4px 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #64748B;
+  color: #64748b;
   transition: all 0.15s;
 }
 
 .navBtn:hover:not(:disabled) {
-  background-color: #F8FAFC;
-  color: #1E293B;
-  border-color: #CBD5E1;
+  background-color: #f8fafc;
+  color: #1e293b;
+  border-color: #cbd5e1;
 }
 
 .navBtn:disabled {
@@ -329,7 +329,7 @@
 
 /* Permissions Modal (Edit / View) */
 .permissionsModalCard {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 12px;
   width: 100%;
   max-width: 680px;
@@ -358,13 +358,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .modalTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0;
 }
 
@@ -372,7 +372,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: #94A3B8;
+  color: #000;
   padding: 4px;
   border-radius: 4px;
   display: flex;
@@ -382,8 +382,8 @@
 }
 
 .closeModalBtn:hover {
-  background-color: #F1F5F9;
-  color: #1E293B;
+  background-color: #f1f5f9;
+  color: #1e293b;
 }
 
 .modalBodyScrollable {
@@ -415,42 +415,42 @@
 }
 
 .formLabel {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .formInput {
   height: 38px;
   padding: 8px 12px;
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-size: 13.5px;
-  color: #1E293B;
+  font-size: 13px;
+  color: #1e293b;
   outline: none;
   font-family: inherit;
   transition: border-color 0.15s;
 }
 
 .formInput:focus {
-  border-color: #644EE5;
-  background-color: #FFFFFF;
+  border-color: #644ee5;
+  background-color: #ffffff;
 }
 
 .formInput:disabled {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   cursor: default;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 .formTextarea {
   padding: 10px 12px;
-  background-color: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 6px;
   font-size: 13.5px;
-  color: #1E293B;
+  color: #1e293b;
   outline: none;
   font-family: inherit;
   resize: vertical;
@@ -459,12 +459,12 @@
 }
 
 .formTextarea:focus {
-  border-color: #644EE5;
+  border-color: #644ee5;
 }
 
 .formTextarea::placeholder,
 .formInput::placeholder {
-  color: #64748B;
+  color: #64748b;
   font-size: 13px;
   font-weight: 400;
 }
@@ -486,7 +486,7 @@
 .statusLabelText {
   font-size: 13px;
   font-weight: 500;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 /* Module Permissions Table */
@@ -499,27 +499,27 @@
 .sectionHeading {
   font-size: 15px;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0;
 }
 
 .permissionsTable {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
 }
 
 .permissionsTable thead tr {
-  background-color: #F8FAFC;
-  border-bottom: 1px solid #E2E8F0;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .permissionsTable th {
   padding: 10px 14px;
   font-size: 12px;
   font-weight: 600;
-  color: #1E293B;
+  color: #1e293b;
   text-align: center;
 }
 
@@ -528,7 +528,7 @@
 }
 
 .permissionsTable tbody tr {
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .permissionsTable td {
@@ -543,7 +543,7 @@
   text-align: left;
   font-weight: 500;
   font-size: 13px;
-  color: #1E293B;
+  color: #1e293b;
 }
 
 /* Toggle Switch Control */
@@ -567,14 +567,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #CBD5E1;
+  background-color: #cbd5e1;
   transition: 0.2s;
   border-radius: 20px;
 }
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 14px;
   width: 14px;
   left: 3px;
@@ -586,7 +586,7 @@
 }
 
 .toggleSwitch input:checked+.slider {
-  background-color: #644EE5;
+  background-color: #644ee5;
 }
 
 .toggleSwitch input:checked+.slider:before {
@@ -605,15 +605,15 @@
   align-items: center;
   justify-content: flex-end;
   gap: 12px;
-  border-top: 1px solid #F1F5F9;
-  background-color: #FFFFFF;
+  border-top: 1px solid #f1f5f9;
+  background-color: #ffffff;
 }
 
 .cancelModalBtn {
-  background-color: #FFFFFF;
-  border: 1px solid #CBD5E1;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
-  padding: 8px 16px;
+  padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   color: #334155;
@@ -623,17 +623,17 @@
 }
 
 .cancelModalBtn:hover {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
-  color: #0F172A;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+  color: #0f172a;
 }
 
 .saveModalBtn {
-  background-color: #644EE5;
-  color: #FFFFFF;
+  background-color: #644ee5;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
-  padding: 8px 18px;
+  padding: 10px 16px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -647,7 +647,7 @@
 
 /* Add New Role Modal */
 .addRoleModalCard {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 12px;
   width: 100%;
   max-width: 440px;
@@ -671,9 +671,9 @@
 
 /* Delete Confirmation Modal */
 .deleteModalCard {
-  background-color: #FFFFFF;
+  background-color: #ffffff;
   border-radius: 16px;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   width: 100%;
   max-width: 420px;
   padding: 24px;
@@ -689,31 +689,31 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: #FEF2F2;
+  background-color: #fef2f2;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  color: #EF4444;
+  color: #ef4444;
 }
 
 .deleteModalTitle {
   font-size: 18px;
   font-weight: 700;
-  color: #0F172A;
+  color: #0f172a;
   margin: 0 0 8px 0;
 }
 
 .deleteModalText {
   font-size: 14px;
   font-weight: 400;
-  color: #64748B;
+  color: #64748b;
   line-height: 1.5;
   margin: 0 0 24px 0;
 }
 
 .deleteModalText strong {
-  color: #1E293B;
+  color: #1e293b;
   font-weight: 700;
 }
 
@@ -726,8 +726,8 @@
 }
 
 .deleteConfirmBtn {
-  background-color: #EF4444;
-  color: #FFFFFF;
+  background-color: #ef4444;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   padding: 9px 24px;
@@ -740,12 +740,12 @@
 }
 
 .deleteConfirmBtn:hover {
-  background-color: #DC2626;
+  background-color: #dc2626;
 }
 
 .deleteCancelBtn {
-  background-color: #FFFFFF;
-  border: 1px solid #CBD5E1;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
   border-radius: 6px;
   padding: 9px 24px;
   font-size: 14px;
@@ -758,6 +758,239 @@
 }
 
 .deleteCancelBtn:hover {
-  background-color: #F8FAFC;
-  border-color: #CBD5E1;
+  background-color: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* ================= USER MANAGEMENT SPECIFIC STYLES ================= */
+
+/* User Management Filter / Top Bar */
+.userFilterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.userSearchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 260px;
+}
+
+.userSearchInput {
+  width: 100%;
+  height: 38px;
+  padding: 8px 14px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1e293b;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.userSearchInput:focus {
+  border-color: #644ee5;
+}
+
+.userSearchInput::placeholder {
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.createUserBtn {
+  background-color: #644ee5;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  transition: background-color 0.15s;
+  height: 38px;
+}
+
+.createUserBtn:hover {
+  background-color: #523dc9;
+}
+
+/* User Management Table Styles */
+.userRoleText {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.userStatusText {
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.actionBtnLock:hover {
+  background-color: #fef9c3;
+  border-color: #fde047;
+  color: #ca8a04;
+}
+
+/* User Management Modals */
+.userModalCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: modalFadeIn 0.18s ease-out;
+}
+
+.userModalBody {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.userFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* View Details Modal Grid */
+.userDetailsViewGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailsRow2Col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailItemLabel {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 400;
+}
+
+.detailItemValue {
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.detailItemValueRole {
+  font-size: 14px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+/* Simple Delete User Modal */
+.deleteUserModalCard {
+  background-color: #ffffff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 460px;
+  padding: 0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: modalFadeIn 0.18s ease-out;
+}
+
+.deleteUserModalBody {
+  padding: 24px 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deleteUserHeading {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.deleteUserSubtext {
+  font-size: 13.5px;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.deleteUserFooter {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.deleteUserBtn {
+  background-color: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s;
+}
+
+.deleteUserBtn:hover {
+  background-color: #dc2626;
+}
+
+/* Dedicated Styles for Create User Modal Role Dropdown */
+.createUserRoleSelectWrapper {
+  width: 100%;
+}
+
+.createUserRoleSelectButton {
+  /* Button custom styling */
+}
+
+.createUserRoleDropdownMenu {
+  /* Menu popup custom styling */
+  top: unset;
+  bottom: -67%;
+  max-height: 220px;
+}
+
+/* Dedicated Styles for Edit User Modal Role Dropdown */
+.editUserRoleSelectWrapper {
+  width: 100%;
+}
+
+.editUserRoleSelectButton {
+  /* Button custom styling */
+}
+
+.editUserRoleDropdownMenu {
+  /* Menu popup custom styling */
+  top: unset;
+  bottom: -67%;
+  max-height: 220px;
 }
