@@ -7,8 +7,8 @@ import {
   IconX
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'services/allEmployeeService';
-import { getHolidaysTable, createHoliday, formatDateDisplay } from '../Services/hrHolidayService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getHolidaysTable, createHoliday, getLeaveTypes, formatDateDisplay } from '../Services/hrHolidayService';
 import styles from './Holidays.module.css';
 
 const MONTH_NAMES = [
@@ -33,6 +33,8 @@ const Holidays = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [departmentList, setDepartmentList] = useState([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [leaveTypes, setLeaveTypes] = useState([]);
+  const [loadingLeaveTypes, setLoadingLeaveTypes] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
@@ -67,6 +69,34 @@ const Holidays = () => {
       })
       .finally(() => {
         if (isMounted) setLoadingDepartments(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch leave types from GET /leave-types on mount
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingLeaveTypes(true);
+    getLeaveTypes()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const typeOptions = data
+            .map((t) => (typeof t === 'string' ? t : t.name || t.title || t.label || t.type || t.id))
+            .filter(Boolean);
+          if (typeOptions.length > 0) {
+            setLeaveTypes(typeOptions);
+            setType(typeOptions[0]);
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load leave types from /leave-types API:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingLeaveTypes(false);
       });
 
     return () => {
@@ -132,7 +162,7 @@ const Holidays = () => {
   const handleOpenModal = (presetDate = '') => {
     setName('');
     setDate(presetDate || `${selectedYear}-01-01`);
-    setType('National Holiday');
+    setType(leaveTypes.length > 0 ? leaveTypes[0] : 'National Holiday');
     setDescription('');
     setAppliesTo('All');
     setDepartmentOverride(false);
@@ -479,21 +509,25 @@ const Holidays = () => {
                   Type <span className={styles.requiredStar}>*</span>
                 </span>
                 <CustomSelect
-                  options={[
-                    'National Holiday',
-                    'Restricted Holiday',
-                    'State Holiday',
-                    'Institution Specific Holiday',
-                    'Optional Holiday',
-                    'Female',
-                    'Male'
-                  ]}
+                  options={
+                    leaveTypes.length > 0
+                      ? leaveTypes
+                      : [
+                          'National Holiday',
+                          'Restricted Holiday',
+                          'State Holiday',
+                          'Institution Specific Holiday',
+                          'Optional Holiday',
+                          'Female',
+                          'Male'
+                        ]
+                  }
                   value={type}
                   onChange={(val) => setType(val)}
                   width="100%"
                   buttonClassName={styles.customTypeSelectBtn}
                   menuClassName={styles.typeSelectMenuUp}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || loadingLeaveTypes}
                 />
               </div>
 

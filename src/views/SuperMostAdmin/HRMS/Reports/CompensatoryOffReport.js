@@ -35,7 +35,7 @@ import {
   exportCompensatoryOffReportPDF,
   exportCompensatoryOffReportExcel
 } from 'services/compensatoryOffReportService';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 

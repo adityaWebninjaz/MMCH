@@ -33,7 +33,7 @@ import {
   exportDeductionSummaryReportPDF,
   exportDeductionSummaryReportExcel
 } from 'services/deductionSummaryReportService';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 
