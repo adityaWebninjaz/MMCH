@@ -42,6 +42,7 @@ import {
   exportRegularisationsPDF,
   exportRegularisationsExcel
 } from './Services/regularisationService';
+import { getDepartments } from 'services/allEmployeeService';
 
 const STATUSES = ['Pending', 'Approved', 'Rejected'];
 
@@ -49,9 +50,28 @@ const Regularisations = () => {
   // Filter States
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   const dateInputRef = useRef(null);
+
+  // Fetch departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in Regularisations:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Format date for button display dynamically
   const formattedDisplayDate = useMemo(() => {
@@ -119,8 +139,11 @@ const Regularisations = () => {
     fetchData(newStatus, searchQuery, true);
   };
 
-  // Dynamic available departments extracted directly from this module's GET API data
+  // Available departments from API with fallback to unique departments in data
   const availableDepartments = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return ['All Departments', ...departmentsList.map((d) => d.name || d.id || d).filter(Boolean)];
+    }
     const depts = new Set();
     data.forEach((row) => {
       if (row.department && row.department !== '-' && row.department !== 'All Departments') {
@@ -128,7 +151,7 @@ const Regularisations = () => {
       }
     });
     return ['All Departments', ...Array.from(depts).sort()];
-  }, [data]);
+  }, [departmentsList, data]);
 
   // Filter logic
   const filteredData = useMemo(() => {
@@ -141,7 +164,12 @@ const Regularisations = () => {
         (row.raw?.applied_at && row.raw.applied_at.startsWith(selectedDate));
 
       // 2. Department filter
-      const matchDept = selectedDept === 'All Departments' || row.department === selectedDept;
+      const matchDept =
+        selectedDept === 'All Departments' ||
+        !selectedDept ||
+        row.department === selectedDept ||
+        row.department?.toLowerCase() === selectedDept?.toLowerCase() ||
+        row.department_id === selectedDept;
 
       // 3. Status filter
       const matchStatus =

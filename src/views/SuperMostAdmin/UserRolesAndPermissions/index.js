@@ -133,19 +133,76 @@ const INITIAL_ROLES = [
   }
 ];
 
+const INITIAL_USERS = [
+  {
+    id: 'user_1',
+    userName: 'John Smith',
+    email: 'Johnsmit@pmch.com',
+    role: 'Super Admin',
+    status: 'Active',
+    createdDate: '2024-01-01',
+    lastLogin: '2024-12-28 14:30:00',
+    rolePermission: 'General administrative access'
+  },
+  {
+    id: 'user_2',
+    userName: 'Diana Miller',
+    email: 'Dianamiller@dorm.com',
+    role: 'Admin',
+    status: 'Active',
+    createdDate: '2024-03-10',
+    lastLogin: '2024-12-27 10:15:00',
+    rolePermission: 'General administrative access'
+  },
+  {
+    id: 'user_3',
+    userName: 'Alice Johnson',
+    email: 'Alicejohnson@dorm.com',
+    role: 'HOD',
+    status: 'Inactive',
+    createdDate: '2024-02-15',
+    lastLogin: '2024-11-20 09:45:00',
+    rolePermission: 'Department head access'
+  },
+  {
+    id: 'user_4',
+    userName: 'Charlie Brown',
+    email: 'Charliebrown@dorm.com',
+    role: 'Warden',
+    status: 'Inactive',
+    createdDate: '2024-05-30',
+    lastLogin: '2024-12-01 16:20:00',
+    rolePermission: 'Hostel and facility oversight'
+  },
+  {
+    id: 'user_5',
+    userName: 'Bob Williams',
+    email: 'Bobwilliams@dorm.com',
+    role: 'Admin 2',
+    status: 'Active',
+    createdDate: '2024-04-25',
+    lastLogin: '2024-12-26 11:10:00',
+    rolePermission: 'Secondary administrative management'
+  }
+];
+
 const UserRolesAndPermissions = () => {
   // Tabs: 'roles_and_permission' | 'user_management'
   const [activeTab, setActiveTab] = useState('roles_and_permission');
 
-  // Filter States
+  // Filter States for Roles & Permissions Tab
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [selectedMonth, setSelectedMonth] = useState('June');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Search State for User Management Tab
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+
   // Table Data State
   const [roles, setRoles] = useState(INITIAL_ROLES);
+  const [users, setUsers] = useState(INITIAL_USERS);
 
-  // Modal States
+  // Modal States for Roles
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('edit'); // 'view' | 'edit'
   const [currentRoleData, setCurrentRoleData] = useState(null);
@@ -161,6 +218,33 @@ const UserRolesAndPermissions = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState(null);
 
+  // Modal States for User Management
+  const [isCreateUserModalOpen, setIsCreateUserModalOpen] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    fullName: '',
+    email: '',
+    role: ''
+  });
+
+  const [isViewUserModalOpen, setIsViewUserModalOpen] = useState(false);
+  const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [editUserForm, setEditUserForm] = useState({
+    fullName: '',
+    email: '',
+    role: ''
+  });
+
+  const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  const [changePasswordUser, setChangePasswordUser] = useState(null);
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
+
   // Filtered Roles
   const filteredRoles = useMemo(() => {
     return roles.filter((r) => {
@@ -168,29 +252,56 @@ const UserRolesAndPermissions = () => {
         !searchQuery.trim() ||
         r.roleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesDept =
-        selectedDepartment === 'All Departments' ||
-        r.departmentScope === selectedDepartment;
+      const matchesDept = selectedDepartment === 'All Departments' || r.departmentScope === selectedDepartment;
       return matchesSearch && matchesDept;
     });
   }, [roles, searchQuery, selectedDepartment]);
 
+  // Filtered Users for User Management Tab
+  const filteredUsers = useMemo(() => {
+    if (!userSearchQuery.trim()) return users;
+    const q = userSearchQuery.toLowerCase();
+    return users.filter(
+      (u) => u.userName.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.toLowerCase().includes(q)
+    );
+  }, [users, userSearchQuery]);
+
+  // Role options for Assign Roles dropdown
+  const userAssignRoleOptions = useMemo(() => {
+    const list = [
+      { value: '', label: 'Select Roles' },
+      { value: 'Super Admin', label: 'Super Admin' },
+      { value: 'Admin', label: 'Admin' },
+      { value: 'Admin 2', label: 'Admin 2' },
+      { value: 'HR Admin', label: 'HR Admin' },
+      { value: 'Accounts Admin', label: 'Accounts Admin' },
+      { value: 'HOD', label: 'HOD' },
+      { value: 'Warden', label: 'Warden' },
+      { value: 'Payroll Executive', label: 'Payroll Executive' },
+      { value: 'Attendance Manager', label: 'Attendance Manager' },
+      { value: 'Reports Viewer', label: 'Reports Viewer' }
+    ];
+
+    const existingVals = new Set(list.map((item) => item.value));
+    roles.forEach((r) => {
+      if (!existingVals.has(r.roleName)) {
+        list.push({ value: r.roleName, label: r.roleName });
+      }
+    });
+
+    return list;
+  }, [roles]);
+
   // Clone options for Add Role modal
   const cloneRoleOptions = useMemo(() => {
-    return [
-      { value: '', label: 'Select role to clone permissions from' },
-      ...roles.map((r) => ({ value: r.id, label: r.roleName }))
-    ];
+    return [{ value: '', label: 'Select role to clone permissions from' }, ...roles.map((r) => ({ value: r.id, label: r.roleName }))];
   }, [roles]);
 
   const addRoleDepartmentOptions = useMemo(() => {
-    return [
-      { value: '', label: 'Select department scope' },
-      ...DEPARTMENT_OPTIONS
-    ];
+    return [{ value: '', label: 'Select department scope' }, ...DEPARTMENT_OPTIONS];
   }, []);
 
-  // Handlers for View / Edit Permissions Modal
+  // ================= HANDLERS: ROLES & PERMISSIONS =================
   const handleOpenViewModal = (role) => {
     setModalMode('view');
     setCurrentRoleData(JSON.parse(JSON.stringify(role)));
@@ -212,9 +323,7 @@ const UserRolesAndPermissions = () => {
     if (modalMode === 'view') return;
     setCurrentRoleData((prev) => ({
       ...prev,
-      permissions: prev.permissions.map((p) =>
-        p.id === moduleId ? { ...p, [field]: !p[field] } : p
-      )
+      permissions: prev.permissions.map((p) => (p.id === moduleId ? { ...p, [field]: !p[field] } : p))
     }));
   };
 
@@ -224,15 +333,12 @@ const UserRolesAndPermissions = () => {
       return;
     }
 
-    setRoles((prev) =>
-      prev.map((r) => (r.id === currentRoleData.id ? currentRoleData : r))
-    );
+    setRoles((prev) => prev.map((r) => (r.id === currentRoleData.id ? currentRoleData : r)));
     toast.success('Permissions updated successfully!');
     setIsPermissionsModalOpen(false);
     setCurrentRoleData(null);
   };
 
-  // Handlers for Add Role Modal
   const handleOpenAddRoleModal = () => {
     setNewRoleForm({
       roleName: '',
@@ -289,7 +395,6 @@ const UserRolesAndPermissions = () => {
     });
   };
 
-  // Handlers for Delete Modal
   const handleOpenDeleteModal = (role) => {
     setRoleToDelete(role);
     setIsDeleteModalOpen(true);
@@ -308,6 +413,183 @@ const UserRolesAndPermissions = () => {
     setRoleToDelete(null);
   };
 
+  // ================= HANDLERS: USER MANAGEMENT =================
+
+  // 1. Create User
+  const handleOpenCreateUserModal = () => {
+    setNewUserForm({
+      fullName: '',
+      email: '',
+      role: ''
+    });
+    setIsCreateUserModalOpen(true);
+  };
+
+  const handleCloseCreateUserModal = () => {
+    setIsCreateUserModalOpen(false);
+    setNewUserForm({
+      fullName: '',
+      email: '',
+      role: ''
+    });
+  };
+
+  const handleCreateUser = () => {
+    if (!newUserForm.fullName.trim()) {
+      toast.error('Please enter Full Name.');
+      return;
+    }
+    if (!newUserForm.email.trim()) {
+      toast.error('Please enter Email Address.');
+      return;
+    }
+    if (!newUserForm.role) {
+      toast.error('Please select a Role.');
+      return;
+    }
+
+    const newUser = {
+      id: `user_${Date.now()}`,
+      userName: newUserForm.fullName.trim(),
+      email: newUserForm.email.trim(),
+      role: newUserForm.role,
+      status: 'Active',
+      createdDate: new Date().toISOString().split('T')[0],
+      lastLogin: 'Never logged in',
+      rolePermission: 'General administrative access'
+    };
+
+    setUsers((prev) => [newUser, ...prev]);
+    toast.success(`User '${newUser.userName}' created successfully!`);
+    setIsCreateUserModalOpen(false);
+    setNewUserForm({ fullName: '', email: '', role: '' });
+  };
+
+  // 2. View User Details
+  const handleOpenViewUserModal = (user) => {
+    setSelectedUser(user);
+    setIsViewUserModalOpen(true);
+  };
+
+  const handleCloseViewUserModal = () => {
+    setIsViewUserModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  // Transition from View Details to Edit Details Modal
+  const handleTransitionViewToEdit = () => {
+    if (!selectedUser) return;
+    setEditUserForm({
+      fullName: selectedUser.userName,
+      email: selectedUser.email,
+      role: selectedUser.role
+    });
+    setIsViewUserModalOpen(false);
+    setIsEditUserModalOpen(true);
+  };
+
+  // 3. Edit User Details
+  const handleOpenEditUserModal = (user) => {
+    setSelectedUser(user);
+    setEditUserForm({
+      fullName: user.userName,
+      email: user.email,
+      role: user.role
+    });
+    setIsEditUserModalOpen(true);
+  };
+
+  const handleCloseEditUserModal = () => {
+    setIsEditUserModalOpen(false);
+    setSelectedUser(null);
+    setEditUserForm({ fullName: '', email: '', role: '' });
+  };
+
+  const handleUpdateUser = () => {
+    if (!editUserForm.fullName.trim()) {
+      toast.error('Full Name cannot be empty.');
+      return;
+    }
+    if (!editUserForm.email.trim()) {
+      toast.error('Email cannot be empty.');
+      return;
+    }
+    if (!editUserForm.role) {
+      toast.error('Please select a Role.');
+      return;
+    }
+
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === selectedUser.id
+          ? {
+              ...u,
+              userName: editUserForm.fullName.trim(),
+              email: editUserForm.email.trim(),
+              role: editUserForm.role
+            }
+          : u
+      )
+    );
+
+    toast.success(`User '${editUserForm.fullName}' updated successfully!`);
+    setIsEditUserModalOpen(false);
+    setSelectedUser(null);
+    setEditUserForm({ fullName: '', email: '', role: '' });
+  };
+
+  // 4. Delete User
+  const handleOpenDeleteUserModal = (user) => {
+    setUserToDelete(user);
+    setIsDeleteUserModalOpen(true);
+  };
+
+  const handleCloseDeleteUserModal = () => {
+    setIsDeleteUserModalOpen(false);
+    setUserToDelete(null);
+  };
+
+  const handleConfirmDeleteUser = () => {
+    if (!userToDelete) return;
+    setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+    toast.success(`User '${userToDelete.userName}' deleted successfully!`);
+    setIsDeleteUserModalOpen(false);
+    setUserToDelete(null);
+  };
+
+  // 5. Change Password (Lock Icon)
+  const handleOpenChangePasswordModal = (user) => {
+    setChangePasswordUser(user);
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+    setIsChangePasswordModalOpen(true);
+  };
+
+  const handleCloseChangePasswordModal = () => {
+    setIsChangePasswordModalOpen(false);
+    setChangePasswordUser(null);
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+  };
+
+  const handleChangePasswordSubmit = () => {
+    if (!passwordForm.newPassword.trim()) {
+      toast.error('Please enter a new password.');
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters.');
+      return;
+    }
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('Passwords do not match.');
+      return;
+    }
+
+    toast.success(`Password changed successfully for ${changePasswordUser?.userName || 'user'}!`);
+    setIsChangePasswordModalOpen(false);
+    setChangePasswordUser(null);
+    setPasswordForm({ newPassword: '', confirmPassword: '' });
+  };
+
   return (
     <div className={styles.container}>
       {/* Title */}
@@ -317,206 +599,356 @@ const UserRolesAndPermissions = () => {
       <div className={styles.tabsBar}>
         <button
           type="button"
-          className={`${styles.tabItem} ${
-            activeTab === 'roles_and_permission' ? styles.tabItemActive : ''
-          }`}
+          className={`${styles.tabItem} ${activeTab === 'roles_and_permission' ? styles.tabItemActive : ''}`}
           onClick={() => setActiveTab('roles_and_permission')}
         >
-          <span>Roles and Permission</span>
-          <span className={styles.tabBadge}>{roles.length > 0 ? 3 : 0}</span>
+          <span>Roles and Permissions</span>
+          <span className={styles.tabBadge}>4</span>
         </button>
         <button
           type="button"
-          className={`${styles.tabItem} ${
-            activeTab === 'user_management' ? styles.tabItemActive : ''
-          }`}
-          onClick={() => {
-            setActiveTab('user_management');
-            toast.info('User Management tab selected');
-          }}
+          className={`${styles.tabItem} ${activeTab === 'user_management' ? styles.tabItemActive : ''}`}
+          onClick={() => setActiveTab('user_management')}
         >
           <span>User Management</span>
-          <span className={styles.tabBadge}>4</span>
+          <span className={styles.tabBadge}>3</span>
         </button>
       </div>
 
-      {/* Filter Row & Action */}
-      <div className={styles.filterRow}>
-        <div className={styles.filterControls}>
-          {/* Department */}
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Department</span>
-            <CustomSelect
-              options={DEPARTMENT_OPTIONS}
-              value={selectedDepartment}
-              onChange={(val) => setSelectedDepartment(val)}
-              width="180px"
-            />
-          </div>
+      {/* ================= VIEW 1: ROLES AND PERMISSIONS TAB ================= */}
+      {activeTab === 'roles_and_permission' && (
+        <>
+          {/* Filter Row & Action */}
+          <div className={styles.filterRow}>
+            <div className={styles.filterControls}>
+              {/* Department */}
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}>Department</span>
+                <CustomSelect
+                  options={DEPARTMENT_OPTIONS}
+                  value={selectedDepartment}
+                  onChange={(val) => setSelectedDepartment(val)}
+                  width="180px"
+                />
+              </div>
 
-          {/* Month */}
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Month</span>
-            <CustomSelect
-              options={MONTH_OPTIONS}
-              value={selectedMonth}
-              onChange={(val) => setSelectedMonth(val)}
-              width="150px"
-            />
-          </div>
+              {/* Month */}
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}>Month</span>
+                <CustomSelect options={MONTH_OPTIONS} value={selectedMonth} onChange={(val) => setSelectedMonth(val)} width="150px" />
+              </div>
 
-          {/* Employee Search */}
-          <div className={styles.filterGroup}>
-            <span className={styles.filterLabel}>Employee Search</span>
-            <div className={styles.searchInputWrapper}>
-              <span className={styles.searchIcon}>
+              {/* Employee Search */}
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}>Employee Search</span>
+                <div className={styles.searchInputWrapper}>
+                  <span className={styles.searchIcon}>
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </span>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search by ID or name..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* + Add Role Button */}
+            <div>
+              <button type="button" className={styles.addRoleBtn} onClick={handleOpenAddRoleModal}>
                 <svg
-                  width="15"
-                  height="15"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-              </span>
-              <input
-                type="text"
-                className={styles.searchInput}
-                placeholder="Search by ID or name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+                <span>Add Role</span>
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* + Add Role Button */}
-        <div>
-          <button
-            type="button"
-            className={styles.addRoleBtn}
-            onClick={handleOpenAddRoleModal}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            <span>Add Role</span>
-          </button>
-        </div>
-      </div>
+          {/* Roles Table */}
+          <div className={styles.tableContainer}>
+            <table className={styles.rolesTable}>
+              <thead>
+                <tr>
+                  <th>Role Name</th>
+                  <th>Description</th>
+                  <th>Created Date</th>
+                  <th>Number of User</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRoles.map((role) => (
+                  <tr key={role.id}>
+                    <td className={styles.roleNameCell}>{role.roleName}</td>
+                    <td>{role.description}</td>
+                    <td>{role.createdDate}</td>
+                    <td>{role.numberOfUsers}</td>
+                    <td>
+                      <div className={styles.actionsCell}>
+                        {/* View Action (Eye) */}
+                        <button
+                          type="button"
+                          className={styles.actionBtn}
+                          title="View Permissions"
+                          onClick={() => handleOpenViewModal(role)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M2.5 12c0-3.8 4.2-6.5 9.5-6.5s9.5 2.7 9.5 6.5-4.2 6.5-9.5 6.5-9.5-2.7-9.5-6.5z" />
+                            <circle cx="12" cy="12" r="2.8" />
+                          </svg>
+                        </button>
 
-      {/* Main Table */}
-      <div className={styles.tableContainer}>
-        <table className={styles.rolesTable}>
-          <thead>
-            <tr>
-              <th>Role Name</th>
-              <th>Description</th>
-              <th>Created Date</th>
-              <th>Number of User</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredRoles.map((role) => (
-              <tr key={role.id}>
-                <td className={styles.roleNameCell}>{role.roleName}</td>
-                <td>{role.description}</td>
-                <td>{role.createdDate}</td>
-                <td>{role.numberOfUsers}</td>
-                <td>
-                  <div className={styles.actionsCell}>
-                    {/* View Action (Eye) */}
-                    <button
-                      type="button"
-                      className={styles.actionBtn}
-                      title="View Permissions"
-                      onClick={() => handleOpenViewModal(role)}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#1E293B"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M2.5 12c0-3.8 4.2-6.5 9.5-6.5s9.5 2.7 9.5 6.5-4.2 6.5-9.5 6.5-9.5-2.7-9.5-6.5z" />
-                        <circle cx="12" cy="12" r="2.8" />
-                      </svg>
-                    </button>
+                        {/* Delete Action (Trash) */}
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                          title="Delete Role"
+                          onClick={() => handleOpenDeleteModal(role)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M9 5V3.8a1.2 1.2 0 0 1 1.2-1.2h3.6a1.2 1.2 0 0 1 1.2 1.2V5" />
+                            <line x1="4" y1="5" x2="20" y2="5" />
+                            <path d="M6 5l.8 13.5a2 2 0 0 0 2 1.8h6.4a2 2 0 0 0 2-1.8L18 5" />
+                            <line x1="10" y1="9" x2="10" y2="15.5" />
+                            <line x1="14" y1="9" x2="14" y2="15.5" />
+                          </svg>
+                        </button>
 
-                    {/* Delete Action (Trash) */}
-                    <button
-                      type="button"
-                      className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
-                      title="Delete Role"
-                      onClick={() => handleOpenDeleteModal(role)}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#1E293B"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M9 5V3.8a1.2 1.2 0 0 1 1.2-1.2h3.6a1.2 1.2 0 0 1 1.2 1.2V5" />
-                        <line x1="4" y1="5" x2="20" y2="5" />
-                        <path d="M6 5l.8 13.5a2 2 0 0 0 2 1.8h6.4a2 2 0 0 0 2-1.8L18 5" />
-                        <line x1="10" y1="9" x2="10" y2="15.5" />
-                        <line x1="14" y1="9" x2="14" y2="15.5" />
-                      </svg>
-                    </button>
+                        {/* Edit Action (Pencil) */}
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
+                          title="Edit Permissions"
+                          onClick={() => handleOpenEditModal(role)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M16 4.2a1.5 1.5 0 0 1 2.1 2.1L8.5 15.8l-3.5 1 1-3.5L16 4.2z" />
+                            <path d="M14.2 6l2.1 2.1" />
+                            <line x1="4.5" y1="20" x2="19.5" y2="20" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
-                    {/* Edit Action (Pencil with Underline) */}
-                    <button
-                      type="button"
-                      className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
-                      title="Edit Permissions"
-                      onClick={() => handleOpenEditModal(role)}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#1E293B"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M16 4.2a1.5 1.5 0 0 1 2.1 2.1L8.5 15.8l-3.5 1 1-3.5L16 4.2z" />
-                        <path d="M14.2 6l2.1 2.1" />
-                        <line x1="4.5" y1="20" x2="19.5" y2="20" />
-                      </svg>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      {/* ================= VIEW 2: USER MANAGEMENT TAB ================= */}
+      {activeTab === 'user_management' && (
+        <>
+          {/* User Management Top Bar (Screenshot 1) */}
+          <div className={styles.userFilterRow}>
+            {/* Search User Input */}
+            <div className={styles.userSearchInputWrapper}>
+              <input
+                type="text"
+                className={styles.userSearchInput}
+                placeholder="Search user"
+                value={userSearchQuery}
+                onChange={(e) => setUserSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* + Create User Button */}
+            <div>
+              <button type="button" className={styles.createUserBtn} onClick={handleOpenCreateUserModal}>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Create User</span>
+              </button>
+            </div>
+          </div>
+
+          {/* User Management Table */}
+          <div className={styles.tableContainer}>
+            <table className={styles.rolesTable}>
+              <thead>
+                <tr>
+                  <th>User Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Created Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.map((user) => (
+                  <tr key={user.id}>
+                    <td>{user.userName}</td>
+                    <td>{user.email}</td>
+                    <td className={styles.userRoleText}>{user.role}</td>
+                    <td className={styles.userStatusText}>{user.status}</td>
+                    <td>{user.createdDate}</td>
+                    <td>
+                      <div className={styles.actionsCell}>
+                        {/* 1. View Action (Eye) - Opens Screenshot 3 Modal */}
+                        <button
+                          type="button"
+                          className={styles.actionBtn}
+                          title="View Details"
+                          onClick={() => handleOpenViewUserModal(user)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M2.5 12c0-3.8 4.2-6.5 9.5-6.5s9.5 2.7 9.5 6.5-4.2 6.5-9.5 6.5-9.5-2.7-9.5-6.5z" />
+                            <circle cx="12" cy="12" r="2.8" />
+                          </svg>
+                        </button>
+
+                        {/* 2. Delete Action (Trash) - Opens Screenshot 5 Modal */}
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                          title="Delete User"
+                          onClick={() => handleOpenDeleteUserModal(user)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M9 5V3.8a1.2 1.2 0 0 1 1.2-1.2h3.6a1.2 1.2 0 0 1 1.2 1.2V5" />
+                            <line x1="4" y1="5" x2="20" y2="5" />
+                            <path d="M6 5l.8 13.5a2 2 0 0 0 2 1.8h6.4a2 2 0 0 0 2-1.8L18 5" />
+                            <line x1="10" y1="9" x2="10" y2="15.5" />
+                            <line x1="14" y1="9" x2="14" y2="15.5" />
+                          </svg>
+                        </button>
+
+                        {/* 3. Edit Action (Pencil) - Opens Screenshot 4 Modal */}
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
+                          title="Edit User"
+                          onClick={() => handleOpenEditUserModal(user)}
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M16 4.2a1.5 1.5 0 0 1 2.1 2.1L8.5 15.8l-3.5 1 1-3.5L16 4.2z" />
+                            <path d="M14.2 6l2.1 2.1" />
+                            <line x1="4.5" y1="20" x2="19.5" y2="20" />
+                          </svg>
+                        </button>
+
+                        {/* 4. Change Password (Lock Icon) - Opens Change Password Modal */}
+                        <button
+                          type="button"
+                          className={`${styles.actionBtn} ${styles.actionBtnLock}`}
+                          title="Change Password"
+                          onClick={() => handleOpenChangePasswordModal(user)}
+                        >
+                          <svg
+                            width="17"
+                            height="17"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#1E293B"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {/* Pagination Footer */}
       <div className={styles.paginationRow}>
@@ -534,23 +966,59 @@ const UserRolesAndPermissions = () => {
 
           <div className={styles.pageNavBtns}>
             <button type="button" className={styles.navBtn} disabled>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="11 17 6 12 11 7" />
                 <polyline points="18 17 13 12 18 7" />
               </svg>
             </button>
             <button type="button" className={styles.navBtn} disabled>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="15 18 9 12 15 6" />
               </svg>
             </button>
             <button type="button" className={styles.navBtn}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </button>
             <button type="button" className={styles.navBtn}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <polyline points="13 17 18 12 13 7" />
                 <polyline points="6 17 11 12 6 7" />
               </svg>
@@ -559,23 +1027,15 @@ const UserRolesAndPermissions = () => {
         </div>
       </div>
 
-      {/* ================= MODALS ================= */}
+      {/* ================= ROLES & PERMISSIONS MODALS ================= */}
 
-      {/* 1. Edit / View Permissions Modal (Screenshot 2) */}
+      {/* 1. Edit / View Permissions Modal */}
       {isPermissionsModalOpen && currentRoleData && (
         <div className={styles.modalOverlay} onClick={handleClosePermissionsModal}>
-          <div
-            className={styles.permissionsModalCard}
-            onClick={(e) => e.stopPropagation()}
-            role="document"
-          >
+          <div className={styles.permissionsModalCard} onClick={(e) => e.stopPropagation()} role="document">
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Edit Permissions</h3>
-              <button
-                type="button"
-                className={styles.closeModalBtn}
-                onClick={handleClosePermissionsModal}
-              >
+              <button type="button" className={styles.closeModalBtn} onClick={handleClosePermissionsModal}>
                 <svg
                   width="18"
                   height="18"
@@ -664,9 +1124,7 @@ const UserRolesAndPermissions = () => {
                         />
                         <span className={styles.slider} />
                       </label>
-                      <span className={styles.statusLabelText}>
-                        {currentRoleData.isActive ? 'Active' : 'Inactive'}
-                      </span>
+                      <span className={styles.statusLabelText}>{currentRoleData.isActive ? 'Active' : 'Inactive'}</span>
                     </div>
                   </div>
                 </div>
@@ -693,13 +1151,7 @@ const UserRolesAndPermissions = () => {
                         {/* View Toggle */}
                         <td>
                           <label className={styles.toggleSwitch}>
-                            <input
-                              type="checkbox"
-                              checked={module.view}
-                              onChange={() =>
-                                handleToggleModulePermission(module.id, 'view')
-                              }
-                            />
+                            <input type="checkbox" checked={module.view} onChange={() => handleToggleModulePermission(module.id, 'view')} />
                             <span className={styles.slider} />
                           </label>
                         </td>
@@ -710,9 +1162,7 @@ const UserRolesAndPermissions = () => {
                             <input
                               type="checkbox"
                               checked={module.create}
-                              onChange={() =>
-                                handleToggleModulePermission(module.id, 'create')
-                              }
+                              onChange={() => handleToggleModulePermission(module.id, 'create')}
                             />
                             <span className={styles.slider} />
                           </label>
@@ -721,13 +1171,7 @@ const UserRolesAndPermissions = () => {
                         {/* Edit Toggle */}
                         <td>
                           <label className={styles.toggleSwitch}>
-                            <input
-                              type="checkbox"
-                              checked={module.edit}
-                              onChange={() =>
-                                handleToggleModulePermission(module.id, 'edit')
-                              }
-                            />
+                            <input type="checkbox" checked={module.edit} onChange={() => handleToggleModulePermission(module.id, 'edit')} />
                             <span className={styles.slider} />
                           </label>
                         </td>
@@ -738,9 +1182,7 @@ const UserRolesAndPermissions = () => {
                             <input
                               type="checkbox"
                               checked={module.delete}
-                              onChange={() =>
-                                handleToggleModulePermission(module.id, 'delete')
-                              }
+                              onChange={() => handleToggleModulePermission(module.id, 'delete')}
                             />
                             <span className={styles.slider} />
                           </label>
@@ -755,18 +1197,10 @@ const UserRolesAndPermissions = () => {
             {/* Modal Footer (Hidden in View Mode) */}
             {modalMode === 'edit' && (
               <div className={styles.modalFooter}>
-                <button
-                  type="button"
-                  className={styles.cancelModalBtn}
-                  onClick={handleClosePermissionsModal}
-                >
+                <button type="button" className={styles.cancelModalBtn} onClick={handleClosePermissionsModal}>
                   Cancel
                 </button>
-                <button
-                  type="button"
-                  className={styles.saveModalBtn}
-                  onClick={handleSavePermissions}
-                >
+                <button type="button" className={styles.saveModalBtn} onClick={handleSavePermissions}>
                   Save Changes
                 </button>
               </div>
@@ -775,21 +1209,13 @@ const UserRolesAndPermissions = () => {
         </div>
       )}
 
-      {/* 2. Add New Role Modal (Screenshot 3) */}
+      {/* 2. Add New Role Modal */}
       {isAddRoleModalOpen && (
         <div className={styles.modalOverlay} onClick={handleCloseAddRoleModal}>
-          <div
-            className={styles.addRoleModalCard}
-            onClick={(e) => e.stopPropagation()}
-            role="document"
-          >
+          <div className={styles.addRoleModalCard} onClick={(e) => e.stopPropagation()} role="document">
             <div className={styles.modalHeader}>
               <h3 className={styles.modalTitle}>Add New Role</h3>
-              <button
-                type="button"
-                className={styles.closeModalBtn}
-                onClick={handleCloseAddRoleModal}
-              >
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseAddRoleModal}>
                 <svg
                   width="18"
                   height="18"
@@ -880,18 +1306,10 @@ const UserRolesAndPermissions = () => {
             </div>
 
             <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={styles.cancelModalBtn}
-                onClick={handleCloseAddRoleModal}
-              >
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseAddRoleModal}>
                 Cancel
               </button>
-              <button
-                type="button"
-                className={styles.saveModalBtn}
-                onClick={handleCreateRole}
-              >
+              <button type="button" className={styles.saveModalBtn} onClick={handleCreateRole}>
                 Create Role
               </button>
             </div>
@@ -899,14 +1317,10 @@ const UserRolesAndPermissions = () => {
         </div>
       )}
 
-      {/* 3. Delete Confirmation Modal (Screenshot 4) */}
+      {/* 3. Delete Role Confirmation Modal */}
       {isDeleteModalOpen && roleToDelete && (
         <div className={styles.modalOverlay} onClick={handleCloseDeleteModal}>
-          <div
-            className={styles.deleteModalCard}
-            onClick={(e) => e.stopPropagation()}
-            role="document"
-          >
+          <div className={styles.deleteModalCard} onClick={(e) => e.stopPropagation()} role="document">
             <div className={styles.deleteIconCircle}>
               <svg
                 width="22"
@@ -930,19 +1344,338 @@ const UserRolesAndPermissions = () => {
             </p>
 
             <div className={styles.deleteModalActions}>
-              <button
-                type="button"
-                className={styles.deleteCancelBtn}
-                onClick={handleCloseDeleteModal}
-              >
+              <button type="button" className={styles.deleteCancelBtn} onClick={handleCloseDeleteModal}>
                 Cancel
               </button>
-              <button
-                type="button"
-                className={styles.deleteConfirmBtn}
-                onClick={handleConfirmDeleteRole}
-              >
+              <button type="button" className={styles.deleteConfirmBtn} onClick={handleConfirmDeleteRole}>
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= USER MANAGEMENT MODALS ================= */}
+
+      {/* 1. Create New User Modal (Screenshot 2) */}
+      {isCreateUserModalOpen && (
+        <div className={styles.modalOverlay} onClick={handleCloseCreateUserModal}>
+          <div className={styles.userModalCard} onClick={(e) => e.stopPropagation()} role="document">
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Create New User</h3>
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseCreateUserModal}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className={styles.userModalBody}>
+              {/* Full Name & Email Row */}
+              <div className={styles.userFormGrid}>
+                <div className={styles.formField}>
+                  <span className={styles.formLabel}>Full Name</span>
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    placeholder="Enter Full Name"
+                    value={newUserForm.fullName}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, fullName: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <span className={styles.formLabel}>Email</span>
+                  <input
+                    type="email"
+                    className={styles.formInput}
+                    placeholder="Enter Email Address"
+                    value={newUserForm.email}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Assign Roles Dropdown */}
+              <div className={styles.formField}>
+                <span className={styles.formLabel}>Assign Roles</span>
+                <CustomSelect
+                  options={userAssignRoleOptions}
+                  value={newUserForm.role}
+                  onChange={(val) => setNewUserForm({ ...newUserForm, role: val })}
+                  placeholder="Select Roles"
+                  className={styles.createUserRoleSelectWrapper}
+                  buttonClassName={styles.createUserRoleSelectButton}
+                  menuClassName={styles.createUserRoleDropdownMenu}
+                  width="100%"
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseCreateUserModal}>
+                Cancel
+              </button>
+              <button type="button" className={styles.saveModalBtn} onClick={handleCreateUser}>
+                Create User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. View User Details Modal (Screenshot 3) */}
+      {isViewUserModalOpen && selectedUser && (
+        <div className={styles.modalOverlay} onClick={handleCloseViewUserModal}>
+          <div className={styles.userModalCard} onClick={(e) => e.stopPropagation()} role="document">
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>User Details</h3>
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseViewUserModal}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className={styles.userModalBody}>
+              <div className={styles.userDetailsViewGrid}>
+                {/* Row 1: Full Name & Email */}
+                <div className={styles.detailsRow2Col}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailItemLabel}>Full Name</span>
+                    <span className={styles.detailItemValue}>{selectedUser.userName}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailItemLabel}>Email</span>
+                    <span className={styles.detailItemValue}>{selectedUser.email}</span>
+                  </div>
+                </div>
+
+                {/* Row 2: Role & Last Login */}
+                <div className={styles.detailsRow2Col}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailItemLabel}>Role</span>
+                    <span className={styles.detailItemValueRole}>{selectedUser.role}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailItemLabel}>Last login</span>
+                    <span className={styles.detailItemValue}>{selectedUser.lastLogin}</span>
+                  </div>
+                </div>
+
+                {/* Row 3: Role Permission */}
+                <div className={styles.detailItem}>
+                  <span className={styles.detailItemLabel}>Role Permission</span>
+                  <span className={styles.detailItemValue}>{selectedUser.rolePermission}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseViewUserModal}>
+                Cancel
+              </button>
+              <button type="button" className={styles.saveModalBtn} onClick={handleTransitionViewToEdit}>
+                Edit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Edit User Details Modal (Screenshot 4) */}
+      {isEditUserModalOpen && selectedUser && (
+        <div className={styles.modalOverlay} onClick={handleCloseEditUserModal}>
+          <div className={styles.userModalCard} onClick={(e) => e.stopPropagation()} role="document">
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Edit User Details</h3>
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseEditUserModal}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className={styles.userModalBody}>
+              {/* Full Name & Email Row */}
+              <div className={styles.userFormGrid}>
+                <div className={styles.formField}>
+                  <span className={styles.formLabel}>Full Name</span>
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    value={editUserForm.fullName}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, fullName: e.target.value })}
+                    autoFocus
+                  />
+                </div>
+
+                <div className={styles.formField}>
+                  <span className={styles.formLabel}>Email</span>
+                  <input
+                    type="email"
+                    className={styles.formInput}
+                    value={editUserForm.email}
+                    onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Role Dropdown */}
+              <div className={styles.formField}>
+                <span className={styles.formLabel}>Role</span>
+                <CustomSelect
+                  options={userAssignRoleOptions}
+                  value={editUserForm.role}
+                  onChange={(val) => setEditUserForm({ ...editUserForm, role: val })}
+                  placeholder="Select Role"
+                  className={styles.editUserRoleSelectWrapper}
+                  buttonClassName={styles.editUserRoleSelectButton}
+                  menuClassName={styles.editUserRoleDropdownMenu}
+                  width="100%"
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseEditUserModal}>
+                Cancel
+              </button>
+              <button type="button" className={styles.saveModalBtn} onClick={handleUpdateUser}>
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Delete User Confirmation Modal (Screenshot 5) */}
+      {isDeleteUserModalOpen && userToDelete && (
+        <div className={styles.modalOverlay} onClick={handleCloseDeleteUserModal}>
+          <div className={styles.deleteUserModalCard} onClick={(e) => e.stopPropagation()} role="document">
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Delete User</h3>
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseDeleteUserModal}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className={styles.deleteUserModalBody}>
+              <h4 className={styles.deleteUserHeading}>Are you sure you want to delete &quot;{userToDelete.userName}&quot;?</h4>
+              <p className={styles.deleteUserSubtext}>This action cannot be undone and will permanently remove the user account.</p>
+            </div>
+
+            <div className={styles.deleteUserFooter}>
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseDeleteUserModal}>
+                Cancel
+              </button>
+              <button type="button" className={styles.deleteUserBtn} onClick={handleConfirmDeleteUser}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Change Password Modal (Screenshot 6) */}
+      {isChangePasswordModalOpen && changePasswordUser && (
+        <div className={styles.modalOverlay} onClick={handleCloseChangePasswordModal}>
+          <div className={styles.userModalCard} onClick={(e) => e.stopPropagation()} role="document">
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Change Password</h3>
+              <button type="button" className={styles.closeModalBtn} onClick={handleCloseChangePasswordModal}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className={styles.userModalBody}>
+              {/* Enter New Password */}
+              <div className={styles.formField}>
+                <span className={styles.formLabel}>Enter New Password</span>
+                <input
+                  type="password"
+                  className={styles.formInput}
+                  placeholder="Enter New Password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  autoFocus
+                />
+              </div>
+
+              {/* Confirm New Password */}
+              <div className={styles.formField}>
+                <span className={styles.formLabel}>Confirm New Password</span>
+                <input
+                  type="password"
+                  className={styles.formInput}
+                  placeholder="Confirm New Password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.cancelModalBtn} onClick={handleCloseChangePasswordModal}>
+                Cancel
+              </button>
+              <button type="button" className={styles.saveModalBtn} onClick={handleChangePasswordSubmit}>
+                Change Password
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     Box,
     Typography,
@@ -26,11 +26,13 @@ import {
     NavigateBefore as NavigateBeforeIcon,
     NavigateNext as NavigateNextIcon,
     LastPage as LastPageIcon,
-    UnfoldMore as UnfoldMoreIcon
+    UnfoldMore as UnfoldMoreIcon,
+    Close as CloseIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import { getChargeEntries, saveChargeEntry } from '../Services/chargeEntryService';
 import AddDeductionModal from './components/AddDeductionModal';
+import { getDepartments } from 'services/allEmployeeService';
 
 const DEPARTMENTS = [
     'All Departments',
@@ -46,10 +48,20 @@ const DEPARTMENTS = [
 const ChargeEntry = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [department, setDepartment] = useState('All Departments');
-    const [selectedDate, setSelectedDate] = useState('12 July 2025');
+    const [departmentsList, setDepartmentsList] = useState([]);
+    const [selectedDate, setSelectedDate] = useState('');
+    const dateInputRef = useRef(null);
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
+
+    // Format date for button display dynamically
+    const formattedDisplayDate = useMemo(() => {
+        if (!selectedDate) return 'All Dates';
+        const d = new Date(selectedDate);
+        if (isNaN(d.getTime())) return selectedDate;
+        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    }, [selectedDate]);
 
     // Modal State
     const [addModalOpen, setAddModalOpen] = useState(false);
@@ -58,9 +70,27 @@ const ChargeEntry = () => {
     const [page, setPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
+    // Fetch departments list from API on mount
+    useEffect(() => {
+        let isMounted = true;
+        getDepartments()
+            .then((data) => {
+                if (isMounted && Array.isArray(data) && data.length > 0) {
+                    setDepartmentsList(data);
+                }
+            })
+            .catch((err) => {
+                console.error('Failed to load departments in ChargeEntry:', err);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
     useEffect(() => {
         fetchData();
-    }, [department]);
+    }, [department, selectedDate]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -303,24 +333,48 @@ const ChargeEntry = () => {
                             }
                         }}
                     >
-                        {DEPARTMENTS.map((dept) => (
-                            <MenuItem
-                                key={dept}
-                                value={dept}
-                                sx={{
-                                    fontFamily: 'Inter, sans-serif',
-                                    fontSize: '13px',
-                                    color: '#1E293B'
-                                }}
-                            >
-                                {dept}
-                            </MenuItem>
-                        ))}
+                        <MenuItem
+                            value="All Departments"
+                            sx={{
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '13px',
+                                color: '#1E293B'
+                            }}
+                        >
+                            All Departments
+                        </MenuItem>
+                        {departmentsList.length > 0
+                            ? departmentsList.map((dept) => (
+                                  <MenuItem
+                                      key={dept.id || dept.name}
+                                      value={dept.name || dept.id}
+                                      sx={{
+                                          fontFamily: 'Inter, sans-serif',
+                                          fontSize: '13px',
+                                          color: '#1E293B'
+                                      }}
+                                  >
+                                      {dept.name}
+                                  </MenuItem>
+                              ))
+                            : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
+                                  <MenuItem
+                                      key={dept}
+                                      value={dept}
+                                      sx={{
+                                          fontFamily: 'Inter, sans-serif',
+                                          fontSize: '13px',
+                                          color: '#1E293B'
+                                      }}
+                                  >
+                                      {dept}
+                                  </MenuItem>
+                              ))}
                     </Select>
                 </Box>
 
-                {/* Filter 3: Date */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', width: { xs: '100%', md: 180 } }}>
+                {/* Filter 3: Date Picker */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: '6px', width: { xs: '100%', md: 180 }, position: 'relative' }}>
                     <Typography
                         sx={{
                             fontFamily: 'Inter, sans-serif',
@@ -332,34 +386,77 @@ const ChargeEntry = () => {
                     >
                         Date
                     </Typography>
-                    <OutlinedInput
+                    <Box sx={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => {
+                                if (dateInputRef.current) {
+                                    if (typeof dateInputRef.current.showPicker === 'function') {
+                                        dateInputRef.current.showPicker();
+                                    } else {
+                                        dateInputRef.current.click();
+                                    }
+                                }
+                            }}
+                            endIcon={<CalendarIcon sx={{ fontSize: 18, color: '#1E293B' }} />}
+                            sx={{
+                                width: '100%',
+                                height: '36px',
+                                borderRadius: '6px !important',
+                                border: '1px solid #E2E8F0',
+                                bgcolor: '#FFFFFF',
+                                color: '#1E293B',
+                                fontSize: '13px',
+                                fontFamily: 'Inter, sans-serif',
+                                fontWeight: 400,
+                                textTransform: 'none',
+                                justifyContent: 'space-between',
+                                px: '12px',
+                                '&:hover': {
+                                    borderColor: '#94A3B8',
+                                    bgcolor: '#FFFFFF'
+                                }
+                            }}
+                        >
+                            {formattedDisplayDate}
+                        </Button>
+                        {selectedDate && (
+                            <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedDate('');
+                                    setPage(1);
+                                }}
+                                sx={{
+                                    position: 'absolute',
+                                    right: '32px',
+                                    p: '2px',
+                                    color: '#94A3B8',
+                                    '&:hover': { color: '#0F172A' }
+                                }}
+                                title="Clear date filter"
+                            >
+                                <CloseIcon sx={{ fontSize: '14px' }} />
+                            </IconButton>
+                        )}
+                    </Box>
+                    <input
+                        type="date"
+                        ref={dateInputRef}
                         value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        endAdornment={
-                            <InputAdornment position="end">
-                                <CalendarIcon sx={{ fontSize: 18, color: '#1E293B' }} />
-                            </InputAdornment>
-                        }
-                        sx={{
-                            borderRadius: '6px !important',
-                            bgcolor: '#FFFFFF',
-                            height: '36px',
-                            fontSize: '13px',
-                            fontFamily: 'Inter, sans-serif',
-                            color: '#1E293B',
-                            '& .MuiOutlinedInput-input': {
-                                py: '8px',
-                                pl: '12px'
-                            },
-                            '& .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#E2E8F0',
-                                borderRadius: '6px !important'
-                            },
-                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#94A3B8' },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: '#644EE5',
-                                borderWidth: '1px'
-                            }
+                        onChange={(e) => {
+                            setSelectedDate(e.target.value);
+                            setPage(1);
+                        }}
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            width: '1px',
+                            height: '1px',
+                            opacity: 0,
+                            pointerEvents: 'none'
                         }}
                     />
                 </Box>

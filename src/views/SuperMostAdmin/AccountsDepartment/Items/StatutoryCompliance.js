@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'services/allEmployeeService';
 import styles from './StatutoryCompliance.module.css';
 
 const TABS = ['TDS', 'PT', 'PF', 'ESIC', 'ADVANCE'];
@@ -52,6 +53,32 @@ const initialAdvanceData = Array(8).fill().map((_, i) => ({
 
 const StatutoryCompliance = () => {
   const [activeTab, setActiveTab] = useState('TDS');
+  const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in StatutoryCompliance:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const deptOptions = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return ['All Departments', ...departmentsList.map((d) => d.name || d.id || d).filter(Boolean)];
+    }
+    return ['All Departments', 'Cardiology', 'Emergency', 'Hostel Admin', 'Radiology', 'ICU', 'Admin'];
+  }, [departmentsList]);
 
   // We could put these in state if we want them to be truly editable,
   // but for the UI layout demo, just mapping over the initial constants is fine.
@@ -86,8 +113,9 @@ const StatutoryCompliance = () => {
       <div className={styles.filterGroup}>
         <span className={styles.filterLabel}>Department</span>
         <CustomSelect
-          options={['All Departments', 'Cardiology', 'Emergency', 'Hostel Admin', 'Radiology', 'ICU', 'Admin']}
-          defaultValue="All Departments"
+          options={deptOptions}
+          value={selectedDept}
+          onChange={(val) => setSelectedDept(val)}
           width={155}
         />
       </div>
