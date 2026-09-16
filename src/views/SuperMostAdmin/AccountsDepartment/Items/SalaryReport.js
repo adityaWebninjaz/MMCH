@@ -8,7 +8,7 @@ import {
   IconChevronsRight
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './SalaryReport.module.css';
 
 const initialMockRows = [

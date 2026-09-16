@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './StatutoryCompliance.module.css';
 
 const TABS = ['TDS', 'PT', 'PF', 'ESIC', 'ADVANCE'];

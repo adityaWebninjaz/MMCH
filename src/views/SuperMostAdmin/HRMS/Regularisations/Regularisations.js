@@ -42,7 +42,7 @@ import {
   exportRegularisationsPDF,
   exportRegularisationsExcel
 } from './Services/regularisationService';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 
 const STATUSES = ['Pending', 'Approved', 'Rejected'];
 
@@ -408,7 +408,7 @@ const Regularisations = () => {
           mb: '24px'
         }}
       >
-        Regularisations
+        Missing Punch
       </Typography>
 
       {/* Filter Controls Bar & Action Buttons */}

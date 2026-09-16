@@ -1,4 +1,4 @@
-import { getShiftDetails, assignEmployeesToShift } from '../../../services/shiftDetailServices';
+import { getShiftDetails, assignEmployeesToShift } from './Shift Management/Services/shiftDetailServices';
 
 export const DEPARTMENT_EMPLOYEE_LIST = [
   { id: 'cardiology', name: 'Cardiology', count: 42 },

@@ -50,7 +50,7 @@ import {
   deleteShift,
   deleteShiftDetail,
   assignEmployeesToShift
-} from '../../../services/shiftDetailServices';
+} from './Services/shiftDetailServices';
 import AssignEmployeeModal from './components/AssignEmployeeModal';
 import ChangeShiftModal from './components/ChangeShiftModal';
 

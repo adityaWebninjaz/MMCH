@@ -28,7 +28,7 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { IconDownload } from '@tabler/icons-react';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 
 // Initial Mock Data matching the design mockup exact requirements
 const INITIAL_OVERTIME_DATA = [

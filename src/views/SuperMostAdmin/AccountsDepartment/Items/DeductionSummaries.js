@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch, IconDownload, IconFileSpreadsheet, IconChevronDown, IconChevronRight, IconArrowDown } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './DeductionSummaries.module.css';
 
 const tableData = [
