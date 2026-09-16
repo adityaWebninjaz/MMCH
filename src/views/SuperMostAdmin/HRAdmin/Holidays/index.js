@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import {
   IconPlus,
@@ -7,6 +7,8 @@ import {
   IconX
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'services/allEmployeeService';
+import { getHolidaysTable, createHoliday, formatDateDisplay } from '../Services/hrHolidayService';
 import styles from './Holidays.module.css';
 
 const MONTH_NAMES = [
@@ -16,144 +18,83 @@ const MONTH_NAMES = [
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-const DEPARTMENTS = [
-  'Emergency',
-  'ICU',
-  'General Medicine',
-  'Surgery',
-  'Pediatrics',
-  'Radiology',
-  'Pharmacy',
-  'Administration',
-  'Hostel',
-  'Security'
-];
-
-const INITIAL_HOLIDAYS_2026 = [
-  {
-    id: 1,
-    name: 'Republic Day',
-    date: '2026-01-26',
-    displayDate: '26 Jan 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 2,
-    name: 'Holi',
-    date: '2026-03-17',
-    displayDate: '17 Mar 2026',
-    type: 'Restricted Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 3,
-    name: 'Ambedkar Jayanti',
-    date: '2026-04-14',
-    displayDate: '14 Apr 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 4,
-    name: 'Labour Day',
-    date: '2026-05-01',
-    displayDate: '01 May 2026',
-    type: 'State Holiday',
-    appliesTo: 'All',
-    departmentOverride: true,
-    overrideDepartments: ['Emergency', 'ICU']
-  },
-  {
-    id: 5,
-    name: 'Independence Day',
-    date: '2026-08-15',
-    displayDate: '15 Aug 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 6,
-    name: 'Onam',
-    date: '2026-09-05',
-    displayDate: '05 Sep 2026',
-    type: 'State Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 7,
-    name: 'Gandhi Jayanti',
-    date: '2026-10-02',
-    displayDate: '02 Oct 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 8,
-    name: 'Diwali',
-    date: '2026-11-08',
-    displayDate: '08 Nov 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 9,
-    name: 'Foundation Day',
-    date: '2026-12-01',
-    displayDate: '01 Dec 2026',
-    type: 'Institution Specific Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  },
-  {
-    id: 10,
-    name: 'Christmas',
-    date: '2026-12-25',
-    displayDate: '25 Dec 2026',
-    type: 'National Holiday',
-    appliesTo: 'All',
-    departmentOverride: false,
-    overrideDepartments: []
-  }
-];
-
-const formatDateDisplay = (dateStr) => {
-  if (!dateStr) return '';
-  const [year, month, day] = dateStr.split('-');
-  const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthIdx = parseInt(month, 10) - 1;
-  return `${day} ${monthNamesShort[monthIdx]} ${year}`;
+const formatHolidayType = (typeStr) => {
+  if (!typeStr) return '-';
+  if (typeStr === 'ALL_DEPARTMENTS') return 'All Departments';
+  if (typeStr === 'DEPARTMENT_SPECIFIC') return 'Department Specific';
+  return typeStr.replace(/_/g, ' ');
 };
 
 const Holidays = () => {
   const [selectedYear, setSelectedYear] = useState(2026);
-  const [holidays, setHolidays] = useState(INITIAL_HOLIDAYS_2026);
+  const [holidays, setHolidays] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [departmentList, setDepartmentList] = useState([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
 
   // Form State
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [type, setType] = useState('National Holiday');
+  const [description, setDescription] = useState('');
   const [appliesTo, setAppliesTo] = useState('All');
   const [departmentOverride, setDepartmentOverride] = useState(false);
-  const [selectedDepartments, setSelectedDepartments] = useState([]);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState([]);
 
   const dateInputRef = useRef(null);
+
+  // Fetch real departments list from GET /departments on mount
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingDepartments(true);
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const list = data.map((dept) => {
+            if (typeof dept === 'string') return { id: dept, name: dept };
+            return {
+              id: dept.id || dept._id || dept.department_id || dept.name,
+              name: dept.name || dept.department_name || dept.title || dept.id
+            };
+          });
+          setDepartmentList(list);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments from /departments API:', err);
+      })
+      .finally(() => {
+        if (isMounted) setLoadingDepartments(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Fetch holidays for selected year
+  const fetchHolidays = useCallback(async (yearToFetch) => {
+    setLoading(true);
+    try {
+      const response = await getHolidaysTable(yearToFetch);
+      if (response && response.success && Array.isArray(response.data)) {
+        setHolidays(response.data);
+      } else {
+        setHolidays([]);
+      }
+    } catch (err) {
+      console.error('Failed to fetch holidays:', err);
+      toast.error('Failed to load holidays for ' + yearToFetch);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHolidays(selectedYear);
+  }, [selectedYear, fetchHolidays]);
 
   // Filter holidays for selected year
   const yearHolidays = useMemo(() => {
@@ -180,10 +121,10 @@ const Holidays = () => {
     return map;
   }, [yearHolidays]);
 
-  // Toggle department checkbox
-  const handleDepartmentToggle = (dept) => {
-    setSelectedDepartments((prev) =>
-      prev.includes(dept) ? prev.filter((d) => d !== dept) : [...prev, dept]
+  // Toggle department checkbox by ID
+  const handleDepartmentToggle = (deptId) => {
+    setSelectedDepartmentIds((prev) =>
+      prev.includes(deptId) ? prev.filter((id) => id !== deptId) : [...prev, deptId]
     );
   };
 
@@ -191,20 +132,33 @@ const Holidays = () => {
   const handleOpenModal = (presetDate = '') => {
     setName('');
     setDate(presetDate || `${selectedYear}-01-01`);
-    setType('Female');
-    setAppliesTo('Specific');
-    setDepartmentOverride(true);
-    setSelectedDepartments([]);
+    setType('National Holiday');
+    setDescription('');
+    setAppliesTo('All');
+    setDepartmentOverride(false);
+    setSelectedDepartmentIds([]);
     setIsModalOpen(true);
   };
 
   // Close Modal
   const handleCloseModal = () => {
+    if (isSubmitting) return;
     setIsModalOpen(false);
   };
 
-  // Handle Form Submit
-  const handleAddHoliday = (e) => {
+  // Switch between All vs Specific
+  const handleAppliesToChange = (val) => {
+    setAppliesTo(val);
+    if (val === 'Specific') {
+      setDepartmentOverride(true);
+    } else {
+      setDepartmentOverride(false);
+      setSelectedDepartmentIds([]);
+    }
+  };
+
+  // Handle Form Submit (POST /holidays)
+  const handleAddHoliday = async (e) => {
     if (e) e.preventDefault();
 
     if (!name.trim()) {
@@ -217,20 +171,43 @@ const Holidays = () => {
       return;
     }
 
-    const newHoliday = {
-      id: Date.now(),
-      name: name.trim(),
-      date,
-      displayDate: formatDateDisplay(date),
-      type,
-      appliesTo,
-      departmentOverride,
-      overrideDepartments: departmentOverride ? selectedDepartments : []
-    };
+    const isSpecific = appliesTo === 'Specific' || departmentOverride;
 
-    setHolidays((prev) => [...prev, newHoliday]);
-    toast.success(`Holiday "${name.trim()}" added successfully!`);
-    handleCloseModal();
+    if (isSpecific && selectedDepartmentIds.length === 0) {
+      toast.error('Please select at least one department for department-specific holiday');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        name: name.trim(),
+        date,
+        description: description.trim()
+      };
+
+      // Pass department_ids only for department-specific holiday
+      if (isSpecific && selectedDepartmentIds.length > 0) {
+        payload.department_ids = selectedDepartmentIds;
+      }
+
+      const result = await createHoliday(payload);
+      toast.success(result?.message || `Holiday "${name.trim()}" added successfully!`);
+
+      const holidayYear = parseInt(date.split('-')[0], 10);
+      if (holidayYear && holidayYear !== selectedYear) {
+        setSelectedYear(holidayYear);
+      } else {
+        await fetchHolidays(selectedYear);
+      }
+
+      handleCloseModal();
+    } catch (err) {
+      console.error('Error in handleAddHoliday:', err);
+      toast.error(err?.message || 'Failed to add holiday. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Render Month Calendar Box
@@ -239,20 +216,14 @@ const Holidays = () => {
     const monthHolidays = holidaysByMonth[monthIndex] || [];
     const holidayCount = monthHolidays.length;
 
-    // Calculate days in month and starting day of week
-    // JS Date month is 0-indexed. Day 0 of next month is total days in current month.
     const daysInMonth = new Date(selectedYear, monthIndex + 1, 0).getDate();
-    // getDay(): 0 = Sun, 1 = Mon, ..., 6 = Sat
-    // We want Monday = 0, Sunday = 6
     const firstDayIndex = (new Date(selectedYear, monthIndex, 1).getDay() + 6) % 7;
 
     const cells = [];
-    // Leading empty cells
     for (let i = 0; i < firstDayIndex; i++) {
       cells.push(<div key={`empty-${i}`} className={styles.emptyCell} />);
     }
 
-    // Days cells
     for (let day = 1; day <= daysInMonth; day++) {
       const isHoliday = monthHolidays.some((h) => h.dayNum === day);
       const matchedHoliday = monthHolidays.find((h) => h.dayNum === day);
@@ -262,7 +233,7 @@ const Holidays = () => {
           key={`day-${day}`}
           type="button"
           className={`${styles.dayCell} ${isHoliday ? styles.holidayCell : ''}`}
-          title={matchedHoliday ? `${matchedHoliday.name} (${matchedHoliday.type})` : undefined}
+          title={matchedHoliday ? `${matchedHoliday.name} (${formatHolidayType(matchedHoliday.type)})` : undefined}
           onClick={() => {
             if (!isHoliday) {
               const formattedM = String(monthIndex + 1).padStart(2, '0');
@@ -306,7 +277,7 @@ const Holidays = () => {
               <div key={h.id} className={styles.holidayNotice}>
                 <span className={styles.bulletDot}>•</span>
                 <span>
-                  {h.displayDate}{' '}
+                  {h.displayDate || formatDateDisplay(h.date)}{' '}
                   <strong className={styles.holidayNameHighlight}>{h.name}</strong>
                 </span>
               </div>
@@ -348,9 +319,15 @@ const Holidays = () => {
       </div>
 
       {/* 12 Months Calendar Grid */}
-      <div className={styles.calendarGrid}>
-        {MONTH_NAMES.map((_, idx) => renderMonthCard(idx))}
-      </div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B', fontWeight: 500 }}>
+          Loading holidays for {selectedYear}...
+        </div>
+      ) : (
+        <div className={styles.calendarGrid}>
+          {MONTH_NAMES.map((_, idx) => renderMonthCard(idx))}
+        </div>
+      )}
 
       {/* Holidays List Table */}
       <div className={styles.tableContainer}>
@@ -365,24 +342,42 @@ const Holidays = () => {
             </tr>
           </thead>
           <tbody>
-            {yearHolidays.length > 0 ? (
-              yearHolidays.map((h) => (
-                <tr key={h.id}>
-                  <td className={styles.dateCell}>{h.displayDate}</td>
-                  <td className={styles.nameCell}>{h.name}</td>
-                  <td className={styles.typeCell}>{h.type}</td>
-                  <td>{h.appliesTo === 'All' ? 'All Department' : 'Specific Departments'}</td>
-                  <td>
-                    {h.departmentOverride && h.overrideDepartments?.length > 0 ? (
-                      <span className={styles.workingDaysBadge}>
-                        {h.overrideDepartments.join(' : ')}
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                </tr>
-              ))
+            {loading ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748B' }}>
+                  Loading table data...
+                </td>
+              </tr>
+            ) : yearHolidays.length > 0 ? (
+              yearHolidays.map((h) => {
+                const workingDepts = h.working_departments?.length > 0
+                  ? h.working_departments
+                  : (h.overrideDepartments?.length > 0 ? h.overrideDepartments : []);
+
+                const appliesToText = h.appliesTo === 'All' || h.type === 'ALL_DEPARTMENTS'
+                  ? 'All Department'
+                  : Array.isArray(h.applies_to_departments) && h.applies_to_departments.length > 0
+                    ? h.applies_to_departments.map((d) => (typeof d === 'object' ? d.name : d)).join(', ')
+                    : 'Specific Departments';
+
+                return (
+                  <tr key={h.id}>
+                    <td className={styles.dateCell}>{h.displayDate || formatDateDisplay(h.date)}</td>
+                    <td className={styles.nameCell}>{h.name}</td>
+                    <td className={styles.typeCell}>{formatHolidayType(h.type)}</td>
+                    <td>{appliesToText}</td>
+                    <td>
+                      {workingDepts.length > 0 ? (
+                        <span className={styles.workingDaysBadge}>
+                          {workingDepts.map((d) => (typeof d === 'object' ? d.name : d)).join(', ')}
+                        </span>
+                      ) : (
+                        '-'
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#94A3B8' }}>
@@ -419,6 +414,7 @@ const Holidays = () => {
                 className={styles.closeButton}
                 onClick={handleCloseModal}
                 aria-label="Close modal"
+                disabled={isSubmitting}
               >
                 <IconX size={18} />
               </button>
@@ -437,6 +433,7 @@ const Holidays = () => {
                   placeholder="e.g. Republic Day"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  disabled={isSubmitting}
                   autoFocus
                 />
               </div>
@@ -449,6 +446,7 @@ const Holidays = () => {
                 <button
                   type="button"
                   className={styles.datePickerBtn}
+                  disabled={isSubmitting}
                   onClick={() => {
                     if (dateInputRef.current) {
                       if (typeof dateInputRef.current.showPicker === 'function') {
@@ -471,6 +469,7 @@ const Holidays = () => {
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   className={styles.hiddenDateInput}
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -481,18 +480,20 @@ const Holidays = () => {
                 </span>
                 <CustomSelect
                   options={[
-                    'Female',
-                    'Male',
                     'National Holiday',
                     'Restricted Holiday',
                     'State Holiday',
                     'Institution Specific Holiday',
-                    'Optional Holiday'
+                    'Optional Holiday',
+                    'Female',
+                    'Male'
                   ]}
                   value={type}
                   onChange={(val) => setType(val)}
                   width="100%"
                   buttonClassName={styles.customTypeSelectBtn}
+                  menuClassName={styles.typeSelectMenuUp}
+                  disabled={isSubmitting}
                 />
               </div>
 
@@ -505,8 +506,9 @@ const Holidays = () => {
                       name="appliesTo"
                       value="All"
                       checked={appliesTo === 'All'}
-                      onChange={() => setAppliesTo('All')}
+                      onChange={() => handleAppliesToChange('All')}
                       className={styles.hiddenRadio}
+                      disabled={isSubmitting}
                     />
                     <span className={`${styles.customRadio} ${appliesTo === 'All' ? styles.customRadioChecked : ''}`}>
                       {appliesTo === 'All' && <span className={styles.radioDot} />}
@@ -520,8 +522,9 @@ const Holidays = () => {
                       name="appliesTo"
                       value="Specific"
                       checked={appliesTo === 'Specific'}
-                      onChange={() => setAppliesTo('Specific')}
+                      onChange={() => handleAppliesToChange('Specific')}
                       className={styles.hiddenRadio}
+                      disabled={isSubmitting}
                     />
                     <span className={`${styles.customRadio} ${appliesTo === 'Specific' ? styles.customRadioChecked : ''}`}>
                       {appliesTo === 'Specific' && <span className={styles.radioDot} />}
@@ -531,57 +534,78 @@ const Holidays = () => {
                 </div>
               </div>
 
-              {/* Department Override Card */}
-              <div className={styles.overrideCard}>
-                <label className={styles.overrideHeaderCheck}>
-                  <input
-                    type="checkbox"
-                    checked={departmentOverride}
-                    onChange={(e) => setDepartmentOverride(e.target.checked)}
-                    className={styles.hiddenRadio}
-                  />
-                  <span className={`${styles.customCheckbox} ${departmentOverride ? styles.customCheckboxChecked : ''}`}>
-                    {departmentOverride && (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className={styles.overrideTitle}>
-                    Department override — mark this as a working day for specific departments
-                  </span>
-                </label>
+              {/* Department Override Card (Rendered when Specific or override checked) */}
+              {(appliesTo === 'Specific' || departmentOverride) && (
+                <div className={styles.overrideCard}>
+                  <label className={styles.overrideHeaderCheck}>
+                    <input
+                      type="checkbox"
+                      checked={departmentOverride}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setDepartmentOverride(checked);
+                        if (!checked && appliesTo === 'Specific') {
+                          setAppliesTo('All');
+                          setSelectedDepartmentIds([]);
+                        }
+                      }}
+                      className={styles.hiddenRadio}
+                      disabled={isSubmitting}
+                    />
+                    <span className={`${styles.customCheckbox} ${departmentOverride ? styles.customCheckboxChecked : ''}`}>
+                      {departmentOverride && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </span>
+                    <span className={styles.overrideTitle}>
+                      Department override — mark this as a working day for specific departments
+                    </span>
+                  </label>
 
-                {departmentOverride && (
-                  <div className={styles.deptGrid}>
-                    {DEPARTMENTS.map((dept) => {
-                      const isChecked = selectedDepartments.includes(dept);
-                      return (
-                        <label key={dept} className={styles.deptLabel}>
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => handleDepartmentToggle(dept)}
-                            className={styles.hiddenRadio}
-                          />
-                          <span className={`${styles.childCheckbox} ${isChecked ? styles.childCheckboxChecked : ''}`}>
-                            {isChecked && (
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="20 6 9 17 4 12" />
-                              </svg>
-                            )}
-                          </span>
-                          <span>{dept}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
+                  {departmentOverride && (
+                    <div className={styles.deptGrid}>
+                      {loadingDepartments ? (
+                        <span style={{ color: '#64748B', fontSize: '13px', gridColumn: 'span 2' }}>
+                          Loading departments...
+                        </span>
+                      ) : departmentList.length > 0 ? (
+                        departmentList.map((dept) => {
+                          const isChecked = selectedDepartmentIds.includes(dept.id);
+                          return (
+                            <label key={dept.id} className={styles.deptLabel}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleDepartmentToggle(dept.id)}
+                                className={styles.hiddenRadio}
+                                disabled={isSubmitting}
+                              />
+                              <span className={`${styles.childCheckbox} ${isChecked ? styles.childCheckboxChecked : ''}`}>
+                                {isChecked && (
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                )}
+                              </span>
+                              <span>{dept.name}</span>
+                            </label>
+                          );
+                        })
+                      ) : (
+                        <span style={{ color: '#94A3B8', fontSize: '13px', gridColumn: 'span 2' }}>
+                          No departments found.
+                        </span>
+                      )}
+                    </div>
+                  )}
 
-                <p className={styles.overrideNote}>
-                  e.g. Emergency / ICU staff work through general holidays. Selected departments will see this date as &quot;Working day&quot; instead of &quot;Holiday&quot;.
-                </p>
-              </div>
+                  <p className={styles.overrideNote}>
+                    e.g. Emergency / ICU staff work through general holidays. Selected departments will see this date as &quot;Working day&quot; instead of &quot;Holiday&quot;.
+                  </p>
+                </div>
+              )}
 
               {/* Modal Footer */}
               <div className={styles.modalFooter}>
@@ -589,14 +613,16 @@ const Holidays = () => {
                   type="button"
                   className={styles.cancelBtn}
                   onClick={handleCloseModal}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   className={styles.submitBtn}
+                  disabled={isSubmitting}
                 >
-                  Add Holiday
+                  {isSubmitting ? 'Adding...' : 'Add Holiday'}
                 </button>
               </div>
             </form>

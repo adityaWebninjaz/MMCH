@@ -33,11 +33,13 @@ import {
   exportDeductionSummaryReportPDF,
   exportDeductionSummaryReportExcel
 } from 'services/deductionSummaryReportService';
+import { getDepartments } from 'services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 
 const DeductionSummaryReport = () => {
   const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [reportData, setReportData] = useState([]);
@@ -45,6 +47,24 @@ const DeductionSummaryReport = () => {
 
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Fetch departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in DeductionSummaryReport:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     fetchReportData();
@@ -64,7 +84,12 @@ const DeductionSummaryReport = () => {
 
   const filteredData = useMemo(() => {
     return reportData.filter((row) => {
-      const matchesDept = selectedDept === 'All Departments' || row.department === selectedDept;
+      const matchesDept =
+        selectedDept === 'All Departments' ||
+        !selectedDept ||
+        row.department === selectedDept ||
+        row.department?.toLowerCase() === selectedDept?.toLowerCase() ||
+        row.department_id === selectedDept;
       const q = searchQuery.trim().toLowerCase();
       const matchesQuery =
         !q ||
@@ -194,11 +219,24 @@ const DeductionSummaryReport = () => {
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1', borderWidth: '1.5px' }
               }}
             >
-              {DEPARTMENTS.map((dept) => (
-                <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
-                  {dept}
-                </MenuItem>
-              ))}
+              <MenuItem value="All Departments" sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                All Departments
+              </MenuItem>
+              {departmentsList.length > 0
+                ? departmentsList.map((dept) => (
+                    <MenuItem
+                      key={dept.id || dept.name}
+                      value={dept.name || dept.id}
+                      sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
+                    >
+                      {dept.name}
+                    </MenuItem>
+                  ))
+                : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
+                    <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                      {dept}
+                    </MenuItem>
+                  ))}
             </Select>
           </FormControl>
 
