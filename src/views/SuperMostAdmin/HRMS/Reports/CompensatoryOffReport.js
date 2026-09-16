@@ -35,15 +35,35 @@ import {
   exportCompensatoryOffReportPDF,
   exportCompensatoryOffReportExcel
 } from 'services/compensatoryOffReportService';
+import { getDepartments } from 'services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 
 const CompensatoryOffReport = () => {
   // Filter States
   const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [selectedExpiryDate, setSelectedExpiryDate] = useState('2026-08-01');
   const [searchQuery, setSearchQuery] = useState('');
   const dateInputRef = useRef(null);
+
+  // Fetch departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in CompensatoryOffReport:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Format date for button display
   const formattedDisplayDate = useMemo(() => {
@@ -91,7 +111,12 @@ const CompensatoryOffReport = () => {
   // Filter Data Logic
   const filteredData = useMemo(() => {
     return reportData.filter((row) => {
-      const matchesDept = selectedDept === 'All Departments' || row.department === selectedDept;
+      const matchesDept =
+        selectedDept === 'All Departments' ||
+        !selectedDept ||
+        row.department === selectedDept ||
+        row.department?.toLowerCase() === selectedDept?.toLowerCase() ||
+        row.department_id === selectedDept;
       const q = searchQuery.trim().toLowerCase();
       const matchesQuery =
         !q ||
@@ -225,11 +250,24 @@ const CompensatoryOffReport = () => {
                 '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#6366F1', borderWidth: '1.5px' }
               }}
             >
-              {DEPARTMENTS.map((dept) => (
-                <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
-                  {dept}
-                </MenuItem>
-              ))}
+              <MenuItem value="All Departments" sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                All Departments
+              </MenuItem>
+              {departmentsList.length > 0
+                ? departmentsList.map((dept) => (
+                    <MenuItem
+                      key={dept.id || dept.name}
+                      value={dept.name || dept.id}
+                      sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
+                    >
+                      {dept.name}
+                    </MenuItem>
+                  ))
+                : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
+                    <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                      {dept}
+                    </MenuItem>
+                  ))}
             </Select>
           </FormControl>
 
