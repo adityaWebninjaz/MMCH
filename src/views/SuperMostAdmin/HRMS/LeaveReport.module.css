@@ -40,9 +40,9 @@
 }
 
 .switcherBtnActive {
-  background-color: #644ee5 !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
+  background-color: #644ee5;
+  color: #ffffff;
+  font-weight: 500;
   box-shadow: 0 1px 3px rgba(100, 78, 229, 0.2);
 }
 

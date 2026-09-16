@@ -470,7 +470,7 @@ const LeaveReport = () => {
               }}
             >
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#0F172A', fontSize: '24px', lineHeight: '100%' }}>
-                {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_requests ?? 0).toLocaleString('en-US')}
+                {(kpis.total_requests ?? 0).toLocaleString('en-US')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
                 Total Application
@@ -488,7 +488,7 @@ const LeaveReport = () => {
               }}
             >
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#D97706', fontSize: '24px', lineHeight: '100%' }}>
-                {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_pending ?? 0).toLocaleString('en-US')}
+                {(kpis.total_pending ?? 0).toLocaleString('en-US')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
                 Pending
@@ -506,7 +506,7 @@ const LeaveReport = () => {
               }}
             >
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#16A34A', fontSize: '24px', lineHeight: '100%' }}>
-                {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_approved ?? 0).toLocaleString('en-US')}
+                {(kpis.total_approved ?? 0).toLocaleString('en-US')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
                 Approved
@@ -524,7 +524,7 @@ const LeaveReport = () => {
               }}
             >
               <Typography variant="h3" sx={{ fontWeight: 700, color: '#DC2626', fontSize: '24px', lineHeight: '100%' }}>
-                {loading ? <Skeleton width="50%" height={28} /> : (kpis.total_rejected ?? 0).toLocaleString('en-US')}
+                {(kpis.total_rejected ?? 0).toLocaleString('en-US')}
               </Typography>
               <Typography variant="body2" sx={{ color: '#475569', mt: '8px', fontWeight: 600, fontSize: '13px', lineHeight: '100%' }}>
                 Rejected
@@ -1043,49 +1043,14 @@ const LeaveReport = () => {
                   <TableCell align="center">Status</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {loading ? (
-                  Array.from({ length: rowsPerPage }).map((_, index) => (
-                    <TableRow
-                      key={`skeleton-${index}`}
-                      sx={{
-                        '& td': {
-                          borderBottom: '1px solid #E2E8F0',
-                          py: '12px',
-                          px: '24px'
-                        }
-                      }}
-                    >
-                      <TableCell>
-                        <Skeleton width={80} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={120} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={100} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={120} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={90} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={90} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Skeleton width={30} sx={{ mx: 'auto' }} />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton width={90} />
-                      </TableCell>
-                      <TableCell align="center">
-                        <Skeleton width={60} sx={{ mx: 'auto' }} />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : leaveItems.length > 0 ? (
+              <TableBody
+                sx={{
+                  opacity: loading ? 0.6 : 1,
+                  transition: 'opacity 0.15s ease-in-out',
+                  pointerEvents: loading ? 'none' : 'auto'
+                }}
+              >
+                {leaveItems.length > 0 ? (
                   leaveItems.map((row, index) => {
                     const statusNormalized = (row.status || '').toUpperCase();
                     let chipBg = '#f1f5f9';
@@ -1156,6 +1121,47 @@ const LeaveReport = () => {
                       </TableRow>
                     );
                   })
+                ) : loading ? (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <TableRow
+                      key={`skeleton-${index}`}
+                      sx={{
+                        '& td': {
+                          borderBottom: '1px solid #E2E8F0',
+                          py: '12px',
+                          px: '24px'
+                        }
+                      }}
+                    >
+                      <TableCell>
+                        <Skeleton width={80} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={120} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={100} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={120} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={90} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={90} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Skeleton width={30} sx={{ mx: 'auto' }} />
+                      </TableCell>
+                      <TableCell>
+                        <Skeleton width={90} />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Skeleton width={60} sx={{ mx: 'auto' }} />
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={9} align="center" sx={{ py: 6, color: '#64748b' }}>

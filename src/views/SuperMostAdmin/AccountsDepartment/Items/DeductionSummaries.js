@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch, IconDownload, IconFileSpreadsheet, IconChevronDown, IconChevronRight, IconArrowDown } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'services/allEmployeeService';
 import styles from './DeductionSummaries.module.css';
 
 const tableData = [
@@ -56,6 +57,32 @@ const DeductionSummaries = () => {
     2: true,
     3: true
   });
+  const [selectedDept, setSelectedDept] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in DeductionSummaries:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const deptOptions = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return ['All Departments', ...departmentsList.map((d) => d.name || d.id || d).filter(Boolean)];
+    }
+    return ['All Departments', 'Hostel Admin', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Admin'];
+  }, [departmentsList]);
 
   const toggleGroup = (id) => {
     setExpandedGroups(prev => ({ ...prev, [id]: !prev[id] }));
@@ -76,8 +103,9 @@ const DeductionSummaries = () => {
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Department</span>
             <CustomSelect
-              options={['All Departments', 'Hostel Admin', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Admin']}
-              defaultValue="All Departments"
+              options={deptOptions}
+              value={selectedDept}
+              onChange={(val) => setSelectedDept(val)}
               width={148}
             />
           </div>

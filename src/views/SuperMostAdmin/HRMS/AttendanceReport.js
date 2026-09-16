@@ -274,6 +274,18 @@ const AttendanceReport = () => {
                 lineHeight: '100%',
                 color: '#1E293B',
                 overflow: 'hidden',
+                '& .MuiSelect-select': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '13px',
+                  color: '#1E293B',
+                  lineHeight: '100%',
+                  fontWeight: 400,
+                  minHeight: 'auto',
+                  py: 0,
+                  height: '38px',
+                  boxSizing: 'border-box'
+                },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#cbd5e1',
                   borderRadius: '8px',
@@ -327,6 +339,18 @@ const AttendanceReport = () => {
                 lineHeight: '100%',
                 color: '#1E293B',
                 overflow: 'hidden',
+                '& .MuiSelect-select': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '13px',
+                  color: '#1E293B',
+                  lineHeight: '100%',
+                  fontWeight: 400,
+                  minHeight: 'auto',
+                  py: 0,
+                  height: '38px',
+                  boxSizing: 'border-box'
+                },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#cbd5e1',
                   borderRadius: '8px',
@@ -377,6 +401,18 @@ const AttendanceReport = () => {
                 lineHeight: '100%',
                 color: '#1E293B',
                 overflow: 'hidden',
+                '& .MuiSelect-select': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  fontSize: '13px',
+                  color: '#1E293B',
+                  lineHeight: '100%',
+                  fontWeight: 400,
+                  minHeight: 'auto',
+                  py: 0,
+                  height: '38px',
+                  boxSizing: 'border-box'
+                },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: '#cbd5e1',
                   borderRadius: '8px',

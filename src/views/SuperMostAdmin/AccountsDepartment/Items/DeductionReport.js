@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
   IconDownload,
@@ -8,6 +8,7 @@ import {
   IconChevronsRight
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'services/allEmployeeService';
 import styles from './DeductionReport.module.css';
 
 const initialMockRows = [
@@ -28,9 +29,34 @@ const totalRow = {
 
 const DeductionReport = () => {
   const [department, setDepartment] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [month, setMonth] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          setDepartmentsList(data);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in DeductionReport:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const deptOptions = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return ['All Departments', ...departmentsList.map((d) => d.name || d.id || d).filter(Boolean)];
+    }
+    return ['All Departments', 'Hostel Administration', 'Electricity Department', 'Front Office'];
+  }, [departmentsList]);
 
   const filteredRows = initialMockRows.filter(row => {
     const matchDept = department === 'All Departments' || row.department === department;
@@ -59,7 +85,7 @@ const DeductionReport = () => {
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Department</span>
             <CustomSelect
-              options={['All Departments', 'Hostel Administration', 'Electricity Department', 'Front Office']}
+              options={deptOptions}
               value={department}
               onChange={(val) => setDepartment(val)}
               width={160}
