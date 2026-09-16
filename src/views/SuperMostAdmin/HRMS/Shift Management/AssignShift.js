@@ -37,8 +37,8 @@ import {
   NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getAllEmployees, getDepartments } from 'services/allEmployeeService';
-import { getShiftDetails, assignEmployeesToShift, assignMultipleDepartmentsToShift } from '../../../services/shiftDetailServices';
+import { getAllEmployees, getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getShiftDetails, assignEmployeesToShift, assignMultipleDepartmentsToShift } from './Services/shiftDetailServices';
 
 const AssignShift = () => {
   const navigate = useNavigate();

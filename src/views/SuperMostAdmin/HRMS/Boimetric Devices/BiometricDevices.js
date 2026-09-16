@@ -15,7 +15,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 import { toast } from 'react-toastify';
 import AddDeviceModal from './components/AddDeviceModal';
 import styles from './devices.module.css';
-import { getDevices, createDevice } from '../../../services/deviceServices';
+import { getDevices, createDevice } from './Services/deviceServices';
 
 const BiometricDevices = () => {
   const [devices, setDevices] = useState([]);

@@ -280,7 +280,7 @@ const superMostAdmin = {
     },
     {
       id: 'hrms-regularisations',
-      title: 'Regularisations',
+      title: 'Missing Punch',
       type: 'item',
       url: '/supermostadmin/hrms/regularisations',
       icon: icons.IconCheckbox,

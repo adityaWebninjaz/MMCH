@@ -32,7 +32,7 @@ import {
 import { toast } from 'react-toastify';
 import { getChargeEntries, saveChargeEntry } from '../Services/chargeEntryService';
 import AddDeductionModal from './components/AddDeductionModal';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 
 const DEPARTMENTS = [
     'All Departments',

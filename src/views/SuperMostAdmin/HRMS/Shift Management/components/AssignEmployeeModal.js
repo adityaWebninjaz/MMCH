@@ -33,8 +33,8 @@ import {
   NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getAllEmployees, getDepartments } from 'services/allEmployeeService';
-import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from 'services/shiftDetailServices';
+import { getAllEmployees, getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from '@/views/SuperMostAdmin/HRMS/Shift Management/Services/shiftDetailServices';
 
 const DEFAULT_DEPARTMENT_LIST = [
   { id: 'cardiology', name: 'Cardiology', count: 0 },

@@ -28,8 +28,8 @@ import {
   Person as PersonIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getProfileApprovals, approveOrRejectProfile, getShifts, getDepartments } from 'services/allEmployeeService';
-import { getDevices } from 'services/deviceServices';
+import { getProfileApprovals, approveOrRejectProfile, getShifts, getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDevices } from '@/views/SuperMostAdmin/HRMS/Boimetric Devices/Services/deviceServices';
 
 const DEPARTMENTS = [
   'All Departments',

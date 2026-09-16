@@ -36,7 +36,7 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { getLeaveReport, exportLeaveReport } from 'services/leaveReportService';
-import { getDepartments } from 'services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './LeaveReport.module.css';
 
 const DATE_PRESETS = [

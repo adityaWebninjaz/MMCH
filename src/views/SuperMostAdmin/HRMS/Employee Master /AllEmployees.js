@@ -51,8 +51,8 @@ import {
   getHODs,
   getManagers,
   getShifts
-} from 'services/allEmployeeService';
-import { getDevices } from 'services/deviceServices';
+} from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDevices } from '@/views/SuperMostAdmin/HRMS/Boimetric Devices/Services/deviceServices';
 
 const DEPARTMENTS = [
   'All Departments',
