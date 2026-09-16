@@ -1,7 +1,8 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, jsx-a11y/label-has-associated-control */
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './UserRolesAndPermissions.module.css';
 
 const DEPARTMENT_OPTIONS = [
@@ -192,8 +193,40 @@ const UserRolesAndPermissions = () => {
 
   // Filter States for Roles & Permissions Tab
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('June');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const list = data.map((dept) => {
+            if (typeof dept === 'string') return { value: dept, label: dept };
+            const name = dept.name || dept.department_name || dept.title || dept.id;
+            return { value: name, label: name };
+          });
+          setDepartmentsList(list);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in UserRolesAndPermissions:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Dynamic department options with 'All Departments'
+  const departmentOptions = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return [{ value: 'All Departments', label: 'All Departments' }, ...departmentsList];
+    }
+    return DEPARTMENT_OPTIONS;
+  }, [departmentsList]);
 
   // Search State for User Management Tab
   const [userSearchQuery, setUserSearchQuery] = useState('');
@@ -298,8 +331,8 @@ const UserRolesAndPermissions = () => {
   }, [roles]);
 
   const addRoleDepartmentOptions = useMemo(() => {
-    return [{ value: '', label: 'Select department scope' }, ...DEPARTMENT_OPTIONS];
-  }, []);
+    return [{ value: '', label: 'Select department scope' }, ...departmentOptions];
+  }, [departmentOptions]);
 
   // ================= HANDLERS: ROLES & PERMISSIONS =================
   const handleOpenViewModal = (role) => {
@@ -625,7 +658,7 @@ const UserRolesAndPermissions = () => {
               <div className={styles.filterGroup}>
                 <span className={styles.filterLabel}>Department</span>
                 <CustomSelect
-                  options={DEPARTMENT_OPTIONS}
+                  options={departmentOptions}
                   value={selectedDepartment}
                   onChange={(val) => setSelectedDepartment(val)}
                   width="180px"
@@ -1076,7 +1109,7 @@ const UserRolesAndPermissions = () => {
                 <div className={styles.formField}>
                   <span className={styles.formLabel}>Department Scope</span>
                   <CustomSelect
-                    options={DEPARTMENT_OPTIONS}
+                    options={departmentOptions}
                     value={currentRoleData.departmentScope || 'All Departments'}
                     onChange={(val) => {
                       if (modalMode === 'view') return;
@@ -1085,6 +1118,7 @@ const UserRolesAndPermissions = () => {
                         departmentScope: val
                       });
                     }}
+                    disabled={modalMode === 'view'}
                     width="100%"
                   />
                 </div>

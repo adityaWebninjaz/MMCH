@@ -70,6 +70,49 @@ export const getHolidaysTable = async (year) => {
 };
 
 /**
+ * Fetch Leave Types
+ * Endpoint: GET /leave-types
+ */
+export const getLeaveTypes = async () => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  if (BASE_URL) {
+    try {
+      const response = await axios.get(`${BASE_URL}/leave-types`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const resData = response?.data?.data || response?.data || [];
+      const list = Array.isArray(resData?.items)
+        ? resData.items
+        : Array.isArray(resData)
+          ? resData
+          : [];
+
+      return list.map((item) => {
+        if (typeof item === 'string') return { id: item, name: item, label: item, value: item };
+        const id = item.id || item._id || item.code || item.name;
+        const name = item.name || item.title || item.label || item.type || id;
+        return {
+          id,
+          name,
+          label: name,
+          value: name,
+          ...item
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching leave types from /leave-types:', error);
+      return [];
+    }
+  }
+
+  return [];
+};
+
+/**
  * Create a new Holiday
  * Endpoint: POST /holidays
  * Payload:
