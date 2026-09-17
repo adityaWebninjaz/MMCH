@@ -41,13 +41,14 @@ export const MOCK_HR_ADMIN_DATA = {
       title: 'Add Employee',
       subtitle: '6-Step Onboarding',
       icon: 'user-plus',
-      path: '/hr-admin/employee'
+      path: '/supermostadmin/hr-admin/employee?mode=create'
     },
     {
       id: 'triggerPayroll',
       title: 'Trigger Payroll Cycle',
       subtitle: 'Advance to Pre - Processing',
       icon: 'play',
+      path: '/supermostadmin/hr-admin/payroll-cycle',
       action: 'trigger-payroll'
     },
     {
@@ -55,6 +56,7 @@ export const MOCK_HR_ADMIN_DATA = {
       title: 'Review Regularisation',
       subtitle: '5 Awaiting Final Update',
       icon: 'checklist',
+      path: '/supermostadmin/hrms/regularisations',
       action: 'review-regularisation'
     }
   ],
