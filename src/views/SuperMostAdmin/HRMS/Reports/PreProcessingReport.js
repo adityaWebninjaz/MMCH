@@ -35,7 +35,7 @@ import {
   getPreProcessingReport,
   exportPreProcessingReportPDF,
   exportPreProcessingReportExcel
-} from 'services/preProcessingReportService';
+} from 'views/SuperMostAdmin/HRMS/Reports/Services/preProcessingReportService';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];

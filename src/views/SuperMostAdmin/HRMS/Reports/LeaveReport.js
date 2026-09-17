@@ -35,7 +35,7 @@ import {
   LastPage as LastPageIcon,
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
-import { getLeaveReport, exportLeaveReport } from 'services/leaveReportService';
+import { getLeaveReport, exportLeaveReport } from 'views/SuperMostAdmin/HRMS/Reports/Services/leaveReportService';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import styles from './LeaveReport.module.css';
 

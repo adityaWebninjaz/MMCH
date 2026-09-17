@@ -33,7 +33,7 @@ import {
   getSaralReport,
   exportSaralReportPDF,
   exportSaralReportExcel
-} from 'services/saralReportService';
+} from 'views/SuperMostAdmin/HRMS/Reports/Services/saralReportService';
 
 const VERSIONS = ['All Version', 'v1', 'v2', 'v3'];
 const LOCK_STATUSES = ['All Status', 'Locked', 'Unlocked'];
