@@ -54,22 +54,58 @@ const HRAdminDashboard = () => {
   const deductionMatrix = data?.deductionMatrix || MOCK_HR_ADMIN_DATA.deductionMatrix;
 
   const handleQuickAction = (action) => {
+    const actionId = action.id || '';
+    const title = (action.title || '').toLowerCase();
+    const act = (action.action || '').toLowerCase();
+
+    if (actionId === 'addEmployee' || title.includes('add employee')) {
+      navigate('/supermostadmin/hr-admin/employee?mode=create', { state: { mode: 'create' } });
+      return;
+    }
+
+    if (
+      actionId === 'triggerPayroll' ||
+      act === 'trigger-payroll' ||
+      title.includes('trigger payroll') ||
+      title.includes('payroll cycle')
+    ) {
+      navigate('/supermostadmin/hr-admin/payroll-cycle');
+      return;
+    }
+
+    if (
+      actionId === 'reviewRegularisation' ||
+      act === 'review-regularisation' ||
+      title.includes('regularisation')
+    ) {
+      navigate('/supermostadmin/hrms/regularisations');
+      return;
+    }
+
     if (action.path) {
-      navigate(action.path);
-    } else if (action.action === 'trigger-payroll') {
-      setToast({
-        open: true,
-        message: 'Payroll cycle advance triggered to Pre-Processing stage',
-        severity: 'success'
-      });
-    } else if (action.action === 'review-regularisation') {
-      setToast({
-        open: true,
-        message: 'Opening Regularisation reviews...',
-        severity: 'info'
-      });
+      const targetPath = action.path.startsWith('/supermostadmin')
+        ? action.path
+        : `/supermostadmin${action.path.startsWith('/') ? action.path : `/${action.path}`}`;
+      navigate(targetPath);
     }
   };
+
+
+  const handlePendingAction = (item) => {
+    if (item.id === 'regularisation' || item.link?.includes('regularisation')) {
+      navigate('/supermostadmin/hrms/regularisations');
+    } else if (item.id === 'leaveQueries' || item.link?.includes('leave')) {
+      navigate('/supermostadmin/hr-admin/leave/leave-reports');
+    } else if (item.id === 'deductionOverride' || item.link?.includes('deduction')) {
+      navigate('/supermostadmin/hr-admin/deduction-control-center');
+    } else if (item.link) {
+      const target = item.link.startsWith('/supermostadmin')
+        ? item.link
+        : `/supermostadmin${item.link.startsWith('/') ? item.link : `/${item.link}`}`;
+      navigate(target);
+    }
+  };
+
 
   const getStatusBadgeStyle = (status) => {
     switch (status?.toLowerCase()) {
@@ -291,6 +327,7 @@ const HRAdminDashboard = () => {
                 {pendingActions.map((item) => (
                   <Grid item xs={12} sm={4} key={item.id}>
                     <Box
+                      onClick={() => handlePendingAction(item)}
                       sx={{
                         border: '1px solid #E2E8F0',
                         borderRadius: '12px',

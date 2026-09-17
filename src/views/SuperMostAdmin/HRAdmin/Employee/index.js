@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -32,6 +33,8 @@ import EmployeeDetails from './Components/EmployeeDetails';
 import AddEditEmployee from './Components/AddEditEmployee';
 
 const HREmployee = () => {
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -56,6 +59,18 @@ const HREmployee = () => {
   // View Mode: 'list' | 'details' | 'create'
   const [viewMode, setViewMode] = useState('list');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+  // Check if opened with create mode from Dashboard Quick Actions
+  useEffect(() => {
+    if (
+      location.state?.mode === 'create' ||
+      searchParams.get('mode') === 'create' ||
+      searchParams.get('action') === 'create'
+    ) {
+      setViewMode('create');
+    }
+  }, [location.state, searchParams]);
+
 
   // Pagination state
   const [page, setPage] = useState(1);
