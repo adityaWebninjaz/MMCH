@@ -17,7 +17,8 @@ import {
   Close as CloseIcon,
   Search as SearchIcon
 } from '@mui/icons-material';
-import { getShiftDetails } from '@/views/SuperMostAdmin/HRMS/Shift Management/Services/shiftDetailServices';
+import { getShiftDetails } from '@/views/SuperMostAdmin/HRMS/ShiftManagement/Services/shiftDetailServices';
+
 
 const DEFAULT_EMPTY_ARRAY = [];
 

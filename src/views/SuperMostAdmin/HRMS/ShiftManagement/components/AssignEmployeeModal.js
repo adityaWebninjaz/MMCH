@@ -33,8 +33,8 @@ import {
   NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getAllEmployees, getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
-import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from '@/views/SuperMostAdmin/HRMS/Shift Management/Services/shiftDetailServices';
+import { getAllEmployees, getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
+import { assignEmployeesToShift, assignMultipleDepartmentsToShift } from 'views/SuperMostAdmin/HRMS/ShiftManagement/Services/shiftDetailServices';
 
 const DEFAULT_DEPARTMENT_LIST = [
   { id: 'cardiology', name: 'Cardiology', count: 0 },
@@ -566,15 +566,15 @@ const AssignEmployeeModal = ({ open, onClose, onAssign, shift, initialMode = 'se
                     </MenuItem>
                     {apiDepartments.length > 0
                       ? apiDepartments.map((dept) => (
-                          <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
-                            {dept.name || dept.id}
-                          </MenuItem>
-                        ))
+                        <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
+                          {dept.name || dept.id}
+                        </MenuItem>
+                      ))
                       : effectiveDepartmentList.map((dept) => (
-                          <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
-                            {dept.name || dept.id}
-                          </MenuItem>
-                        ))}
+                        <MenuItem key={dept.id} value={dept.id} sx={{ fontSize: '13px' }}>
+                          {dept.name || dept.id}
+                        </MenuItem>
+                      ))}
                   </Select>
                 </FormControl>
               </Box>

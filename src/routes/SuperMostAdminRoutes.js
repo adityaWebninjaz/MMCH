@@ -5,12 +5,12 @@ import { Navigate } from 'react-router-dom';
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 
-const HrmsAllEmployees = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Employee Master /AllEmployees')));
-const HrmsApprovals = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Employee Master /Approvals')));
-const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Boimetric Devices/BiometricDevices')));
+const HrmsAllEmployees = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/EmployeeMaster/AllEmployees')));
+const HrmsApprovals = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/EmployeeMaster/Approvals')));
+const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/BoimetricDevices/BiometricDevices')));
 const AuditLogs = Loadable(lazy(() => import('views/SuperMostAdmin/AuditLogs')));
-const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Shift Management/ShiftDetails')));
-const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Shift Management/AssignShift')));
+const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftManagement/ShiftDetails')));
+const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftManagement/AssignShift')));
 const HrmsAttendanceReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AttendanceReport')));
 const HrmsLeaveReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/LeaveReport')));
 const HrmsOvertimeReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/OvertimeReport')));

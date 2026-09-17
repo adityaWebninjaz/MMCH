@@ -32,7 +32,7 @@ import {
 import { toast } from 'react-toastify';
 import { getChargeEntries, saveChargeEntry } from '../Services/chargeEntryService';
 import AddDeductionModal from './components/AddDeductionModal';
-import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEPARTMENTS = [
     'All Departments',
@@ -345,31 +345,31 @@ const ChargeEntry = () => {
                         </MenuItem>
                         {departmentsList.length > 0
                             ? departmentsList.map((dept) => (
-                                  <MenuItem
-                                      key={dept.id || dept.name}
-                                      value={dept.name || dept.id}
-                                      sx={{
-                                          fontFamily: 'Inter, sans-serif',
-                                          fontSize: '13px',
-                                          color: '#1E293B'
-                                      }}
-                                  >
-                                      {dept.name}
-                                  </MenuItem>
-                              ))
+                                <MenuItem
+                                    key={dept.id || dept.name}
+                                    value={dept.name || dept.id}
+                                    sx={{
+                                        fontFamily: 'Inter, sans-serif',
+                                        fontSize: '13px',
+                                        color: '#1E293B'
+                                    }}
+                                >
+                                    {dept.name}
+                                </MenuItem>
+                            ))
                             : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
-                                  <MenuItem
-                                      key={dept}
-                                      value={dept}
-                                      sx={{
-                                          fontFamily: 'Inter, sans-serif',
-                                          fontSize: '13px',
-                                          color: '#1E293B'
-                                      }}
-                                  >
-                                      {dept}
-                                  </MenuItem>
-                              ))}
+                                <MenuItem
+                                    key={dept}
+                                    value={dept}
+                                    sx={{
+                                        fontFamily: 'Inter, sans-serif',
+                                        fontSize: '13px',
+                                        color: '#1E293B'
+                                    }}
+                                >
+                                    {dept}
+                                </MenuItem>
+                            ))}
                     </Select>
                 </Box>
 

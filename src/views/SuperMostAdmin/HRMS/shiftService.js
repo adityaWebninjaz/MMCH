@@ -1,4 +1,4 @@
-import { getShiftDetails, assignEmployeesToShift } from './Shift Management/Services/shiftDetailServices';
+import { getShiftDetails, assignEmployeesToShift } from './ShiftManagement/Services/shiftDetailServices';
 
 export const DEPARTMENT_EMPLOYEE_LIST = [
   { id: 'cardiology', name: 'Cardiology', count: 42 },
@@ -31,8 +31,8 @@ export const assignShift = async ({ shiftId, uids = [], selectedEmployees = [] }
     Array.isArray(uids) && uids.length > 0
       ? uids
       : Array.isArray(selectedEmployees)
-      ? selectedEmployees.map((e) => e.empId || e.uid || e.id).filter(Boolean)
-      : [];
+        ? selectedEmployees.map((e) => e.empId || e.uid || e.id).filter(Boolean)
+        : [];
 
   return assignEmployeesToShift(shiftId, empUids);
 };

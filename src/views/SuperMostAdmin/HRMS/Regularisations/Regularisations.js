@@ -42,7 +42,7 @@ import {
   exportRegularisationsPDF,
   exportRegularisationsExcel
 } from './Services/regularisationService';
-import { getDepartments } from '../Employee Master /Services/allEmployeeService';
+import { getDepartments } from '../EmployeeMaster/Services/allEmployeeService';
 
 const STATUSES = ['Pending', 'Approved', 'Rejected'];
 

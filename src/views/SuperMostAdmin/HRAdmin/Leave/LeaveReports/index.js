@@ -10,7 +10,7 @@ import { IconCalendar, IconDownload, IconSearch, IconX } from '@tabler/icons-rea
 import { toast } from 'react-toastify';
 import CustomSelect from 'ui-component/CustomSelect';
 import { getLeaveApprovals } from '../../Services/hrLeaveApprovalService';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import styles from './LeaveReports.module.css';
 
 // Fallback Initial Mock Data
@@ -406,12 +406,12 @@ const LeaveReports = () => {
                   const statusClass = isApproved
                     ? styles.statusApproved
                     : isPending
-                    ? styles.statusPending
-                    : isRejected
-                    ? styles.statusRejected
-                    : isCancelled
-                    ? styles.statusCancelled
-                    : '';
+                      ? styles.statusPending
+                      : isRejected
+                        ? styles.statusRejected
+                        : isCancelled
+                          ? styles.statusCancelled
+                          : '';
 
                   return (
                     <tr key={row.id} className={styles.tr}>

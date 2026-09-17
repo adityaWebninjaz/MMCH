@@ -28,7 +28,7 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { IconDownload } from '@tabler/icons-react';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 // Initial Mock Data matching the design mockup exact requirements
 const INITIAL_OVERTIME_DATA = [
@@ -223,19 +223,19 @@ const OvertimeReport = () => {
               </MenuItem>
               {departmentsList.length > 0
                 ? departmentsList.map((dept) => (
-                    <MenuItem
-                      key={dept.id || dept.name}
-                      value={dept.name || dept.id}
-                      sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
-                    >
-                      {dept.name}
-                    </MenuItem>
-                  ))
+                  <MenuItem
+                    key={dept.id || dept.name}
+                    value={dept.name || dept.id}
+                    sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
+                  >
+                    {dept.name}
+                  </MenuItem>
+                ))
                 : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
-                    <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
-                      {dept}
-                    </MenuItem>
-                  ))}
+                  <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                    {dept}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
 

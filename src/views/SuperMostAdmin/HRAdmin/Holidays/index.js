@@ -7,7 +7,7 @@ import {
   IconX
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import { getHolidaysTable, createHoliday, getLeaveTypes, formatDateDisplay } from '../Services/hrHolidayService';
 import styles from './Holidays.module.css';
 
@@ -513,14 +513,14 @@ const Holidays = () => {
                     leaveTypes.length > 0
                       ? leaveTypes
                       : [
-                          'National Holiday',
-                          'Restricted Holiday',
-                          'State Holiday',
-                          'Institution Specific Holiday',
-                          'Optional Holiday',
-                          'Female',
-                          'Male'
-                        ]
+                        'National Holiday',
+                        'Restricted Holiday',
+                        'State Holiday',
+                        'Institution Specific Holiday',
+                        'Optional Holiday',
+                        'Female',
+                        'Male'
+                      ]
                   }
                   value={type}
                   onChange={(val) => setType(val)}
