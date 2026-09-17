@@ -7,6 +7,7 @@ import {
   NavigateNext as NavigateNextIcon,
   LastPage as LastPageIcon
 } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import {
   IconCalendar,
   IconDownload,
@@ -16,9 +17,10 @@ import {
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
+import { getCompOffApprovals } from '../../Services/hrLeaveApprovalService';
 import styles from './CompOffReports.module.css';
 
-// Mock data matching Screenshot 1 & Screenshot 2
+// Fallback Initial Mock Data
 const INITIAL_COMP_OFF_DATA = [
   {
     id: 1,
@@ -27,12 +29,9 @@ const INITIAL_COMP_OFF_DATA = [
     department: 'Cardiology',
     designation: 'HOD',
     requestedDate: '14 Jul 2026',
+    compOffDate: '14 Jul 2026',
     actionBy: 'Hod',
     status: 'Approved',
-    drawerEmpName: 'Dr.Shreya Krishnan',
-    drawerEmpId: 'CMP1234',
-    drawerRequestedDate: '07 Aug 2025',
-    compOffDate: '07 Aug 2025',
     startDuration: 'Half Day',
     reason: 'I am writing to report a malfunctioning X-ray machine in the Radiology department. The machine is producing blurry images, which is impacting our ability to accurately diagnose patients. This has been ongoing for a week. Request immediate attention.'
   },
@@ -43,318 +42,62 @@ const INITIAL_COMP_OFF_DATA = [
     department: 'Cardiology',
     designation: 'HOD',
     requestedDate: '14 Jul 2026',
+    compOffDate: '14 Jul 2026',
     actionBy: 'Hod',
     status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1235',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
     startDuration: 'Full Day',
     reason: 'Compensatory off request against weekend emergency shift duty in cardiology.'
-  },
-  {
-    id: 3,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1236',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Overtime compensation for extended night duty.'
-  },
-  {
-    id: 4,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1237',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Compensatory leave after attending emergency cardiac catheterization.'
-  },
-  {
-    id: 5,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1238',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Weekend duty compensation.'
-  },
-  {
-    id: 6,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1239',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Managing emergency admissions on national holiday.'
-  },
-  {
-    id: 7,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1240',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Compensatory off for continuous 24-hour on-call duty.'
-  },
-  {
-    id: 8,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1241',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Holiday shift coverage in ICU.'
-  },
-  {
-    id: 9,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1242',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Cardiac department annual emergency audit review.'
-  },
-  {
-    id: 10,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1243',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Late night emergency bypass monitoring.'
-  },
-  {
-    id: 11,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1244',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Sunday ICU emergency on-call cover.'
-  },
-  {
-    id: 12,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1245',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Critical care consultation on off day.'
-  },
-  {
-    id: 13,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1246',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Managing disaster triage team on scheduled leave day.'
-  },
-  {
-    id: 14,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1247',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Emergency angioplasty support.'
-  },
-  {
-    id: 15,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1248',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Covering senior medical officer leave in emergency ward.'
-  },
-  {
-    id: 16,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1249',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Emergency outpatient clinic extra shift.'
-  },
-  {
-    id: 17,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1250',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'Post-operative monitoring on weekend.'
-  },
-  {
-    id: 18,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1251',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Resident training session on Sunday morning.'
-  },
-  {
-    id: 19,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1252',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Full Day',
-    reason: 'ICU night shift during public holiday.'
-  },
-  {
-    id: 20,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1253',
-    drawerRequestedDate: '14 Jul 2026',
-    compOffDate: '14 Jul 2026',
-    startDuration: 'Half Day',
-    reason: 'Emergency cardiology on-call support.'
   }
 ];
 
-const DEFAULT_DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin', 'IT'];
+const DEFAULT_DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin', 'IT', 'Anatomy', 'Administration'];
 const STATUSES = ['All Status', 'Approved', 'Pending', 'Rejected', 'Cancelled'];
+
+// Helper to format ISO date "YYYY-MM-DD" or timestamp to "14 Jul 2026"
+const formatDisplayDate = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return String(dateStr);
+  }
+};
+
+// Helper to convert backend status to Title Case
+const formatStatusTitle = (status) => {
+  if (!status) return 'Pending';
+  const upper = String(status).toUpperCase();
+  if (upper === 'APPROVED') return 'Approved';
+  if (upper === 'REJECTED') return 'Rejected';
+  if (upper === 'PENDING') return 'Pending';
+  if (upper === 'CANCELLED' || upper === 'CANCELED') return 'Cancelled';
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+};
 
 const CompOffReports = () => {
   // Filter States
-  const [selectedDate, setSelectedDate] = useState('2025-07-12');
+  const [selectedDate, setSelectedDate] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [searchQuery, setSearchQuery] = useState('');
   const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const dateInputRef = useRef(null);
 
-  // Fetch departments list from API on mount
+  // Data & Loading States
+  const [compOffRecords, setCompOffRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Drawer state for Details Modal
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Pagination State
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // 1. Fetch departments list from API on mount
   useEffect(() => {
     let isMounted = true;
     getDepartments()
@@ -376,38 +119,116 @@ const CompOffReports = () => {
     };
   }, []);
 
-  // Drawer state for Screenshot 2
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // 2. Fetch Comp-off approvals from backend API
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCompOffData = async () => {
+      setLoading(true);
+      try {
+        const data = await getCompOffApprovals({ status: selectedStatus });
+        if (isMounted) {
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((item, index) => {
+              const durationFormatted =
+                item.duration === 'HALF_DAY'
+                  ? 'Half Day'
+                  : item.duration === 'FULL_DAY'
+                    ? 'Full Day'
+                    : item.duration || 'Full Day';
 
-  // Pagination State
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+              let reviewerName = '-';
+              if (item.reviewed_by?.full_name) {
+                reviewerName = item.reviewed_by.designation
+                  ? `${item.reviewed_by.full_name} (${item.reviewed_by.designation})`
+                  : item.reviewed_by.full_name;
+              }
+
+              return {
+                id: item.id || `compoff-${index + 1}`,
+                empId: item.employee?.uid || item.empId || '-',
+                empName: item.employee?.full_name || item.empName || 'N/A',
+                department: item.employee?.department || item.department || '-',
+                designation: item.employee?.designation || item.designation || '-',
+                requestedDate: formatDisplayDate(item.applied_at || item.date),
+                rawRequestedDate: item.applied_at || '',
+                compOffDate: formatDisplayDate(item.date),
+                rawCompOffDate: item.date || '',
+                actionBy: reviewerName,
+                status: formatStatusTitle(item.status),
+                rawStatus: item.status,
+                startDuration: durationFormatted,
+                reason: item.reason || 'No reason provided',
+                rejectionRemark: item.rejection_remark || '',
+                reviewedBy: reviewerName,
+                reviewedAt: formatDisplayDate(item.reviewed_at),
+                raw: item
+              };
+            });
+            setCompOffRecords(mapped);
+          } else {
+            setCompOffRecords(data.length === 0 ? [] : INITIAL_COMP_OFF_DATA);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load comp off approvals:', err);
+        if (isMounted) {
+          setCompOffRecords(INITIAL_COMP_OFF_DATA);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCompOffData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedStatus]);
 
   // Format date display
   const formattedDisplayDate = useMemo(() => {
-    if (!selectedDate) return '12 July 2025';
+    if (!selectedDate) return 'All Dates';
     const d = new Date(selectedDate);
-    if (isNaN(d.getTime())) return '12 July 2025';
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    if (isNaN(d.getTime())) return 'All Dates';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }, [selectedDate]);
 
   // Filter Data Logic
   const filteredData = useMemo(() => {
-    return INITIAL_COMP_OFF_DATA.filter((row) => {
-      const matchesDept = selectedDept === 'All Departments' || row.department === selectedDept;
-      const matchesStatus = selectedStatus === 'All Status' || row.status === selectedStatus;
+    return compOffRecords.filter((row) => {
+      // 1. Department match
+      const matchesDept =
+        selectedDept === 'All Departments' ||
+        row.department === selectedDept ||
+        row.department?.toLowerCase() === selectedDept?.toLowerCase();
+
+      // 2. Status match
+      const matchesStatus =
+        selectedStatus === 'All Status' ||
+        row.status?.toLowerCase() === selectedStatus?.toLowerCase();
+
+      // 3. Date match (checks both comp off date & requested date)
+      const matchesDate =
+        !selectedDate ||
+        row.rawCompOffDate === selectedDate ||
+        (row.rawRequestedDate && row.rawRequestedDate.startsWith(selectedDate));
+
+      // 4. Search Query match
       const q = searchQuery.trim().toLowerCase();
       const matchesQuery =
         !q ||
-        row.empId.toLowerCase().includes(q) ||
-        row.empName.toLowerCase().includes(q) ||
-        row.department.toLowerCase().includes(q) ||
-        row.designation.toLowerCase().includes(q);
+        (row.empId && row.empId.toLowerCase().includes(q)) ||
+        (row.empName && row.empName.toLowerCase().includes(q)) ||
+        (row.department && row.department.toLowerCase().includes(q)) ||
+        (row.designation && row.designation.toLowerCase().includes(q)) ||
+        (row.status && row.status.toLowerCase().includes(q));
 
-      return matchesDept && matchesStatus && matchesQuery;
+      return matchesDept && matchesStatus && matchesDate && matchesQuery;
     });
-  }, [selectedDept, selectedStatus, searchQuery]);
+  }, [compOffRecords, selectedDept, selectedStatus, selectedDate, searchQuery]);
 
   // Paginated Data Logic
   const totalCount = filteredData.length;
@@ -424,7 +245,7 @@ const CompOffReports = () => {
   };
 
   const handleExportExcel = () => {
-    const headers = ['Emp ID', 'Employee', 'Department', 'Designation', 'Requested Date', 'Action By', 'Status'];
+    const headers = ['Emp ID', 'Employee', 'Department', 'Designation', 'Requested Date', 'Comp Off Date', 'Duration', 'Action By', 'Status', 'Reason'];
     const csvRows = [headers.join(',')];
     filteredData.forEach((row) => {
       csvRows.push([
@@ -433,8 +254,11 @@ const CompOffReports = () => {
         `"${row.department}"`,
         `"${row.designation}"`,
         `"${row.requestedDate}"`,
+        `"${row.compOffDate}"`,
+        `"${row.startDuration}"`,
         `"${row.actionBy}"`,
-        `"${row.status}"`
+        `"${row.status}"`,
+        `"${(row.reason || '').replace(/"/g, '""')}"`
       ].join(','));
     });
     const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
@@ -469,32 +293,56 @@ const CompOffReports = () => {
             <label htmlFor="compOffDateBtn" className={styles.filterLabel}>
               Date
             </label>
-            <button
-              id="compOffDateBtn"
-              type="button"
-              className={styles.dateButton}
-              onClick={() => {
-                if (dateInputRef.current) {
-                  if (typeof dateInputRef.current.showPicker === 'function') {
-                    dateInputRef.current.showPicker();
-                  } else {
-                    dateInputRef.current.click();
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <button
+                id="compOffDateBtn"
+                type="button"
+                className={styles.dateButton}
+                onClick={() => {
+                  if (dateInputRef.current) {
+                    if (typeof dateInputRef.current.showPicker === 'function') {
+                      dateInputRef.current.showPicker();
+                    } else {
+                      dateInputRef.current.click();
+                    }
                   }
-                }
-              }}
-            >
-              <span>{formattedDisplayDate}</span>
-              <IconCalendar size={18} stroke={1.75} color="#1E293B" />
-            </button>
+                }}
+              >
+                <span>{formattedDisplayDate}</span>
+                <IconCalendar size={18} stroke={1.75} color="#1E293B" />
+              </button>
+              {selectedDate && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDate('');
+                    setPage(1);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '34px',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#94A3B8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: 0
+                  }}
+                  title="Clear date"
+                >
+                  <IconX size={14} />
+                </button>
+              )}
+            </div>
             <input
               type="date"
               ref={dateInputRef}
               value={selectedDate}
               onChange={(e) => {
-                if (e.target.value) {
-                  setSelectedDate(e.target.value);
-                  setPage(1);
-                }
+                setSelectedDate(e.target.value);
+                setPage(1);
               }}
               className={styles.hiddenDateInput}
             />
@@ -588,7 +436,13 @@ const CompOffReports = () => {
             </tr>
           </thead>
           <tbody>
-            {currentRows.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                  <CircularProgress size={32} sx={{ color: '#644EE5' }} />
+                </td>
+              </tr>
+            ) : currentRows.length === 0 ? (
               <tr>
                 <td colSpan={8} className={styles.emptyRow}>
                   No compensatory off records found matching filters.
@@ -599,13 +453,16 @@ const CompOffReports = () => {
                 const isApproved = row.status === 'Approved';
                 const isPending = row.status === 'Pending';
                 const isRejected = row.status === 'Rejected';
+                const isCancelled = row.status === 'Cancelled';
                 const statusClass = isApproved
                   ? styles.statusApproved
                   : isPending
                     ? styles.statusPending
                     : isRejected
                       ? styles.statusRejected
-                      : '';
+                      : isCancelled
+                        ? styles.statusCancelled || ''
+                        : '';
 
                 return (
                   <tr key={row.id} className={styles.tr}>
@@ -732,8 +589,18 @@ const CompOffReports = () => {
               <div className={styles.drawerHeader}>
                 <h3 className={styles.drawerTitle}>Comp Off Request Details</h3>
                 <div className={styles.drawerHeaderActions}>
-                  <span className={`${styles.statusChip} ${styles.statusApproved}`}>
-                    {selectedItem.status || 'Approved'}
+                  <span
+                    className={`${styles.statusChip} ${
+                      selectedItem.status === 'Approved'
+                        ? styles.statusApproved
+                        : selectedItem.status === 'Pending'
+                          ? styles.statusPending
+                          : selectedItem.status === 'Rejected'
+                            ? styles.statusRejected
+                            : ''
+                    }`}
+                  >
+                    {selectedItem.status || 'Pending'}
                   </span>
                   <button
                     type="button"
@@ -749,7 +616,7 @@ const CompOffReports = () => {
               {/* Employee Name & Details Subtitle */}
               <div className={styles.drawerEmployeeInfo}>
                 <h4 className={styles.drawerEmpName}>
-                  {selectedItem.drawerEmpName || selectedItem.empName || 'Dr.Shreya Krishnan'}
+                  {selectedItem.empName || 'Employee Name'}
                 </h4>
                 <p className={styles.drawerEmpSub}>
                   {selectedItem.empId} · {selectedItem.department} Department
@@ -760,11 +627,11 @@ const CompOffReports = () => {
               <div className={styles.tintedInfoBox}>
                 <div className={styles.infoCol}>
                   <span className={styles.infoColLabel}>Emp ID</span>
-                  <span className={styles.infoColValue}>{selectedItem.drawerEmpId || 'CMP1234'}</span>
+                  <span className={styles.infoColValue}>{selectedItem.empId || '-'}</span>
                 </div>
                 <div className={styles.infoCol}>
                   <span className={styles.infoColLabel}>Requested Date</span>
-                  <span className={styles.infoColValue}>{selectedItem.drawerRequestedDate || selectedItem.requestedDate || '07 Aug 2025'}</span>
+                  <span className={styles.infoColValue}>{selectedItem.requestedDate || '-'}</span>
                 </div>
               </div>
 
@@ -773,21 +640,38 @@ const CompOffReports = () => {
                 <div className={styles.detailsRow}>
                   <div className={styles.infoCol}>
                     <span className={styles.infoColLabel}>Comp off Date</span>
-                    <span className={styles.infoColValue}>{selectedItem.compOffDate || '07 Aug 2025'}</span>
+                    <span className={styles.infoColValue}>{selectedItem.compOffDate || '-'}</span>
                   </div>
                   <div className={styles.infoCol}>
                     <span className={styles.infoColLabel}>Start Duration</span>
-                    <span className={styles.infoColValue}>{selectedItem.startDuration || 'Half Day'}</span>
+                    <span className={styles.infoColValue}>{selectedItem.startDuration || 'Full Day'}</span>
                   </div>
                 </div>
 
                 <div className={styles.reasonSection}>
                   <span className={styles.reasonLabel}>Comp Off Reason</span>
                   <p className={styles.reasonValue}>
-                    {selectedItem.reason ||
-                      'I am writing to report a malfunctioning X-ray machine in the Radiology department. The machine is producing blurry images, which is impacting our ability to accurately diagnose patients. This has been ongoing for a week. Request immediate attention.'}
+                    {selectedItem.reason || 'No reason provided'}
                   </p>
                 </div>
+
+                {selectedItem.actionBy && selectedItem.actionBy !== '-' && (
+                  <div className={styles.reasonSection} style={{ marginTop: '12px' }}>
+                    <span className={styles.reasonLabel}>Reviewed By</span>
+                    <p className={styles.reasonValue}>
+                      {selectedItem.actionBy} {selectedItem.reviewedAt && selectedItem.reviewedAt !== '-' ? `(${selectedItem.reviewedAt})` : ''}
+                    </p>
+                  </div>
+                )}
+
+                {selectedItem.rejectionRemark && (
+                  <div className={styles.reasonSection} style={{ marginTop: '12px' }}>
+                    <span className={styles.reasonLabel} style={{ color: '#DC2626' }}>Rejection Remark</span>
+                    <p className={styles.reasonValue} style={{ color: '#DC2626' }}>
+                      {selectedItem.rejectionRemark}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>,
@@ -798,4 +682,3 @@ const CompOffReports = () => {
 };
 
 export default CompOffReports;
-

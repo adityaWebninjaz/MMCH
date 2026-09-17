@@ -43,3 +43,49 @@ export const getLeaveApprovals = async ({ status = 'ALL' } = {}) => {
 
   return [];
 };
+
+/**
+ * Fetch Comp-Off Approvals / Reports list from Backend API
+ * Endpoint: GET /leaves/comp-off-approvals
+ * Query params: status (ALL, APPROVED, REJECTED, PENDING, CANCELLED), etc.
+ */
+export const getCompOffApprovals = async ({ status = 'ALL' } = {}) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  let normalizedStatus = 'ALL';
+  if (status && status !== 'All Status' && status !== 'ALL' && status !== 'all') {
+    normalizedStatus = status.toUpperCase();
+  }
+
+  if (BASE_URL) {
+    try {
+      const response = await axios.get(`${BASE_URL}/leaves/comp-off-approvals`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          accept: 'application/json'
+        },
+        params: {
+          status: normalizedStatus
+        },
+        timeout: 10000
+      });
+
+      if (response?.data?.success && Array.isArray(response?.data?.data)) {
+        return response.data.data;
+      }
+      if (Array.isArray(response?.data)) {
+        return response.data;
+      }
+      if (response?.data?.data && Array.isArray(response.data.data.items)) {
+        return response.data.data.items;
+      }
+    } catch (error) {
+      console.error('Error fetching comp-off approvals from API:', error);
+      throw error;
+    }
+  }
+
+  return [];
+};
+
+
