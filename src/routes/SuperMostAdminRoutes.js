@@ -11,8 +11,8 @@ const HrmsBiometricDevices = Loadable(lazy(() => import('views/SuperMostAdmin/HR
 const AuditLogs = Loadable(lazy(() => import('views/SuperMostAdmin/AuditLogs')));
 const HrmsShiftDetails = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftManagement/ShiftDetails')));
 const HrmsAssignShift = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/ShiftManagement/AssignShift')));
-const HrmsAttendanceReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/AttendanceReport')));
-const HrmsLeaveReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/LeaveReport')));
+const HrmsAttendanceReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/AttendanceReport')));
+const HrmsLeaveReport = Loadable(lazy(() => import('@/views/SuperMostAdmin/HRMS/Reports/LeaveReport')));
 const HrmsOvertimeReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/OvertimeReport')));
 const HrmsCompensatoryOffReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/CompensatoryOffReport')));
 const HrmsDeductionSummaryReport = Loadable(lazy(() => import('views/SuperMostAdmin/HRMS/Reports/DeductionSummaryReport')));
