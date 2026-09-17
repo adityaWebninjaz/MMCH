@@ -35,7 +35,7 @@ import {
   exportElectricityReportPDF,
   exportElectricityReportExcel
 } from 'services/electricityReportService';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 const ROOMS = ['All Room', 'A-101', 'A-102', 'A-103', 'B-201', 'B-202', 'B-203', 'C-301'];
@@ -261,19 +261,19 @@ const ElectricityReport = () => {
               </MenuItem>
               {departmentsList.length > 0
                 ? departmentsList.map((dept) => (
-                    <MenuItem
-                      key={dept.id || dept.name}
-                      value={dept.name || dept.id}
-                      sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
-                    >
-                      {dept.name}
-                    </MenuItem>
-                  ))
+                  <MenuItem
+                    key={dept.id || dept.name}
+                    value={dept.name || dept.id}
+                    sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
+                  >
+                    {dept.name}
+                  </MenuItem>
+                ))
                 : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
-                    <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
-                      {dept}
-                    </MenuItem>
-                  ))}
+                  <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                    {dept}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
 

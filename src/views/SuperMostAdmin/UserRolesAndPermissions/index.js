@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import styles from './UserRolesAndPermissions.module.css';
 
 const DEPARTMENT_OPTIONS = [
@@ -556,11 +556,11 @@ const UserRolesAndPermissions = () => {
       prev.map((u) =>
         u.id === selectedUser.id
           ? {
-              ...u,
-              userName: editUserForm.fullName.trim(),
-              email: editUserForm.email.trim(),
-              role: editUserForm.role
-            }
+            ...u,
+            userName: editUserForm.fullName.trim(),
+            email: editUserForm.email.trim(),
+            role: editUserForm.role
+          }
           : u
       )
     );

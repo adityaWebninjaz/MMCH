@@ -35,7 +35,7 @@ import {
   exportCompensatoryOffReportPDF,
   exportCompensatoryOffReportExcel
 } from 'services/compensatoryOffReportService';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];
 
@@ -255,19 +255,19 @@ const CompensatoryOffReport = () => {
               </MenuItem>
               {departmentsList.length > 0
                 ? departmentsList.map((dept) => (
-                    <MenuItem
-                      key={dept.id || dept.name}
-                      value={dept.name || dept.id}
-                      sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
-                    >
-                      {dept.name}
-                    </MenuItem>
-                  ))
+                  <MenuItem
+                    key={dept.id || dept.name}
+                    value={dept.name || dept.id}
+                    sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}
+                  >
+                    {dept.name}
+                  </MenuItem>
+                ))
                 : DEPARTMENTS.filter((d) => d !== 'All Departments').map((dept) => (
-                    <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
-                      {dept}
-                    </MenuItem>
-                  ))}
+                  <MenuItem key={dept} value={dept} sx={{ fontSize: '13px', color: '#1E293B', lineHeight: '100%', fontWeight: 400 }}>
+                    {dept}
+                  </MenuItem>
+                ))}
             </Select>
           </FormControl>
 
@@ -682,7 +682,7 @@ const CompensatoryOffReport = () => {
                 minWidth: '78px',
                 overflow: 'hidden',
                 '& .MuiOutlinedInput-notchedOutline': {
-                   borderColor: '#E2E8F0',
+                  borderColor: '#E2E8F0',
                   borderRadius: '6px',
                   borderWidth: '1px',
                   top: 0,

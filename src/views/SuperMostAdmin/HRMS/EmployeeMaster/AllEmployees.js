@@ -51,8 +51,8 @@ import {
   getHODs,
   getManagers,
   getShifts
-} from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
-import { getDevices } from '@/views/SuperMostAdmin/HRMS/Boimetric Devices/Services/deviceServices';
+} from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
+import { getDevices } from 'views/SuperMostAdmin/HRMS/BoimetricDevices/Services/deviceServices';
 
 const DEPARTMENTS = [
   'All Departments',
@@ -394,12 +394,12 @@ const AllEmployees = () => {
         const updatedLabel = matchedManager
           ? typeof matchedManager === 'object'
             ? matchedManager.name ||
-              matchedManager.full_name ||
-              matchedManager.hod_name ||
-              matchedManager.designation ||
-              matchedManager.designation_name ||
-              matchedManager.title ||
-              matchedManager.id
+            matchedManager.full_name ||
+            matchedManager.hod_name ||
+            matchedManager.designation ||
+            matchedManager.designation_name ||
+            matchedManager.title ||
+            matchedManager.id
             : matchedManager
           : newHod;
 
@@ -1241,7 +1241,7 @@ const AllEmployees = () => {
               }
             }}
           >
-           {updatingHod ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
+            {updatingHod ? <CircularProgress size={22} sx={{ color: '#FFFFFF' }} /> : 'Update'}
           </Button>
         </DialogActions>
       </Dialog>

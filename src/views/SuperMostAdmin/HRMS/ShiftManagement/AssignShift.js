@@ -37,7 +37,7 @@ import {
   NavigateNext as NavigateNextIcon
 } from '@mui/icons-material';
 import { toast } from 'react-toastify';
-import { getAllEmployees, getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getAllEmployees, getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import { getShiftDetails, assignEmployeesToShift, assignMultipleDepartmentsToShift } from './Services/shiftDetailServices';
 
 const AssignShift = () => {
@@ -690,28 +690,28 @@ const AssignShift = () => {
 
               {/* Selection Counter Badge & Assign Button */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-               <Button
-            variant="contained"
-            onClick={handleOpenSelectShiftModal}
-            sx={{
-              minWidth: 95,
-              bgcolor: '#644EE5',
-              color: '#ffffff',
-              textTransform: 'none',
-              fontWeight: 600,
-              fontSize: '14px',
-              borderRadius: '8px',
-              px: '24px',
-              height: '37px',
-              boxShadow: 'none',
-              '&:hover': {
-                bgcolor: '#4f46e5',
-                boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
-              }
-            }}
-          >
-            Assign
-          </Button>
+                <Button
+                  variant="contained"
+                  onClick={handleOpenSelectShiftModal}
+                  sx={{
+                    minWidth: 95,
+                    bgcolor: '#644EE5',
+                    color: '#ffffff',
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    fontSize: '14px',
+                    borderRadius: '8px',
+                    px: '24px',
+                    height: '37px',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      bgcolor: '#4f46e5',
+                      boxShadow: '0 2px 6px rgba(99,102,241,0.25)'
+                    }
+                  }}
+                >
+                  Assign
+                </Button>
 
                 <Typography
                   variant="body2"

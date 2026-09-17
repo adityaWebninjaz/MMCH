@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { IconSearch, IconDownload, IconFileSpreadsheet, IconChevronDown, IconChevronRight, IconArrowDown } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import styles from './DeductionSummaries.module.css';
 
 const tableData = [
@@ -113,9 +113,9 @@ const DeductionSummaries = () => {
             <span className={styles.filterLabel}>Employee Search</span>
             <div className={styles.searchInputWrapper}>
               <IconSearch className={styles.searchIcon} />
-              <input 
-                type="text" 
-                placeholder="Search by ID or name..." 
+              <input
+                type="text"
+                placeholder="Search by ID or name..."
                 className={`${styles.searchInput} ${styles.searchInputWithIcon}`}
               />
             </div>
@@ -170,7 +170,7 @@ const DeductionSummaries = () => {
                     <td className={styles.td}>{row.dept}</td>
                     <td className={styles.td}>{row.type}</td>
                     <td className={styles.tdAmount}>{row.amount}</td>
-                    <td className={styles.td} style={{color: '#64748B'}}>{row.submittedBy}</td>
+                    <td className={styles.td} style={{ color: '#64748B' }}>{row.submittedBy}</td>
                     <td className={styles.tdStatus}>
                       <span className={`${styles.statusBadge} ${row.status === 'Submitted' ? styles.statusSubmitted : styles.statusLocked}`}>
                         {row.status}

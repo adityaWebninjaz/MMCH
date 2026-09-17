@@ -11,7 +11,7 @@ import {
   Grid
 } from '@mui/material';
 import { toast } from 'react-toastify';
-import { getEmployees } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getEmployees } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEFAULT_EMPLOYEE = {
   name: 'Dr.Shreya Krishnan',

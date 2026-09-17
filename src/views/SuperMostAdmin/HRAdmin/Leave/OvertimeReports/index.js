@@ -15,7 +15,7 @@ import {
   IconEye
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import styles from './OvertimeReports.module.css';
 
 // Mock data matching Screenshot 2 & Screenshot 3
@@ -522,10 +522,10 @@ const OvertimeReports = () => {
                 const statusClass = isApproved
                   ? styles.statusApproved
                   : isPending
-                  ? styles.statusPending
-                  : isRejected
-                  ? styles.statusRejected
-                  : '';
+                    ? styles.statusPending
+                    : isRejected
+                      ? styles.statusRejected
+                      : '';
 
                 return (
                   <tr key={row.id} className={styles.tr}>

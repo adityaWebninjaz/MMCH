@@ -10,7 +10,7 @@ import {
   exportGridMatrixToPDF,
   exportGridMatrixToExcel
 } from '../Services/hrAttendanceService';
-import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 import AttendanceGrid from './Components/Grid';
 import styles from './Attendance.module.css';
 

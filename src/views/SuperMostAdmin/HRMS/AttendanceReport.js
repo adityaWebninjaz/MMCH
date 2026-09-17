@@ -31,7 +31,7 @@ import {
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
 import { getAttendanceReport, exportAttendanceReport } from 'services/attendanceReportService';
-import { getDepartments } from '@/views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const MONTHS = [
   { value: 1, label: 'January' },
