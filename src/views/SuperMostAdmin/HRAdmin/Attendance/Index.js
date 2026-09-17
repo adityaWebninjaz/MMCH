@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { IconCalendar, IconChevronDown, IconDownload, IconSearch } from '@tabler/icons-react';
 import { CircularProgress, Select, MenuItem } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -10,10 +10,11 @@ import {
   exportGridMatrixToPDF,
   exportGridMatrixToExcel
 } from '../Services/hrAttendanceService';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import AttendanceGrid from './Components/Grid';
 import styles from './Attendance.module.css';
 
-// Department filter options
+// Department filter options fallback
 const DEPARTMENT_OPTIONS = [
   { id: 'all', name: 'All Departments' },
   { id: 'Emergency', name: 'Emergency' },
@@ -64,11 +65,45 @@ const Attendance = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Filter state
+  const dateInputRef = useRef(null);
   const [selectedDate, setSelectedDate] = useState('2025-07-12');
   const [selectedMonth, setSelectedMonth] = useState('July');
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedDepartment, setSelectedDepartment] = useState('all');
+  const [departmentsList, setDepartmentsList] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Fetch real departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const list = data.map((dept) => {
+            if (typeof dept === 'string') return { id: dept, name: dept };
+            return {
+              id: dept.name || dept.id || dept._id || dept.department_id,
+              name: dept.name || dept.department_name || dept.title || dept.id
+            };
+          });
+          setDepartmentsList(list);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in Attendance:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const departmentOptions = useMemo(() => {
+    if (departmentsList.length > 0) {
+      return [{ id: 'all', name: 'All Departments' }, ...departmentsList];
+    }
+    return DEPARTMENT_OPTIONS;
+  }, [departmentsList]);
 
   // Summary dataset for Dashboard view
   const [summaryData, setSummaryData] = useState([]);
@@ -101,9 +136,9 @@ const Attendance = () => {
 
   // Department name string for export
   const selectedDepartmentName = useMemo(() => {
-    const found = DEPARTMENT_OPTIONS.find((d) => d.id === selectedDepartment);
+    const found = departmentOptions.find((d) => d.id === selectedDepartment || d.name === selectedDepartment);
     return found ? found.name : 'All Departments';
-  }, [selectedDepartment]);
+  }, [selectedDepartment, departmentOptions]);
 
   // Export PDF Handler (handles both Dashboard summary and Grid matrix)
   const handleExportPDF = async () => {
@@ -193,11 +228,24 @@ const Attendance = () => {
                 Date
               </label>
               <div className={styles.inputWrapper}>
-                <div className={styles.dateInputCustom}>
+                <button
+                  type="button"
+                  className={styles.dateInputCustom}
+                  onClick={() => {
+                    if (dateInputRef.current) {
+                      if (typeof dateInputRef.current.showPicker === 'function') {
+                        dateInputRef.current.showPicker();
+                      } else {
+                        dateInputRef.current.focus();
+                      }
+                    }
+                  }}
+                >
                   <span>{formattedDisplayDate}</span>
                   <IconCalendar size={18} color="#64748B" />
-                </div>
+                </button>
                 <input
+                  ref={dateInputRef}
                   id="attendance-date-picker"
                   type="date"
                   className={styles.dateNativeInput}
@@ -221,8 +269,13 @@ const Attendance = () => {
                 size="small"
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
-                IconComponent={() => (
-                  <IconCalendar size={18} stroke={1.75} style={{ color: '#64748B', marginRight: 10, pointerEvents: 'none' }} />
+                IconComponent={(iconProps) => (
+                  <IconCalendar
+                    {...iconProps}
+                    size={18}
+                    stroke={1.75}
+                    style={{ color: '#64748B', pointerEvents: 'none' }}
+                  />
                 )}
                 sx={{
                   height: '32px',
@@ -230,6 +283,10 @@ const Attendance = () => {
                   bgcolor: '#FFFFFF',
                   borderRadius: '6px !important',
                   fontFamily: "'Inter', sans-serif !important",
+                  '& .MuiSelect-icon': {
+                    pointerEvents: 'none',
+                    right: '10px'
+                  },
                   '& .MuiOutlinedInput-notchedOutline, & fieldset': {
                     borderColor: '#E2E8F0',
                     borderRadius: '6px !important'
@@ -299,8 +356,13 @@ const Attendance = () => {
               size="small"
               value={selectedDepartment}
               onChange={(e) => setSelectedDepartment(e.target.value)}
-              IconComponent={() => (
-                <IconChevronDown size={18} stroke={2} style={{ color: '#64748B', marginRight: 10, pointerEvents: 'none' }} />
+              IconComponent={(iconProps) => (
+                <IconChevronDown
+                  {...iconProps}
+                  size={18}
+                  stroke={2}
+                  style={{ color: '#64748B', pointerEvents: 'none' }}
+                />
               )}
               sx={{
                 height: '32px',
@@ -308,6 +370,10 @@ const Attendance = () => {
                 bgcolor: '#FFFFFF',
                 borderRadius: '6px !important',
                 fontFamily: "'Inter', sans-serif !important",
+                '& .MuiSelect-icon': {
+                  pointerEvents: 'none',
+                  right: '10px'
+                },
                 '& .MuiOutlinedInput-notchedOutline, & fieldset': {
                   borderColor: '#E2E8F0',
                   borderRadius: '6px !important'
@@ -341,12 +407,13 @@ const Attendance = () => {
                     borderRadius: '6px',
                     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
                     border: '1px solid #E2E8F0',
-                    mt: 0.5
+                    mt: 0.5,
+                    maxHeight: '260px'
                   }
                 }
               }}
             >
-              {DEPARTMENT_OPTIONS.map((dept) => (
+              {departmentOptions.map((dept) => (
                 <MenuItem
                   key={dept.id}
                   value={dept.id}
