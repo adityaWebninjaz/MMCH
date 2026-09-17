@@ -30,7 +30,7 @@ import {
   LastPage as LastPageIcon,
   UnfoldMore as UnfoldMoreIcon
 } from '@mui/icons-material';
-import { getAttendanceReport, exportAttendanceReport } from '@/views/SuperMostAdmin/HRMS/Reports/Services/attendanceReportService';
+import { getAttendanceReport, exportAttendanceReport } from 'views/SuperMostAdmin/HRMS/Reports/Services/attendanceReportService';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const MONTHS = [

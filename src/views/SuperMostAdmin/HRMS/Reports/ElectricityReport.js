@@ -34,7 +34,7 @@ import {
   getElectricityReport,
   exportElectricityReportPDF,
   exportElectricityReportExcel
-} from '@/views/SuperMostAdmin/HRMS/Reports/Services/electricityReportService';
+} from 'views/SuperMostAdmin/HRMS/Reports/Services/electricityReportService';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
 
 const DEPARTMENTS = ['All Departments', 'Emergency', 'Radiology', 'ICU', 'Housekeeping', 'OPD', 'Admin'];

@@ -33,7 +33,7 @@ import {
   getAttendanceExceptionReport,
   exportAttendanceExceptionReportPDF,
   exportAttendanceExceptionReportExcel
-} from '@/views/SuperMostAdmin/HRMS/Reports/Services/attendanceExceptionReportService';
+} from 'views/SuperMostAdmin/HRMS/Reports/Services/attendanceExceptionReportService';
 
 const MONTHS = ['June', 'May', 'April', 'March', 'February', 'January', 'July', 'August', 'September', 'October', 'November', 'December'];
 
