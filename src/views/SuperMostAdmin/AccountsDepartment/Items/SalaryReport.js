@@ -174,7 +174,7 @@ const SalaryReport = () => {
               value={rowsPerPage}
               onChange={(val) => setRowsPerPage(Number(val))}
               size="small"
-              width={65}
+              width={78}
             />
           </div>
           <div>Page {currentPage} of {totalPages}</div>

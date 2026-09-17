@@ -156,7 +156,7 @@ const PreProcessingReview = () => {
                 setCurrentPage(1);
               }}
               size="small"
-              width={65}
+              width={78}
             />
           </div>
           <div>Page {currentPage} of {totalPages}</div>

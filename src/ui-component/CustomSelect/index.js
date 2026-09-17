@@ -1,7 +1,7 @@
-/* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events */
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { IconChevronDown } from '@tabler/icons-react';
+import { Menu, MenuItem } from '@mui/material';
 import styles from './CustomSelect.module.css';
 
 const CustomSelect = ({
@@ -17,9 +17,13 @@ const CustomSelect = ({
   minWidth,
   size = 'normal' // 'normal' | 'small'
 }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [internalValue, setInternalValue] = useState(value !== undefined ? value : (defaultValue || (options[0]?.value ?? options[0] ?? '')));
-  const containerRef = useRef(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const isOpen = Boolean(anchorEl);
+  const buttonRef = useRef(null);
+
+  const [internalValue, setInternalValue] = useState(
+    value !== undefined ? value : defaultValue || (options[0]?.value ?? options[0] ?? '')
+  );
 
   const currentValue = value !== undefined ? value : internalValue;
 
@@ -29,24 +33,17 @@ const CustomSelect = ({
     }
   }, [value]);
 
-  // Handle outside click
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
-    };
-  }, [isOpen]);
+  const handleOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleSelect = (optionValue) => {
     setInternalValue(optionValue);
-    setIsOpen(false);
+    handleClose();
     if (onChange) {
       onChange(optionValue);
     }
@@ -61,27 +58,29 @@ const CustomSelect = ({
 
   const selectedOption = normalizedOptions.find((opt) => String(opt.value) === String(currentValue));
   const displayText = selectedOption ? selectedOption.label : (currentValue || placeholder);
-  const isPlaceholder = !currentValue || (selectedOption && (selectedOption.value === '' || selectedOption.value === null || selectedOption.value === undefined));
+  const isPlaceholder =
+    !currentValue ||
+    (selectedOption && (selectedOption.value === '' || selectedOption.value === null || selectedOption.value === undefined));
 
   return (
     <div
-      ref={containerRef}
       className={`${styles.dropdownWrapper} ${className}`}
       style={{
         width: width || 'auto',
-        minWidth: minWidth || 'auto'
+        minWidth: minWidth || 'auto',
+        display: 'inline-block'
       }}
     >
       <button
+        ref={buttonRef}
         type="button"
         className={`${styles.dropdownButton} ${isOpen ? styles.dropdownButtonOpen : ''} ${buttonClassName}`}
-        onClick={() => setIsOpen((prev) => !prev)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') setIsOpen(false);
-        }}
+        onClick={handleOpen}
         style={{
-          height: size === 'small' ? '30px' : '38px',
-          fontSize: size === 'small' ? '12px' : '13px'
+          height: size === 'small' ? '32px' : '38px',
+          fontSize: size === 'small' ? '13px' : '13px',
+          padding: size === 'small' ? '0 6px 0 10px' : '0 10px 0 12px',
+          gap: size === 'small' ? '4px' : '8px'
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -94,28 +93,61 @@ const CustomSelect = ({
         </span>
       </button>
 
-      {isOpen && (
-        <ul
-          className={`${styles.dropdownMenu} ${menuClassName}`}
-          role="listbox"
-          tabIndex={-1}
-        >
-          {normalizedOptions.map((opt) => {
-            const isSelected = String(opt.value) === String(currentValue);
-            return (
-              <li
-                key={String(opt.value)}
-                className={`${styles.dropdownItem} ${isSelected ? styles.dropdownItemSelected : ''}`}
-                onClick={() => handleSelect(opt.value)}
-                role="option"
-                aria-selected={isSelected}
-              >
-                <span>{opt.label}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <Menu
+        anchorEl={anchorEl}
+        open={isOpen}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left'
+        }}
+        PaperProps={{
+          className: menuClassName,
+          sx: {
+            minWidth: buttonRef.current ? `${buttonRef.current.offsetWidth}px` : 'auto',
+            maxHeight: 280,
+            borderRadius: '8px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+            border: '1px solid #E2E8F0',
+            mt: 0.5,
+            py: 0.5,
+            bgcolor: '#FFFFFF',
+            '& .MuiMenuItem-root': {
+              fontFamily: "'Inter', sans-serif !important",
+              fontSize: size === 'small' ? '12px !important' : '13px !important',
+              fontWeight: '400 !important',
+              color: '#1E293B',
+              py: '6px',
+              px: '12px',
+              '&:hover': {
+                bgcolor: '#F8FAFC'
+              },
+              '&.Mui-selected': {
+                bgcolor: '#EEF2FF !important',
+                color: '#6366F1 !important',
+                fontWeight: '500 !important'
+              }
+            }
+          }
+        }}
+      >
+        {normalizedOptions.map((opt) => {
+          const isSelected = String(opt.value) === String(currentValue);
+          return (
+            <MenuItem
+              key={String(opt.value)}
+              selected={isSelected}
+              onClick={() => handleSelect(opt.value)}
+            >
+              {opt.label}
+            </MenuItem>
+          );
+        })}
+      </Menu>
     </div>
   );
 };

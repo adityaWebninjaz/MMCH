@@ -332,6 +332,12 @@
   min-width: 76px;
 }
 
+.statusCancelled {
+  background-color: #F1F5F9;
+  color: #475569;
+  min-width: 82px;
+}
+
 .emptyRow {
   padding: 48px;
   text-align: center;
