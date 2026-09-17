@@ -1,8 +1,18 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions, jsx-a11y/label-has-associated-control */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import CustomSelect from 'ui-component/CustomSelect';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
+import {
+  getRoles,
+  createRole,
+  updateRole,
+  deleteRole,
+  formatDate,
+  formatRoleName,
+  getApiErrorMessage
+} from './Services/userRolesService';
 import styles from './UserRolesAndPermissions.module.css';
 
 const DEPARTMENT_OPTIONS = [
@@ -233,7 +243,52 @@ const UserRolesAndPermissions = () => {
 
   // Table Data State
   const [roles, setRoles] = useState(INITIAL_ROLES);
+  const [loadingRoles, setLoadingRoles] = useState(true);
   const [users, setUsers] = useState(INITIAL_USERS);
+
+  // Fetch roles from GET /roles API on mount
+  const fetchRolesData = useCallback(async () => {
+    setLoadingRoles(true);
+    try {
+      const res = await getRoles();
+      const rawList = res?.data || (Array.isArray(res) ? res : []);
+
+      if (rawList.length > 0) {
+        const mappedRoles = rawList.map((item) => {
+          const roleName = item.roleName || item.role_name || item.name || '';
+          return {
+            id: item.id || item._id,
+            roleName,
+            displayName: formatRoleName(roleName),
+            description: item.description || item.desc || '-',
+            createdDate: formatDate(item.createdAt || item.created_at || item.createdDate),
+            numberOfUsers: item.numberOfUsers ?? item.user_count ?? item.users_count ?? item.numberOfUser ?? 0,
+            departmentScope: item.departmentScope || item.department_scope || item.department || 'All Departments',
+            isActive: (item.status || (item.isActive !== undefined ? (item.isActive ? 'active' : 'inactive') : 'active')).toLowerCase() === 'active',
+            rawStatus: item.status || 'active',
+            permissions:
+              item.permissions ||
+              DEFAULT_MODULE_PERMISSIONS.map((m) => ({
+                ...m,
+                view: true,
+                create: roleName.toLowerCase().includes('admin') || roleName.toLowerCase().includes('super'),
+                edit: roleName.toLowerCase().includes('admin') || roleName.toLowerCase().includes('super'),
+                delete: roleName.toLowerCase().includes('super')
+              }))
+          };
+        });
+        setRoles(mappedRoles);
+      }
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Failed to fetch roles from server'));
+    } finally {
+      setLoadingRoles(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRolesData();
+  }, [fetchRolesData]);
 
   // Modal States for Roles
   const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
@@ -281,10 +336,12 @@ const UserRolesAndPermissions = () => {
   // Filtered Roles
   const filteredRoles = useMemo(() => {
     return roles.filter((r) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        r.roleName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        r.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const name = (r.displayName || r.roleName || '').toLowerCase();
+      const rawName = (r.roleName || '').toLowerCase();
+      const desc = (r.description || '').toLowerCase();
+      const q = searchQuery.trim().toLowerCase();
+
+      const matchesSearch = !q || name.includes(q) || rawName.includes(q) || desc.includes(q);
       const matchesDept = selectedDepartment === 'All Departments' || r.departmentScope === selectedDepartment;
       return matchesSearch && matchesDept;
     });
@@ -301,33 +358,20 @@ const UserRolesAndPermissions = () => {
 
   // Role options for Assign Roles dropdown
   const userAssignRoleOptions = useMemo(() => {
-    const list = [
-      { value: '', label: 'Select Roles' },
-      { value: 'Super Admin', label: 'Super Admin' },
-      { value: 'Admin', label: 'Admin' },
-      { value: 'Admin 2', label: 'Admin 2' },
-      { value: 'HR Admin', label: 'HR Admin' },
-      { value: 'Accounts Admin', label: 'Accounts Admin' },
-      { value: 'HOD', label: 'HOD' },
-      { value: 'Warden', label: 'Warden' },
-      { value: 'Payroll Executive', label: 'Payroll Executive' },
-      { value: 'Attendance Manager', label: 'Attendance Manager' },
-      { value: 'Reports Viewer', label: 'Reports Viewer' }
-    ];
-
-    const existingVals = new Set(list.map((item) => item.value));
+    const list = [{ value: '', label: 'Select Roles' }];
     roles.forEach((r) => {
-      if (!existingVals.has(r.roleName)) {
-        list.push({ value: r.roleName, label: r.roleName });
-      }
+      const val = r.displayName || r.roleName;
+      list.push({ value: val, label: val });
     });
-
     return list;
   }, [roles]);
 
   // Clone options for Add Role modal
   const cloneRoleOptions = useMemo(() => {
-    return [{ value: '', label: 'Select role to clone permissions from' }, ...roles.map((r) => ({ value: r.id, label: r.roleName }))];
+    return [
+      { value: '', label: 'Select role to clone permissions from' },
+      ...roles.map((r) => ({ value: r.id, label: r.displayName || r.roleName }))
+    ];
   }, [roles]);
 
   const addRoleDepartmentOptions = useMemo(() => {
@@ -360,16 +404,25 @@ const UserRolesAndPermissions = () => {
     }));
   };
 
-  const handleSavePermissions = () => {
+  const handleSavePermissions = async () => {
     if (!currentRoleData.roleName.trim()) {
       toast.error('Role name cannot be empty.');
       return;
     }
 
-    setRoles((prev) => prev.map((r) => (r.id === currentRoleData.id ? currentRoleData : r)));
-    toast.success('Permissions updated successfully!');
-    setIsPermissionsModalOpen(false);
-    setCurrentRoleData(null);
+    try {
+      if (currentRoleData.id && !String(currentRoleData.id).startsWith('role_')) {
+        await updateRole(currentRoleData.id, currentRoleData);
+      }
+      setRoles((prev) => prev.map((r) => (r.id === currentRoleData.id ? currentRoleData : r)));
+      toast.success('Permissions updated successfully!');
+      setIsPermissionsModalOpen(false);
+      setCurrentRoleData(null);
+    } catch (err) {
+      const errorMsg = getApiErrorMessage(err, 'Failed to update role permissions.');
+      console.error('Error updating role:', err);
+      toast.error(errorMsg);
+    }
   };
 
   const handleOpenAddRoleModal = () => {
@@ -392,7 +445,7 @@ const UserRolesAndPermissions = () => {
     });
   };
 
-  const handleCreateRole = () => {
+  const handleCreateRole = async () => {
     if (!newRoleForm.roleName.trim()) {
       toast.error('Please enter a role name.');
       return;
@@ -406,26 +459,42 @@ const UserRolesAndPermissions = () => {
       }
     }
 
-    const newRole = {
-      id: `role_${Date.now()}`,
+    const payload = {
       roleName: newRoleForm.roleName.trim(),
       description: newRoleForm.description.trim() || 'Role responsibilities defined',
-      createdDate: '15 Jun 2026',
-      numberOfUsers: 0,
       departmentScope: newRoleForm.departmentScope || 'All Departments',
-      isActive: true,
       permissions: permissionsToAssign
     };
 
-    setRoles((prev) => [...prev, newRole]);
-    toast.success(`Role '${newRole.roleName}' created successfully!`);
-    setIsAddRoleModalOpen(false);
-    setNewRoleForm({
-      roleName: '',
-      description: '',
-      departmentScope: '',
-      cloneRoleId: ''
-    });
+    try {
+      const response = await createRole(payload);
+      const createdItem = response?.data || response;
+      const newRole = {
+        id: createdItem?.id || createdItem?._id || `role_${Date.now()}`,
+        roleName: createdItem?.roleName || payload.roleName,
+        displayName: formatRoleName(createdItem?.roleName || payload.roleName),
+        description: createdItem?.description || payload.description,
+        createdDate: formatDate(createdItem?.createdAt || new Date()),
+        numberOfUsers: createdItem?.numberOfUsers || 0,
+        departmentScope: createdItem?.departmentScope || payload.departmentScope,
+        isActive: true,
+        permissions: createdItem?.permissions || permissionsToAssign
+      };
+
+      setRoles((prev) => [...prev, newRole]);
+      toast.success(`Role '${newRole.roleName}' created successfully!`);
+      setIsAddRoleModalOpen(false);
+      setNewRoleForm({
+        roleName: '',
+        description: '',
+        departmentScope: '',
+        cloneRoleId: ''
+      });
+    } catch (err) {
+      const errorMsg = getApiErrorMessage(err, 'Failed to create role.');
+      console.error('Error creating role:', err);
+      toast.error(errorMsg);
+    }
   };
 
   const handleOpenDeleteModal = (role) => {
@@ -438,12 +507,21 @@ const UserRolesAndPermissions = () => {
     setRoleToDelete(null);
   };
 
-  const handleConfirmDeleteRole = () => {
+  const handleConfirmDeleteRole = async () => {
     if (!roleToDelete) return;
-    setRoles((prev) => prev.filter((r) => r.id !== roleToDelete.id));
-    toast.success(`Role '${roleToDelete.roleName}' deleted successfully!`);
-    setIsDeleteModalOpen(false);
-    setRoleToDelete(null);
+    try {
+      if (roleToDelete.id && !String(roleToDelete.id).startsWith('role_')) {
+        await deleteRole(roleToDelete.id);
+      }
+      setRoles((prev) => prev.filter((r) => r.id !== roleToDelete.id));
+      toast.success(`Role '${roleToDelete.roleName}' deleted successfully!`);
+      setIsDeleteModalOpen(false);
+      setRoleToDelete(null);
+    } catch (err) {
+      const errorMsg = getApiErrorMessage(err, 'Failed to delete role.');
+      console.error('Error deleting role:', err);
+      toast.error(errorMsg);
+    }
   };
 
   // ================= HANDLERS: USER MANAGEMENT =================
@@ -556,11 +634,11 @@ const UserRolesAndPermissions = () => {
       prev.map((u) =>
         u.id === selectedUser.id
           ? {
-            ...u,
-            userName: editUserForm.fullName.trim(),
-            email: editUserForm.email.trim(),
-            role: editUserForm.role
-          }
+              ...u,
+              userName: editUserForm.fullName.trim(),
+              email: editUserForm.email.trim(),
+              role: editUserForm.role
+            }
           : u
       )
     );
@@ -636,7 +714,7 @@ const UserRolesAndPermissions = () => {
           onClick={() => setActiveTab('roles_and_permission')}
         >
           <span>Roles and Permissions</span>
-          <span className={styles.tabBadge}>4</span>
+          <span className={styles.tabBadge}>{roles.length}</span>
         </button>
         <button
           type="button"
@@ -644,7 +722,7 @@ const UserRolesAndPermissions = () => {
           onClick={() => setActiveTab('user_management')}
         >
           <span>User Management</span>
-          <span className={styles.tabBadge}>3</span>
+          <span className={styles.tabBadge}>{users.length}</span>
         </button>
       </div>
 
@@ -735,87 +813,101 @@ const UserRolesAndPermissions = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredRoles.map((role) => (
-                  <tr key={role.id}>
-                    <td className={styles.roleNameCell}>{role.roleName}</td>
-                    <td>{role.description}</td>
-                    <td>{role.createdDate}</td>
-                    <td>{role.numberOfUsers}</td>
-                    <td>
-                      <div className={styles.actionsCell}>
-                        {/* View Action (Eye) */}
-                        <button
-                          type="button"
-                          className={styles.actionBtn}
-                          title="View Permissions"
-                          onClick={() => handleOpenViewModal(role)}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#1E293B"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M2.5 12c0-3.8 4.2-6.5 9.5-6.5s9.5 2.7 9.5 6.5-4.2 6.5-9.5 6.5-9.5-2.7-9.5-6.5z" />
-                            <circle cx="12" cy="12" r="2.8" />
-                          </svg>
-                        </button>
-
-                        {/* Delete Action (Trash) */}
-                        <button
-                          type="button"
-                          className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
-                          title="Delete Role"
-                          onClick={() => handleOpenDeleteModal(role)}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#1E293B"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M9 5V3.8a1.2 1.2 0 0 1 1.2-1.2h3.6a1.2 1.2 0 0 1 1.2 1.2V5" />
-                            <line x1="4" y1="5" x2="20" y2="5" />
-                            <path d="M6 5l.8 13.5a2 2 0 0 0 2 1.8h6.4a2 2 0 0 0 2-1.8L18 5" />
-                            <line x1="10" y1="9" x2="10" y2="15.5" />
-                            <line x1="14" y1="9" x2="14" y2="15.5" />
-                          </svg>
-                        </button>
-
-                        {/* Edit Action (Pencil) */}
-                        <button
-                          type="button"
-                          className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
-                          title="Edit Permissions"
-                          onClick={() => handleOpenEditModal(role)}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#1E293B"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M16 4.2a1.5 1.5 0 0 1 2.1 2.1L8.5 15.8l-3.5 1 1-3.5L16 4.2z" />
-                            <path d="M14.2 6l2.1 2.1" />
-                            <line x1="4.5" y1="20" x2="19.5" y2="20" />
-                          </svg>
-                        </button>
-                      </div>
+                {loadingRoles ? (
+                  <tr>
+                    <td colSpan="5" className={styles.loadingCell}>
+                      <CircularProgress size={24} sx={{ color: '#644EE5' }} />
                     </td>
                   </tr>
-                ))}
+                ) : filteredRoles.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className={styles.noDataCell}>
+                      No roles found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredRoles.map((role) => (
+                    <tr key={role.id}>
+                      <td className={styles.roleNameCell}>{role.displayName || role.roleName}</td>
+                      <td className={styles.roleDescCell}>{role.description}</td>
+                      <td>{role.createdDate}</td>
+                      <td>{role.numberOfUsers}</td>
+                      <td>
+                        <div className={styles.actionsCell}>
+                          {/* View Action (Eye) */}
+                          <button
+                            type="button"
+                            className={styles.actionBtn}
+                            title="View Permissions"
+                            onClick={() => handleOpenViewModal(role)}
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#1E293B"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M2.5 12c0-3.8 4.2-6.5 9.5-6.5s9.5 2.7 9.5 6.5-4.2 6.5-9.5 6.5-9.5-2.7-9.5-6.5z" />
+                              <circle cx="12" cy="12" r="2.8" />
+                            </svg>
+                          </button>
+
+                          {/* Delete Action (Trash) */}
+                          <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
+                            title="Delete Role"
+                            onClick={() => handleOpenDeleteModal(role)}
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#1E293B"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M9 5V3.8a1.2 1.2 0 0 1 1.2-1.2h3.6a1.2 1.2 0 0 1 1.2 1.2V5" />
+                              <line x1="4" y1="5" x2="20" y2="5" />
+                              <path d="M6 5l.8 13.5a2 2 0 0 0 2 1.8h6.4a2 2 0 0 0 2-1.8L18 5" />
+                              <line x1="10" y1="9" x2="10" y2="15.5" />
+                              <line x1="14" y1="9" x2="14" y2="15.5" />
+                            </svg>
+                          </button>
+
+                          {/* Edit Action (Pencil) */}
+                          <button
+                            type="button"
+                            className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
+                            title="Edit Permissions"
+                            onClick={() => handleOpenEditModal(role)}
+                          >
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#1E293B"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M16 4.2a1.5 1.5 0 0 1 2.1 2.1L8.5 15.8l-3.5 1 1-3.5L16 4.2z" />
+                              <path d="M14.2 6l2.1 2.1" />
+                              <line x1="4.5" y1="20" x2="19.5" y2="20" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

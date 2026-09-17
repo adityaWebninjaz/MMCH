@@ -237,6 +237,22 @@
   color: #644ee5;
 }
 
+.loadingCell,
+.noDataCell {
+  text-align: center !important;
+  padding: 40px 18px !important;
+  color: #64748b !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+}
+
+.roleDescCell {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* Pagination Footer */
 .paginationRow {
   display: flex;
