@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   FirstPage as FirstPageIcon,
@@ -15,6 +15,7 @@ import {
   IconEye
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
+import { getDepartments } from 'views/SuperMostAdmin/HRMS/Employee Master /Services/allEmployeeService';
 import styles from './CompOffReports.module.css';
 
 // Mock data matching Screenshot 1 & Screenshot 2
@@ -341,8 +342,8 @@ const INITIAL_COMP_OFF_DATA = [
   }
 ];
 
-const DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin'];
-const STATUSES = ['All Status', 'Approved', 'Pending', 'Rejected'];
+const DEFAULT_DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin', 'IT'];
+const STATUSES = ['All Status', 'Approved', 'Pending', 'Rejected', 'Cancelled'];
 
 const CompOffReports = () => {
   // Filter States
@@ -350,7 +351,30 @@ const CompOffReports = () => {
   const [selectedDept, setSelectedDept] = useState('All Departments');
   const [selectedStatus, setSelectedStatus] = useState('All Status');
   const [searchQuery, setSearchQuery] = useState('');
+  const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const dateInputRef = useRef(null);
+
+  // Fetch departments list from API on mount
+  useEffect(() => {
+    let isMounted = true;
+    getDepartments()
+      .then((data) => {
+        if (isMounted && Array.isArray(data) && data.length > 0) {
+          const names = data
+            .map((d) => (typeof d === 'string' ? d : d.name || d.department_name || d.title || ''))
+            .filter(Boolean);
+          const uniqueDepts = Array.from(new Set(['All Departments', ...names]));
+          setDepartments(uniqueDepts);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load departments in Comp Off Reports:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Drawer state for Screenshot 2
   const [selectedItem, setSelectedItem] = useState(null);
@@ -480,13 +504,13 @@ const CompOffReports = () => {
           <div className={styles.filterGroup}>
             <span className={styles.filterLabel}>Department</span>
             <CustomSelect
-              options={DEPARTMENTS}
+              options={departments}
               value={selectedDept}
               onChange={(val) => {
                 setSelectedDept(val);
                 setPage(1);
               }}
-              width={148}
+              width={160}
             />
           </div>
 
@@ -632,7 +656,7 @@ const CompOffReports = () => {
                 setPage(1);
               }}
               size="small"
-              width={65}
+              width={78}
             />
           </div>
 
