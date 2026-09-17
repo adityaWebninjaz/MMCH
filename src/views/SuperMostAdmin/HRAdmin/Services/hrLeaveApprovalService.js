@@ -88,4 +88,53 @@ export const getCompOffApprovals = async ({ status = 'ALL' } = {}) => {
   return [];
 };
 
+/**
+ * Fetch Overtime Approvals / Reports list from Backend API
+ * Endpoint: GET /leaves/overtime-approvals
+ * Query params: status (ALL, APPROVED, REJECTED, PENDING, CANCELLED), etc.
+ */
+export const getOvertimeApprovals = async ({ status = 'PENDING' } = {}) => {
+  const token = Cookies.get('Token') || Cookies.get('token');
+
+  let normalizedStatus = 'PENDING';
+  if (status) {
+    if (status === 'All Status' || status === 'ALL' || status === 'all') {
+      normalizedStatus = 'ALL';
+    } else {
+      normalizedStatus = status.toUpperCase();
+    }
+  }
+
+  if (BASE_URL) {
+    try {
+      const response = await axios.get(`${BASE_URL}/leaves/overtime-approvals`, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : '',
+          accept: 'application/json'
+        },
+        params: {
+          status: normalizedStatus
+        },
+        timeout: 10000
+      });
+
+      if (response?.data?.success && Array.isArray(response?.data?.data)) {
+        return response.data.data;
+      }
+      if (Array.isArray(response?.data)) {
+        return response.data;
+      }
+      if (response?.data?.data && Array.isArray(response.data.data.items)) {
+        return response.data.data.items;
+      }
+    } catch (error) {
+      console.error('Error fetching overtime approvals from API:', error);
+      throw error;
+    }
+  }
+
+  return [];
+};
+
+
 
