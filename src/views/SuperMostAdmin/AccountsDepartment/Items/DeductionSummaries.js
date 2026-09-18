@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { IconSearch, IconDownload, IconFileSpreadsheet, IconChevronDown, IconChevronRight, IconArrowDown } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
-
 import styles from './DeductionSummaries.module.css';
 
 const tableData = [
