@@ -7,6 +7,7 @@ import {
   NavigateNext as NavigateNextIcon,
   LastPage as LastPageIcon
 } from '@mui/icons-material';
+import { CircularProgress } from '@mui/material';
 import {
   IconCalendar,
   IconDownload,
@@ -16,9 +17,10 @@ import {
 } from '@tabler/icons-react';
 import CustomSelect from 'ui-component/CustomSelect';
 import { getDepartments } from 'views/SuperMostAdmin/HRMS/EmployeeMaster/Services/allEmployeeService';
+import { getOvertimeApprovals } from '../../Services/hrLeaveApprovalService';
 import styles from './OvertimeReports.module.css';
 
-// Mock data matching Screenshot 2 & Screenshot 3
+// Fallback Initial Mock Data
 const INITIAL_OVERTIME_DATA = [
   {
     id: 1,
@@ -27,254 +29,76 @@ const INITIAL_OVERTIME_DATA = [
     department: 'Cardiology',
     designation: 'HOD',
     requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr.Shreya Krishnan',
-    drawerEmpId: 'CMP1234',
-    overtimeDate: '07 Aug 2025',
+    rawRequestedDate: '2026-07-14',
+    overtimeDate: '14 Jul 2026',
+    rawOvertimeDate: '2026-07-14',
     overtimeDuration: '02:30 Hrs',
-    reason: 'I am writing to report a malfunctioning X-ray machine in the Radiology department. The machine is producing blurry images, which is impacting our ability to accurately diagnose patients. This has been ongoing for a week. Request immediate attention.'
-  },
-  {
-    id: 2,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Radiology',
-    designation: 'Radiologist',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1235',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '03:00 Hrs',
-    reason: 'Emergency radiology shifts coverage due to staff shortage and unexpected critical patient intake.'
-  },
-  {
-    id: 3,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
     actionBy: 'Admin',
     status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1236',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:00 Hrs',
     reason: 'Critical care monitoring for post-operative bypass surgery patients overnight.'
-  },
-  {
-    id: 4,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1237',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:30 Hrs',
-    reason: 'Assisting in urgent cardiology consults during peak admission hours.'
-  },
-  {
-    id: 5,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1238',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '01:30 Hrs',
-    reason: 'Conducting evening review rounds for intensive cardiac care unit.'
-  },
-  {
-    id: 6,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1239',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:00 Hrs',
-    reason: 'Emergency cath lab procedures and post-angioplasty patient stabilization.'
-  },
-  {
-    id: 7,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1240',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '03:15 Hrs',
-    reason: 'Covering senior consultant duties on call during weekend schedule.'
-  },
-  {
-    id: 8,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1241',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:30 Hrs',
-    reason: 'Departmental quality assurance review and complex case discussions.'
-  },
-  {
-    id: 9,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1242',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:00 Hrs',
-    reason: 'Special cardiac clinic for high-risk elderly patients.'
-  },
-  {
-    id: 10,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1243',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:30 Hrs',
-    reason: 'Supervising resident doctors and managing ICU admissions.'
-  },
-  {
-    id: 11,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1244',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:00 Hrs',
-    reason: 'Cardiac emergency response and defibrillator maintenance verification.'
-  },
-  {
-    id: 12,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1245',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '01:45 Hrs',
-    reason: 'Late evening echo-cardiogram reviews for admitted cardiology cases.'
-  },
-  {
-    id: 13,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Hod',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1246',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:30 Hrs',
-    reason: 'Managing acute coronary syndrome patient protocol and medications.'
-  },
-  {
-    id: 14,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1247',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:15 Hrs',
-    reason: 'Extended emergency department consultations.'
-  },
-  {
-    id: 15,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1248',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '03:00 Hrs',
-    reason: 'Assisting surgical team during prolonged open heart surgery.'
-  },
-  {
-    id: 16,
-    empId: 'EMP235469',
-    empName: 'Dr. Ravi Mehta',
-    department: 'Cardiology',
-    designation: 'HOD',
-    requestedDate: '14 Jul 2026',
-    actionBy: 'Admin',
-    status: 'Approved',
-    drawerEmpName: 'Dr. Ravi Mehta',
-    drawerEmpId: 'CMP1249',
-    overtimeDate: '14 Jul 2026',
-    overtimeDuration: '02:00 Hrs',
-    reason: 'Patient counseling and emergency discharge reviews.'
   }
 ];
 
-const DEFAULT_DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin', 'IT'];
-const STATUSES = ['All Status', 'Approved', 'Pending', 'Rejected', 'Cancelled'];
+const DEFAULT_DEPARTMENTS = ['All Departments', 'Cardiology', 'Radiology', 'Emergency', 'ICU', 'Hostel', 'Admin', 'IT', 'Anatomy', 'Administration'];
+const STATUSES = ['All Status', 'Pending', 'Approved', 'Rejected', 'Cancelled'];
+
+// Helper to format minutes to "HH:MM Hrs"
+const formatDurationMinutes = (minutes) => {
+  if (minutes === null || minutes === undefined || minutes === '') return '-';
+  const num = Number(minutes);
+  if (isNaN(num)) return String(minutes);
+  const hrs = Math.floor(num / 60);
+  const mins = num % 60;
+  const padHrs = String(hrs).padStart(2, '0');
+  const padMins = String(mins).padStart(2, '0');
+  return `${padHrs}:${padMins} Hrs`;
+};
+
+// Helper to format ISO date "YYYY-MM-DD" or timestamp to "14 Jul 2026"
+const formatDisplayDate = (dateStr) => {
+  if (!dateStr) return '-';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return String(dateStr);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch (e) {
+    return String(dateStr);
+  }
+};
+
+// Helper to convert backend status to Title Case
+const formatStatusTitle = (status) => {
+  if (!status) return 'Pending';
+  const upper = String(status).toUpperCase();
+  if (upper === 'APPROVED') return 'Approved';
+  if (upper === 'REJECTED') return 'Rejected';
+  if (upper === 'PENDING') return 'Pending';
+  if (upper === 'CANCELLED' || upper === 'CANCELED') return 'Cancelled';
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+};
 
 const OvertimeReports = () => {
-  // Filter states
-  const [selectedDate, setSelectedDate] = useState('2025-07-12');
+  // Filter states - Default to 'Pending' as requested
+  const [selectedDate, setSelectedDate] = useState('');
   const [selectedDept, setSelectedDept] = useState('All Departments');
-  const [selectedStatus, setSelectedStatus] = useState('All Status');
+  const [selectedStatus, setSelectedStatus] = useState('Pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [departments, setDepartments] = useState(DEFAULT_DEPARTMENTS);
   const dateInputRef = useRef(null);
 
-  // Fetch departments list from API on mount
+  // Data & Loading States
+  const [overtimeRecords, setOvertimeRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Drawer state for Details Modal
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // 1. Fetch departments list from API on mount
   useEffect(() => {
     let isMounted = true;
     getDepartments()
@@ -296,38 +120,117 @@ const OvertimeReports = () => {
     };
   }, []);
 
-  // Drawer state for Screenshot 3
-  const [selectedItem, setSelectedItem] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // 2. Fetch Overtime approvals from backend API
+  useEffect(() => {
+    let isMounted = true;
+    const fetchOvertimeData = async () => {
+      setLoading(true);
+      try {
+        const data = await getOvertimeApprovals({ status: selectedStatus });
+        if (isMounted) {
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map((item, index) => {
+              const durationFormatted =
+                item.duration_minutes !== null && item.duration_minutes !== undefined
+                  ? formatDurationMinutes(item.duration_minutes)
+                  : item.duration || '-';
 
-  // Pagination states
-  const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+              let reviewerName = '-';
+              if (item.reviewed_by?.full_name) {
+                reviewerName = item.reviewed_by.designation
+                  ? `${item.reviewed_by.full_name} (${item.reviewed_by.designation})`
+                  : item.reviewed_by.full_name;
+              } else if (typeof item.reviewed_by === 'string' && item.reviewed_by.trim()) {
+                reviewerName = item.reviewed_by;
+              }
+
+              return {
+                id: item.id || `overtime-${index + 1}`,
+                empId: item.employee?.uid || item.empId || '-',
+                empName: item.employee?.full_name || item.empName || 'N/A',
+                department: item.employee?.department || item.department || '-',
+                designation: item.employee?.designation || item.designation || '-',
+                requestedDate: formatDisplayDate(item.applied_at || item.date),
+                rawRequestedDate: item.applied_at || '',
+                overtimeDate: formatDisplayDate(item.date),
+                rawOvertimeDate: item.date || '',
+                overtimeDuration: durationFormatted,
+                actionBy: reviewerName,
+                status: formatStatusTitle(item.status),
+                rawStatus: item.status,
+                reason: item.reason || 'No reason provided',
+                rejectionRemark: item.rejection_remark || '',
+                reviewedBy: reviewerName,
+                reviewedAt: formatDisplayDate(item.reviewed_at),
+                shift: item.employee?.shift || null,
+                raw: item
+              };
+            });
+            setOvertimeRecords(mapped);
+          } else {
+            setOvertimeRecords(data.length === 0 ? [] : INITIAL_OVERTIME_DATA);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load overtime approvals:', err);
+        if (isMounted) {
+          setOvertimeRecords(INITIAL_OVERTIME_DATA);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchOvertimeData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedStatus]);
 
   // Format date display
   const formattedDisplayDate = useMemo(() => {
-    if (!selectedDate) return '12 July 2025';
+    if (!selectedDate) return 'All Dates';
     const d = new Date(selectedDate);
-    if (isNaN(d.getTime())) return '12 July 2025';
-    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+    if (isNaN(d.getTime())) return 'All Dates';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   }, [selectedDate]);
 
   // Filtered data logic
   const filteredData = useMemo(() => {
-    return INITIAL_OVERTIME_DATA.filter((row) => {
-      const matchDept = selectedDept === 'All Departments' || row.department === selectedDept;
-      const matchStatus = selectedStatus === 'All Status' || row.status === selectedStatus;
-      const q = searchQuery.trim().toLowerCase();
-      const matchSearch =
-        !q ||
-        row.empId.toLowerCase().includes(q) ||
-        row.empName.toLowerCase().includes(q) ||
-        row.department.toLowerCase().includes(q) ||
-        row.designation.toLowerCase().includes(q);
+    return overtimeRecords.filter((row) => {
+      // 1. Department match
+      const matchesDept =
+        selectedDept === 'All Departments' ||
+        row.department === selectedDept ||
+        row.department?.toLowerCase() === selectedDept?.toLowerCase();
 
-      return matchDept && matchStatus && matchSearch;
+      // 2. Status match
+      const matchesStatus =
+        selectedStatus === 'All Status' ||
+        row.status?.toLowerCase() === selectedStatus?.toLowerCase();
+
+      // 3. Date match (checks both overtime date & requested date)
+      const matchesDate =
+        !selectedDate ||
+        row.rawOvertimeDate === selectedDate ||
+        (row.rawRequestedDate && row.rawRequestedDate.startsWith(selectedDate));
+
+      // 4. Search Query match
+      const q = searchQuery.trim().toLowerCase();
+      const matchesQuery =
+        !q ||
+        (row.empId && row.empId.toLowerCase().includes(q)) ||
+        (row.empName && row.empName.toLowerCase().includes(q)) ||
+        (row.department && row.department.toLowerCase().includes(q)) ||
+        (row.designation && row.designation.toLowerCase().includes(q)) ||
+        (row.status && row.status.toLowerCase().includes(q));
+
+      return matchesDept && matchesStatus && matchesDate && matchesQuery;
     });
-  }, [selectedDept, selectedStatus, searchQuery]);
+  }, [overtimeRecords, selectedDept, selectedStatus, selectedDate, searchQuery]);
 
   // Paginated records
   const totalCount = filteredData.length;
@@ -344,7 +247,7 @@ const OvertimeReports = () => {
   };
 
   const handleExportExcel = () => {
-    const headers = ['Emp ID', 'Employee', 'Department', 'Designation', 'Requested Date', 'Action By', 'Status'];
+    const headers = ['Emp ID', 'Employee', 'Department', 'Designation', 'Requested Date', 'Overtime Date', 'Duration', 'Action By', 'Status', 'Reason'];
     const csvRows = [headers.join(',')];
     filteredData.forEach((row) => {
       csvRows.push([
@@ -353,8 +256,11 @@ const OvertimeReports = () => {
         `"${row.department}"`,
         `"${row.designation}"`,
         `"${row.requestedDate}"`,
+        `"${row.overtimeDate}"`,
+        `"${row.overtimeDuration}"`,
         `"${row.actionBy}"`,
-        `"${row.status}"`
+        `"${row.status}"`,
+        `"${(row.reason || '').replace(/"/g, '""')}"`
       ].join(','));
     });
     const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
@@ -389,32 +295,56 @@ const OvertimeReports = () => {
             <label htmlFor="otDateBtn" className={styles.filterLabel}>
               Date
             </label>
-            <button
-              id="otDateBtn"
-              type="button"
-              className={styles.dateButton}
-              onClick={() => {
-                if (dateInputRef.current) {
-                  if (typeof dateInputRef.current.showPicker === 'function') {
-                    dateInputRef.current.showPicker();
-                  } else {
-                    dateInputRef.current.click();
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+              <button
+                id="otDateBtn"
+                type="button"
+                className={styles.dateButton}
+                onClick={() => {
+                  if (dateInputRef.current) {
+                    if (typeof dateInputRef.current.showPicker === 'function') {
+                      dateInputRef.current.showPicker();
+                    } else {
+                      dateInputRef.current.click();
+                    }
                   }
-                }
-              }}
-            >
-              <span>{formattedDisplayDate}</span>
-              <IconCalendar size={18} stroke={1.75} color="#1E293B" />
-            </button>
+                }}
+              >
+                <span>{formattedDisplayDate}</span>
+                <IconCalendar size={18} stroke={1.75} color="#1E293B" />
+              </button>
+              {selectedDate && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedDate('');
+                    setPage(1);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    right: '34px',
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#94A3B8',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: 0
+                  }}
+                  title="Clear date"
+                >
+                  <IconX size={14} />
+                </button>
+              )}
+            </div>
             <input
               type="date"
               ref={dateInputRef}
               value={selectedDate}
               onChange={(e) => {
-                if (e.target.value) {
-                  setSelectedDate(e.target.value);
-                  setPage(1);
-                }
+                setSelectedDate(e.target.value);
+                setPage(1);
               }}
               className={styles.hiddenDateInput}
             />
@@ -508,7 +438,13 @@ const OvertimeReports = () => {
             </tr>
           </thead>
           <tbody>
-            {currentRows.length === 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan={8} style={{ textAlign: 'center', padding: '40px' }}>
+                  <CircularProgress size={32} sx={{ color: '#644EE5' }} />
+                </td>
+              </tr>
+            ) : currentRows.length === 0 ? (
               <tr>
                 <td colSpan={8} className={styles.emptyRow}>
                   No overtime records found matching filters.
@@ -519,13 +455,16 @@ const OvertimeReports = () => {
                 const isApproved = row.status === 'Approved';
                 const isPending = row.status === 'Pending';
                 const isRejected = row.status === 'Rejected';
+                const isCancelled = row.status === 'Cancelled';
                 const statusClass = isApproved
                   ? styles.statusApproved
                   : isPending
                     ? styles.statusPending
                     : isRejected
                       ? styles.statusRejected
-                      : '';
+                      : isCancelled
+                        ? styles.statusCancelled || ''
+                        : '';
 
                 return (
                   <tr key={row.id} className={styles.tr}>
@@ -627,7 +566,7 @@ const OvertimeReports = () => {
         </div>
       </div>
 
-      {/* Right Side Details Drawer (Screenshot 3) */}
+      {/* Right Side Details Drawer */}
       {isDrawerOpen &&
         selectedItem &&
         typeof document !== 'undefined' &&
@@ -652,8 +591,20 @@ const OvertimeReports = () => {
               <div className={styles.drawerHeader}>
                 <h3 className={styles.drawerTitle}>Overtime Request Details</h3>
                 <div className={styles.drawerHeaderActions}>
-                  <span className={`${styles.statusChip} ${styles.statusApproved}`}>
-                    {selectedItem.status || 'Approved'}
+                  <span
+                    className={`${styles.statusChip} ${
+                      selectedItem.status === 'Approved'
+                        ? styles.statusApproved
+                        : selectedItem.status === 'Pending'
+                          ? styles.statusPending
+                          : selectedItem.status === 'Rejected'
+                            ? styles.statusRejected
+                            : selectedItem.status === 'Cancelled'
+                              ? styles.statusCancelled || ''
+                              : ''
+                    }`}
+                  >
+                    {selectedItem.status || 'Pending'}
                   </span>
                   <button
                     type="button"
@@ -669,7 +620,7 @@ const OvertimeReports = () => {
               {/* Employee Name & Details Subtitle */}
               <div className={styles.drawerEmployeeInfo}>
                 <h4 className={styles.drawerEmpName}>
-                  {selectedItem.drawerEmpName || selectedItem.empName || 'Dr.Shreya Krishnan'}
+                  {selectedItem.empName || 'Employee Name'}
                 </h4>
                 <p className={styles.drawerEmpSub}>
                   {selectedItem.empId} · {selectedItem.department} Department
@@ -680,11 +631,11 @@ const OvertimeReports = () => {
               <div className={styles.tintedInfoBox}>
                 <div className={styles.infoCol}>
                   <span className={styles.infoColLabel}>Emp ID</span>
-                  <span className={styles.infoColValue}>{selectedItem.drawerEmpId || 'CMP1234'}</span>
+                  <span className={styles.infoColValue}>{selectedItem.empId || '-'}</span>
                 </div>
                 <div className={styles.infoCol}>
                   <span className={styles.infoColLabel}>Requested Date</span>
-                  <span className={styles.infoColValue}>{selectedItem.requestedDate || '07 Aug 2025'}</span>
+                  <span className={styles.infoColValue}>{selectedItem.requestedDate || '-'}</span>
                 </div>
               </div>
 
@@ -693,21 +644,47 @@ const OvertimeReports = () => {
                 <div className={styles.detailsRow}>
                   <div className={styles.infoCol}>
                     <span className={styles.infoColLabel}>Overtime Date</span>
-                    <span className={styles.infoColValue}>{selectedItem.overtimeDate || '07 Aug 2025'}</span>
+                    <span className={styles.infoColValue}>{selectedItem.overtimeDate || '-'}</span>
                   </div>
                   <div className={styles.infoCol}>
                     <span className={styles.infoColLabel}>Overtime Duration</span>
-                    <span className={styles.infoColValue}>{selectedItem.overtimeDuration || '02:30 Hrs'}</span>
+                    <span className={styles.infoColValue}>{selectedItem.overtimeDuration || '-'}</span>
                   </div>
                 </div>
 
                 <div className={styles.reasonSection}>
                   <span className={styles.reasonLabel}>Overtime Reason</span>
                   <p className={styles.reasonValue}>
-                    {selectedItem.reason ||
-                      'I am writing to report a malfunctioning X-ray machine in the Radiology department. The machine is producing blurry images, which is impacting our ability to accurately diagnose patients. This has been ongoing for a week. Request immediate attention.'}
+                    {selectedItem.reason || 'No reason provided'}
                   </p>
                 </div>
+
+                {selectedItem.shift && (
+                  <div className={styles.reasonSection}>
+                    <span className={styles.reasonLabel}>Shift Details</span>
+                    <p className={styles.reasonValue}>
+                      {selectedItem.shift.name} ({selectedItem.shift.start_time} - {selectedItem.shift.end_time})
+                    </p>
+                  </div>
+                )}
+
+                {selectedItem.actionBy && selectedItem.actionBy !== '-' && (
+                  <div className={styles.reasonSection} style={{ marginTop: '12px' }}>
+                    <span className={styles.reasonLabel}>Reviewed By</span>
+                    <p className={styles.reasonValue}>
+                      {selectedItem.actionBy} {selectedItem.reviewedAt && selectedItem.reviewedAt !== '-' ? `(${selectedItem.reviewedAt})` : ''}
+                    </p>
+                  </div>
+                )}
+
+                {selectedItem.rejectionRemark && (
+                  <div className={styles.reasonSection} style={{ marginTop: '12px' }}>
+                    <span className={styles.reasonLabel} style={{ color: '#DC2626' }}>Rejection Remark</span>
+                    <p className={styles.reasonValue} style={{ color: '#DC2626' }}>
+                      {selectedItem.rejectionRemark}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>,
@@ -718,4 +695,5 @@ const OvertimeReports = () => {
 };
 
 export default OvertimeReports;
+
 
