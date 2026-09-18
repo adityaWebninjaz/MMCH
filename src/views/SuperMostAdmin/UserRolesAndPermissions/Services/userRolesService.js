@@ -6,6 +6,7 @@ const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 /**
  * Extracts clean backend error message from server response
  */
+
 export const getApiErrorMessage = (error, defaultMsg = 'An unexpected error occurred') => {
   const resData = error?.response?.data;
   if (!resData) return error?.message || defaultMsg;

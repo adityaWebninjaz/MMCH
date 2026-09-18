@@ -984,9 +984,8 @@
   width: 100%;
 }
 
-.createUserRoleSelectButton {
+/* .createUserRoleSelectButton {
   /* Button custom styling */
-}
 
 .createUserRoleDropdownMenu {
   /* Menu popup custom styling */
@@ -996,13 +995,12 @@
 }
 
 /* Dedicated Styles for Edit User Modal Role Dropdown */
-.editUserRoleSelectWrapper {
+/* .editUserRoleSelectWrapper {
   width: 100%;
-}
+} */
 
-.editUserRoleSelectButton {
+/* .editUserRoleSelectButton {
   /* Button custom styling */
-}
 
 .editUserRoleDropdownMenu {
   /* Menu popup custom styling */
